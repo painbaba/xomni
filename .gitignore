@@ -17,6 +17,16 @@ state.json
 .usage.json
 .usage.json.lock
 
+# sensitive content — not for public distribution
+skills/research/web-research/references/mundhe-ias-dossier-2026.md
+skills/research/parallel-research-swarm/references/epstein-files-verified-notes.md
+skills/research/web-research/references/epstein-files-status-2026.md
+skills/autonomous-ai-agents/agent-battle-lab/references/ghost-real-targets-assessment.md
+skills/security/agent-battle-arena/references/psyops-playbook.md
+skills/security/agent-battle-arena/references/phone-trap-playbook.md
+skills/security/agent-battle-arena/templates/attack_drainer.py
+skills/security/agent-battle-arena/references/supply-chain-and-keeper-attacks.md
+
 # os
 .DS_Store
 Thumbs.db
