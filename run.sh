@@ -7,5 +7,15 @@
 #          ./run.sh chat -q "..."  (one-shot)
 #          ./run.sh --continue     (resume last session)
 # ============================================================
-echo "[XOMNI] starting host + 12 plugins..."
+export XOMNI_HOME="$(cd "$(dirname "$0")" && pwd)"
+# Best-effort: ensure a local Ollama runtime is reachable so LOCAL
+# models work with zero extra installs (never blocks chat).
+if command -v ollama >/dev/null 2>&1 && ! curl -sf --max-time 2 http://127.0.0.1:11434/v1/models >/dev/null 2>&1; then
+    (ollama serve >/dev/null 2>&1 &)
+    for _ in $(seq 1 30); do
+        curl -sf --max-time 2 http://127.0.0.1:11434/v1/models >/dev/null 2>&1 && break
+        sleep 2
+    done
+fi
+echo "[XOMNI] starting host + 14 plugins..."
 hermes "$@"

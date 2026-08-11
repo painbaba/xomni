@@ -81,13 +81,13 @@ cd plugins/repomap  && python -m unittest tests.test_core -v
 # ... 329 tests total across the suite
 ```
 
-Verified live (2026-08-11): **346/346 tests pass, 0 failures.**
+Verified live (2026-08-11): **357/357 tests pass, 0 failures.**
 
 | Plugin | Tests | Plugin | Tests |
 |---|---|---|---|
 | gh-ops | 60 | verify-runner | 38 |
 | context-loader | 34 | context-compact | 30 |
-| local-models | 29 | sandbox-gate | 29 |
+| local-models | 40 | sandbox-gate | 29 |
 | title-statusline | 27 | mcp-catalog | 26 |
 | provider-pool | 16 | repomap | 15 |
 | waitperk | 14 | perkline | 11 |
@@ -102,6 +102,22 @@ Verified live (2026-08-11): **346/346 tests pass, 0 failures.**
 | Frontier | `gpt-5.6-luna` | ~1.4s |
 | Coding | `kimi-k2.7-code` / `qwen3.7-plus` | ~12s / ~5s |
 | Vision | `minimax-m3` (only verified vision) | ~6s |
+
+## Local models, zero install — Ollama bundled
+
+XOMNI ships the **Ollama runtime** so local models work without downloading
+Ollama separately. The launcher does it all on first run:
+
+1. Downloads the official portable Ollama build **once** (~130 MB) into
+   `ollama/runtime/` (official source, MIT-licensed).
+2. Starts `ollama serve` automatically on `127.0.0.1:11434`.
+3. Pulls the default local model `qwen2.5:3b` (~1.9 GB) on first run — after
+   that, local inference works **offline, forever free, no account**.
+
+Then the `/ollama` command manages it (`status | start | install | pull`), and
+`/localmodels scan` detects it as a live OpenAI-compatible server — route
+Hermes/OpenCode/Codex/Aider/Goose to `http://127.0.0.1:11434/v1` with
+`/localmodels config ollama`.
 
 ## The skills you already inherit
 

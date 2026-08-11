@@ -7,5 +7,11 @@ REM  Usage:  run.cmd                (interactive chat)
 REM          run.cmd chat -q "..."  (one-shot)
 REM          run.cmd --continue     (resume last session)
 REM ============================================================
-echo [XOMNI] starting host + 12 plugins...
+set XOMNI_HOME=%~dp0
+REM Best-effort: ensure the bundled Ollama runtime is up so LOCAL
+REM models work with zero extra installs (never blocks chat).
+if exist "%~dp0ollama\start-ollama.ps1" (
+    powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0ollama\start-ollama.ps1" >nul 2>&1
+)
+echo [XOMNI] starting host + 14 plugins...
 hermes %*

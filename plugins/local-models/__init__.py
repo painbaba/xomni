@@ -6,6 +6,7 @@ Commands:
     /localmodels config [server] print wiring snippets for a server
     /localmodels add <base_url> [id]   remember an extra server (servers.json)
     /localmodels remove <id>           forget an extra server
+    /ollama status|start|install|pull  bundled Ollama runtime manager
 
 Tool: ``local_models`` (action=status|scan|config[, server]) — model-callable
 so the agent can query local models mid-task. All hooks return None / this
@@ -15,8 +16,10 @@ from __future__ import annotations
 
 try:
     from . import core
+    from . import runtime
 except ImportError:  # standalone test import (no parent package)
     import core  # type: ignore
+    import runtime  # type: ignore
 
 _CTX = None
 
@@ -26,6 +29,7 @@ HELP = (
     "/localmodels config [server] print wiring snippets (default: ollama)\n"
     "/localmodels add <base_url> [id]  remember an extra server\n"
     "/localmodels remove <id>          forget an extra server\n"
+    "/ollama status|start|install|pull  bundled Ollama runtime manager\n"
 )
 
 
@@ -127,6 +131,66 @@ def _local_models_tool(params: dict) -> str:
     return f"unknown action {action!r}. actions: status | scan | config [server]"
 
 
+def _ollama_status_text() -> str:
+    st = runtime.status()
+    lines = []
+    if st["serving"]:
+        model_list = ", ".join(st["models"]) or "(no models pulled yet)"
+        lines.append(f"ollama: SERVING on {runtime.OLLAMA_BASE_URL}")
+        lines.append(f"  models: {model_list}")
+        if not st["default_model_present"]:
+            lines.append(
+                f"  tip: /ollama pull {runtime.DEFAULT_MODEL} for the bundled default local model"
+            )
+    else:
+        lines.append("ollama: not running")
+        if st["binary"]:
+            lines.append(f"  binary found: {st['binary']} — /ollama start")
+        else:
+            lines.append("  no binary yet — /ollama install (bundles the official build)")
+    if st["bundled_installed"]:
+        lines.append(f"  bundled runtime: {st['runtime_dir']}")
+    return "\n".join(lines)
+
+
+def _handle_ollama(raw: str) -> str:
+    args = (raw or "").strip()
+    parts = args.split(None, 1)
+    cmd = (parts[0] or "").lower()
+    rest = parts[1].strip() if len(parts) > 1 else ""
+    if not cmd or cmd in ("status", "?"):
+        return _ollama_status_text()
+    if cmd == "install":
+        result = runtime.install_runtime()
+        if result["error"]:
+            return f"ollama install failed: {result['error']}"
+        return f"ollama installed: {result['binary']} — /ollama start"
+    if cmd == "start":
+        binary = runtime.find_binary()
+        if binary is None:
+            return "no ollama binary — /ollama install first"
+        if runtime.is_serving():
+            return "ollama already serving."
+        result = runtime.start_serve(binary)
+        if result["error"]:
+            return f"ollama start failed: {result['error']}"
+        if result["ready"]:
+            return f"ollama serving on {runtime.OLLAMA_BASE_URL}."
+        return "ollama serve launched but not ready yet — /ollama status"
+    if cmd == "pull":
+        model = rest or runtime.DEFAULT_MODEL
+        binary = runtime.find_binary()
+        if binary is None:
+            return "no ollama binary — /ollama install first"
+        result = runtime.pull_model(binary, model)
+        if not result["ok"]:
+            return f"ollama pull {model} failed: {result['error']}"
+        return f"pulled {model}. /localmodels scan to see it live."
+    if cmd in ("help", "-h", "--help"):
+        return "/ollama status | start | install | pull [model]"
+    return f"unknown subcommand {cmd!r}\n/ollama status | start | install | pull [model]"
+
+
 def register(ctx) -> None:
     global _CTX
     _CTX = ctx
@@ -170,4 +234,14 @@ def register(ctx) -> None:
         handler=_local_models_tool,
         description="Probe and wire local OpenAI-compatible model servers (Ollama / LM Studio)",
         emoji="🖥️",
+    )
+    ctx.register_command(
+        "ollama",
+        handler=_handle_ollama,
+        description=(
+            "Bundled Ollama runtime manager: status | start | install | "
+            "pull [model]. Ships the official Ollama build so local models "
+            "work with zero extra installs."
+        ),
+        args_hint="[status|start|install|pull [model]]",
     )

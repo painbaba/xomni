@@ -276,14 +276,17 @@ class WiringTests(unittest.TestCase):
 
         class FakeCtx:
             def register_command(self, name, handler, description="", args_hint=""):
-                calls["cmd"] = (name, handler, description, args_hint)
+                calls.setdefault("cmd", []).append((name, handler, description, args_hint))
 
             def register_tool(self, name, toolset, schema, handler, **kw):
                 calls["tool"] = (name, toolset, schema, handler, kw)
 
         self.plugin.register(FakeCtx())
-        self.assertEqual(calls["cmd"][0], "localmodels")
-        self.assertIn("status | scan | config", calls["cmd"][2])
+        names = [c[0] for c in calls["cmd"]]
+        self.assertIn("localmodels", names)
+        self.assertIn("ollama", names)
+        desc = next(d for n, h, d, a in calls["cmd"] if n == "localmodels")
+        self.assertIn("status | scan | config", desc)
         self.assertEqual(calls["tool"][0], "local_models")
         self.assertEqual(calls["tool"][1], "local")
         schema = calls["tool"][2]
