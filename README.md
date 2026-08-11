@@ -103,6 +103,31 @@ Verified live (2026-08-11): **357/357 tests pass, 0 failures.**
 | Coding | `kimi-k2.7-code` / `qwen3.7-plus` | ~12s / ~5s |
 | Vision | `minimax-m3` (only verified vision) | ~6s |
 
+## Bring your own provider — built in
+
+You're never locked to XOMNI's routing. Hermes natively connects **any
+OpenAI-compatible endpoint** — your own OpenAI/Anthropic/Groq/Azure/OpenRouter
+key, a corporate gateway, or a vLLM/LM-Studio box on your LAN:
+
+```yaml
+# config.yaml (Hermes install dir)
+model:
+  provider: custom          # or any of the 32 built-in profiles (anthropic,
+                            # gemini, openrouter, deepseek, xai, nvidia, ...)
+  model: gpt-4o             # or whatever your endpoint serves
+  base_url: https://api.openai.com/v1   # direct endpoint; takes precedence
+  api_key: YOUR_KEY         # falls back to OPENAI_API_KEY in .env
+
+# optional failover chain
+fallback_providers:
+  - provider: openrouter
+    model: deepseek/deepseek-chat
+```
+
+Keys live in `.env`, one per provider (`OPENAI_API_KEY`, `ANTHROPIC_API_KEY`,
+...), and `/provider` prints the ready-to-paste snippet for every agent in the
+stack (Hermes/OpenCode/Codex/Aider/Goose).
+
 ## Local models, zero install — Ollama bundled
 
 XOMNI ships the **Ollama runtime** so local models work without downloading
