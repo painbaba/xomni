@@ -21,7 +21,7 @@ import shutil
 import subprocess
 import sys
 
-ROOT = os.path.dirname(os.path.abspath(__file__))
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PLUGINS_DIR = os.path.join(ROOT, "plugins")
 SKILLS_DIR = os.path.join(ROOT, "skills")
 DATA_DIR = os.path.join(ROOT, "data")
