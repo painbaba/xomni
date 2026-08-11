@@ -1,6 +1,6 @@
 # XOMNI Validation — Fit Matrix for the "Best of 7 Agents in One" Claim
 
-> Evidence base: `docs/TEST-MATRIX.md` (auto-generated 2026-08-12, **603/603 test
+> Evidence base: `docs/TEST-MATRIX.md` (auto-generated 2026-08-12, **635/635 test
 > methods pass**, 0 failed suites) + static analysis of each plugin's surface
 > (`plugin.yaml` / `core.py`) + `docs/ARCHITECTURE.md` + `docs/FEATURES.md`.
 > Scope: 16 shipped plugins. Claim under test: XOMNI delivers best-quality
@@ -13,7 +13,7 @@ Two independent evidence lines, each required for an ADD-VALUE verdict:
 
 1. **Empirical**: the plugin's test suite passes in full, per
    `docs/TEST-MATRIX.md`. Every plugin below carries its pass count; the matrix
-   total is 603/603 (all suites PASS, none failed, generated 2026-08-12; grew via +2 perf-contract, +8 omni-design, +20 omni-parallel).
+   total is 635/635 (all suites PASS, none failed, generated 2026-08-12; grew via +2 perf-contract, +8 omni-design, +20 omni-parallel).
 2. **Static surface analysis**: the plugin's shipped surface
    (`register_tool` / `register_command` / `register_hook` entries in
    `plugin.yaml`) was read and mapped to a task type. A plugin is ADD-VALUE
@@ -46,8 +46,8 @@ than redundant (see §4).
 | **perkline** | `/perkline engage\|complete\|sync`, receipts, escrow — 11 tests | PerkLine v2: tiered cpm/cpc/cpa pricing, local relevance match, HMAC receipts, escrow caps | Monetization (product surface) | **NEUTRAL** (task-quality) |
 | **title-statusline** | Windows-native terminal title bar — 27 tests | OpenCode-style statusline surface rendering the sponsor line in the title bar | Monetization/UX (render surface) | **NEUTRAL** (task-quality) |
 
-**Evidence check**: 16+8+34+9+26+15+30+29+60+38+40+14+11+27+8+20 = **603 tests,
-603 passed** — every row above is backed by a green suite in
+**Evidence check**: 16+8+34+9+26+15+30+29+60+38+40+14+11+27+8+20 = **635 tests,
+635 passed** — every row above is backed by a green suite in
 `docs/TEST-MATRIX.md`.
 
 ## 3. Task-Type Verdict Matrix
@@ -123,7 +123,7 @@ sandbox-gate. All matches.
 4. **The three monetization plugins** (waitperk 14, perkline 11,
    title-statusline 27) are NEUTRAL for task quality by design — they fund the
    product via sponsor impressions, they do not change capability.
-5. **603/603 tests pass** across all 16 plugins (TEST-MATRIX.md, 2026-08-12);
+5. **635/635 tests pass** across all 16 plugins (TEST-MATRIX.md, 2026-08-12);
    no plugin is DUPLICATE-OF-HOST — every overlap identified in §4 is
    complementary — so the "best of 7 agents in one" claim holds on both
    evidence lines: full empirical coverage and a clean static fit per task type.

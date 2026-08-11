@@ -143,3 +143,56 @@ class WaitPerkCoreTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class EdgeCaseTests(WaitPerkCoreTests):
+    """Monetization edge cases: pause, idle gaps, earnings cap, persistence."""
+
+    def test_paused_events_not_counted(self):
+        led = self._ledger()
+        led.state["paused"] = True
+        before = led.state["impressions"]
+        r = core.record_work_event(led, now=1000.0)
+        self.assertEqual(r["counted"], False)
+        self.assertEqual(led.state["impressions"], before)
+
+    def test_idle_gap_over_600s_not_active_time(self):
+        led = self._ledger()
+        core.record_work_event(led, now=1000.0)
+        before = led.state.get("active_seconds", 0.0)
+        core.record_work_event(led, now=2000.0)  # gap > 600s = idle, not screen time
+        self.assertEqual(led.state.get("active_seconds", 0.0), before)
+
+    def test_work_events_accumulate_impressions(self):
+        led = self._ledger()
+        for i in range(3):
+            core.record_work_event(led, now=100.0 + i)
+        self.assertEqual(led.state["impressions"], 3)
+
+    def test_earnings_capped_at_half_sponsor_paid(self):
+        led = self._ledger()
+        core.record_work_event(led, now=1.0)
+        core.record_work_event(led, now=2.0)
+        e = core.compute_earnings(led, sponsor_paid=100.0)
+        self.assertLessEqual(e, 50.0 + 1e-9)  # min(0.5*P*share, 0.5*P) cap
+        self.assertGreaterEqual(e, 0.0)
+
+    def test_payout_invariant_holds_after_many_events(self):
+        led = self._ledger()
+        for i in range(20):
+            core.record_work_event(led, now=10.0 + i)
+        self.assertTrue(core.payout_invariant(led, sponsor_paid=100.0))
+
+    def test_persistence_roundtrip(self):
+        led = self._ledger()
+        core.record_work_event(led, now=5.0)
+        core.start_session(led, now=6.0)
+        led.save()
+        again = core.Ledger.load()
+        self.assertEqual(again.state["impressions"], led.state["impressions"])
+        self.assertEqual(again.state["device_id"], led.state["device_id"])
+
+    def test_render_line_respects_width(self):
+        led = self._ledger()
+        line = core.render_line(led, width=30)
+        self.assertLessEqual(len(line), 30)

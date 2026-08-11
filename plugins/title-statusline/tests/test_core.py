@@ -167,3 +167,34 @@ class CycleTitleTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class EdgeCaseTests(unittest.TestCase):
+    """Title render edge cases: escape hygiene, line preference, truncation."""
+
+    def test_sanitize_strips_escape_bell_cr_lf(self):
+        dirty = "sponsor\x1b]0;inject\x07 line\r\n"
+        clean = core._sanitize(dirty)
+        self.assertNotIn("\x1b", clean)
+        self.assertNotIn("\x07", clean)
+        self.assertNotIn("\r", clean)
+        self.assertNotIn("\n", clean)
+        self.assertIn("sponsor", clean)
+
+    def test_pick_line_prefers_last_nonblank(self):
+        lines = ["waitperk line", "perkline line"]
+        self.assertIn("perkline line", core.pick_line(lines))
+
+    def test_pick_line_blank_perkline_falls_through(self):
+        lines = ["waitperk line", "  "]
+        out = core.pick_line(lines)
+        self.assertIn("waitperk line", out)
+        self.assertNotIn("perkline", out)
+
+    def test_pick_line_empty_shows_prefix(self):
+        self.assertEqual(core.pick_line([]), "[agent]")
+
+    def test_pick_line_truncates_to_max(self):
+        long = "x" * 200
+        out = core.pick_line([long], prefix="[agent]")
+        self.assertLessEqual(len(out), core.TITLE_MAX)

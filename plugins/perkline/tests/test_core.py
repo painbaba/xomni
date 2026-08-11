@@ -141,3 +141,59 @@ class PerkLineCoreTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class EdgeCaseTests(unittest.TestCase):
+    """Monetization edge cases: escrow cap, second-price auction, receipts."""
+
+    def _ledger(self):
+        led = core.Ledger()
+        led.config["sponsors"] = [
+            {"id": "s1", "message": "one", "budget": 100.0, "model": "cpm"},
+            {"id": "s2", "message": "two", "budget": 50.0, "model": "cpc"},
+        ]
+        return led
+
+    def test_charge_never_exceeds_budget(self):
+        led = self._ledger()
+        sp = led.config["sponsors"][0]
+        core._charge(led, sp, 500.0)  # attempt 5x over budget
+        self.assertEqual(led.state["escrow_spent"]["s1"], 100.0)
+        self.assertTrue(core.escrow_invariant(led))
+
+    def test_earnings_half_of_actual_spend(self):
+        led = self._ledger()
+        sp = led.config["sponsors"][0]
+        core._charge(led, sp, 40.0)
+        self.assertAlmostEqual(led.state["earnings_total"], 20.0, places=6)
+
+    def test_auction_second_price(self):
+        led = self._ledger()
+        r = core.run_auction(led, [{"sponsor_id": "s1", "bid": 10.0},
+                                   {"sponsor_id": "s2", "bid": 7.0}])
+        self.assertEqual(r["winner"], "s1")
+        self.assertEqual(r["price"], 7.0)  # second price, not 10
+
+    def test_auction_single_bid_pays_zero(self):
+        led = self._ledger()
+        r = core.run_auction(led, [{"sponsor_id": "s1", "bid": 10.0}])
+        self.assertEqual(r["winner"], "s1")
+        self.assertEqual(r["price"], 0.0)
+
+    def test_auction_empty_no_winner(self):
+        led = self._ledger()
+        r = core.run_auction(led, [])
+        self.assertIsNone(r["winner"])
+
+    def test_receipt_roundtrip_and_tamper(self):
+        led = self._ledger()
+        led.state["secret"] = "test-secret-32-chars-long-xxxxxxxx"
+        receipt = core._receipt(led, "s1", "render", 1234.5)
+        self.assertTrue(core.verify_receipt(receipt, "test-secret-32-chars-long-xxxxxxxx"))
+        self.assertFalse(core.verify_receipt(receipt + "x", "test-secret-32-chars-long-xxxxxxxx"))
+        self.assertFalse(core.verify_receipt(receipt, "wrong-secret"))
+
+    def test_render_line_paused_blank(self):
+        led = self._ledger()
+        led.state["paused"] = True
+        self.assertEqual(core.render_line(led), "")

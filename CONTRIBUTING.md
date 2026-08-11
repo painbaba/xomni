@@ -1,7 +1,7 @@
 # Contributing to XOMNI
 
 Thanks for contributing to XOMNI — an MIT-licensed, open-source agent product
-with **16 plugins** and a **603-test** suite. This guide covers how to add a
+with **16 plugins** and a **635-test** suite. This guide covers how to add a
 plugin, the rules that keep the runtime fast, and how to get your changes
 reviewed and merged.
 
@@ -109,7 +109,7 @@ Current verified environment (see `docs/TEST-MATRIX.md`):
 
 | Environment | Result |
 |---|---|
-| Windows 10/11, Python 3.11, git-bash (primary dev env) | ✅ 603/603 pass (16 plugins) |
+| Windows 10/11, Python 3.11, git-bash (primary dev env) | ✅ 635/635 pass (16 plugins) |
 | <!-- MATRIX-PLACEHOLDER: add rows here as platforms/versions are verified, e.g. `Ubuntu 22.04, Python 3.10 | ⏳ pending` --> | ⏳ pending |
 
 Rules for the matrix:
@@ -135,7 +135,7 @@ Rules for the matrix:
 1. **Fork** `github.com/painbaba/xomni` and create a branch
    (`feat/<plugin>` or `fix/<description>`).
 2. **Add or fix a plugin** following §2, including tests.
-3. **Run the matrix** (`bash .bench/run_all_tests.sh`) and confirm 603/603
+3. **Run the matrix** (`bash .bench/run_all_tests.sh`) and confirm 635/635
    (or your new total) pass.
 4. **Open the PR** with a description covering: what the plugin does, its
    tools/commands, test results, and confirmation that it adds **zero hooks**

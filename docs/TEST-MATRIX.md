@@ -1,4 +1,4 @@
-# Plugin Test Matrix (auto-generated 2026-08-12 01:03)
+# Plugin Test Matrix (auto-generated 2026-08-12 01:24)
 
 | context-compact | PASS | test_methods: 31 |
 | context-loader | PASS | test_methods: 69 |
@@ -9,12 +9,12 @@
 | omni-media | PASS | test_methods: 27 |
 | omni-memory | PASS | test_methods: 26 |
 | omni-parallel | PASS | test_methods: 20 |
-| perkline | PASS | test_methods: 11 |
+| perkline | PASS | test_methods: 18 |
 | provider-pool | PASS | test_methods: 36 |
 | repomap | PASS | test_methods: 42 |
 | sandbox-gate | PASS | test_methods: 42 |
-| title-statusline | PASS | test_methods: 27 |
+| title-statusline | PASS | test_methods: 32 |
 | verify-runner | PASS | test_methods: 38 |
-| waitperk | PASS | test_methods: 14 |
+| waitperk | PASS | test_methods: 34 |
 
-TOTAL test methods: 603 | passed: 603 | failed suites:
+TOTAL test methods: 635 | passed: 635 | failed suites:
