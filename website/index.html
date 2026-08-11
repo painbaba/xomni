@@ -92,7 +92,7 @@ section.block{padding:clamp(56px,8vw,96px) 0;border-top:1px solid var(--border)}
 .card h3{font-size:17px;margin-bottom:6px;overflow-wrap:anywhere}
 .card p{color:var(--muted);font-size:14.5px}
 .card .tag{display:inline-block;font-family:var(--font-mono);font-size:11px;color:var(--accent);border:1px solid var(--accent-dim);border-radius:999px;padding:2px 10px;margin-bottom:12px;text-transform:uppercase;letter-spacing:.06em}
-.plugins-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:16px;margin-top:48px}
+.plugins-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:16px;margin-top:48px}
 .plugin-col{min-width:0}
 .plugin-col h4{font-family:var(--font-mono);font-size:12px;color:var(--faint);text-transform:uppercase;letter-spacing:.1em;margin-bottom:12px}
 .plugin-col .pl{background:var(--surface-1);border:1px solid var(--border);border-radius:var(--radius-1);padding:12px 14px;margin-bottom:8px;font-size:13.5px;min-width:0;overflow-wrap:anywhere;transition:border-color var(--dur-fast)}
@@ -181,7 +181,7 @@ footer.site-footer{border-top:1px solid var(--border);padding:40px 24px;margin-t
       <article class="card reveal"><span class="tag">Composed in</span><h3>OpenCode · jcode · Codex · Aider · Goose · OpenClaw</h3><p>Status-line TUI, RAM discipline, sandboxed execution, symbol-level repo maps, MCP-native extensibility, personal memory and media understanding — each as a plugin.</p></article>
       <article class="card reveal"><span class="tag">Why it works</span><h3>Edge modules, not forks</h3><p>Every strength lands as a tested plugin on the host core. No 2.7&nbsp;GB source merge, no broken monolith — just composed capability.</p></article>
     </div>
-    <h2>16 plugins, <span class="muted">six themes</span></h2>
+    <h2>16 plugins, <span class="muted">seven themes</span></h2>
     <div class="plugins-grid">
       <div class="plugin-col"><h4>Sponsorship</h4><div class="pl"><div class="pn">waitperk</div><div class="pd">sponsor line, impressions, 50/50</div></div><div class="pl"><div class="pn">perkline</div><div class="pd">CPM/CPC tiers, receipts, escrow</div></div></div>
       <div class="plugin-col"><h4>Free models</h4><div class="pl"><div class="pn">provider-pool</div><div class="pd">25 verified models, health checks</div></div><div class="pl"><div class="pn">local-models</div><div class="pd">Ollama / LM Studio wiring</div></div></div>
