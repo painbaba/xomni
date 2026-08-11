@@ -99,6 +99,15 @@ Verified live (2026-08-11): **329/329 tests pass, 0 failures.**
 | Coding | `kimi-k2.7-code` / `qwen3.7-plus` | ~12s / ~5s |
 | Vision | `minimax-m3` (only verified vision) | ~6s |
 
+## The skills you already inherit
+
+XOMNI runs **on Hermes** — same host, same install — so every skill Hermes
+loads is yours with zero extra setup: **200+ skills verified live** (kanban,
+code review, TUI, MCP wiring, obsidian, docx, video pipelines, cloudflare,
+web-perf, data science, and the full built-in + user skill catalog), plus
+memory, cron, and gateway multi-platform support. You don't install the
+features — the host brings them.
+
 ## The sponsorship model (how it earns)
 
 ```
