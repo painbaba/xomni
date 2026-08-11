@@ -22,3 +22,6 @@ Notes:
   attribution and inspection; it is not part of the runtime.
 - MIT/Apache-2.0 require retaining copyright notices on redistribution â€” see
   each vendored repo's LICENSE file.
+
+| OpenClaw personal-assistant concepts (shipped modules) | OpenClaw (formerly Clawdbot) | MIT |
+| OmniMemory / OmniMedia concept (shipped) | OpenClaw personal memory + media pipelines | concept reimplemented independently — no OpenClaw source copied |

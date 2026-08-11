@@ -1,0 +1,4 @@
+name: omni-memory
+version: "1.0.0"
+description: "OpenClaw-style personal memory — local SQLite facts, /remember /recall, LLM consolidation"
+author: "user"

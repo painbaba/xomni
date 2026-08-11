@@ -1,0 +1,4 @@
+name: omni-media
+version: "1.0.0"
+description: "OpenClaw-style media understanding — /ocr /caption /mediascan via verified vision model"
+author: "user"

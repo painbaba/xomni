@@ -1,9 +1,9 @@
 # XOMNI — one agent. every feature. every free model.
 
 **XOMNI** (X + Omni = everything, in one) is a single terminal agent that
-composes the signature strengths of the six best open-source coding agents —
-**Hermes, OpenCode, jcode, Codex, Aider, Goose** — on one host, with a built-in
-**sponsorship engine** that pays you for your installs.
+composes the signature strengths of the seven best open-source coding agents —
+**Hermes, OpenCode, jcode, Codex, Aider, Goose, OpenClaw** — on one host, with
+a built-in **sponsorship engine** that pays you for your installs.
 
 - **Free forever.** MIT sources, no license key, no "pro" wall. The agent is
   the free bait; the sponsorship network is the product.
@@ -16,15 +16,15 @@ composes the signature strengths of the six best open-source coding agents —
 - **Earn while you work**: 50/50 impression-share sponsorship payouts, receipts,
   escrow caps, second-price auctions.
 
-> Design rule: **compose, don't merge.** A literal merge of six codebases in
+> Design rule: **compose, don't merge.** A literal merge of seven codebases in
 > Python + Go + Rust would produce a broken monolith. XOMNI is one host
-> (Hermes — the richest framework of the six, MIT, and the only one with
+> (Hermes — the richest framework of the seven, MIT, and the only one with
 > skills/memory/cron/plugins/gateway) with the other agents' signature
 > strengths ported in as edge modules.
 
 ---
 
-## The six agents, one host
+## The seven agents, one host
 
 | Tool | Language | Signature strength | Where it lands in XOMNI | Status |
 |---|---|---|---|---|
@@ -34,8 +34,9 @@ composes the signature strengths of the six best open-source coding agents —
 | Codex | Rust | Sandboxed execution, plan+act loop | Sandbox gate for risky tool calls | SHIPPED (`plugins/sandbox-gate`) |
 | Aider | Python | Repo map (tree-sitter), surgical git diffs | Symbol-level repo map for the model | SHIPPED (`plugins/repomap`) |
 | Goose | Rust | MCP-native extensibility | MCP-server catalog conventions | SHIPPED (`plugins/mcp-catalog`) |
+| OpenClaw | TypeScript | Personal assistant: persistent semantic memory, media understanding (OCR/vision), platform-native automation | Local memory + media pipeline | SHIPPED (`plugins/omni-memory`, `plugins/omni-media`) |
 
-## The 12 plugins
+## The 14 plugins
 
 | Plugin | What it does | Origin strength |
 |---|---|---|
@@ -51,6 +52,8 @@ composes the signature strengths of the six best open-source coding agents —
 | `gh-ops` | gh/glab wrappers with strict parsers | OpenCode |
 | `local-models` | Ollama/LM Studio probe + config generation | OpenCode |
 | `title-statusline` | Sponsor line in the terminal title bar | OpenCode |
+| `omni-memory` | OpenClaw-style personal memory: local SQLite facts, /remember /recall, LLM consolidation | OpenClaw |
+| `omni-media` | OpenClaw-style media understanding: /ocr /caption /mediascan via the verified vision model | OpenClaw |
 
 ## Install (one command)
 
@@ -62,7 +65,7 @@ run.cmd
 ./run.sh
 ```
 
-The launcher starts the Hermes host with all 12 plugins loaded — interactive
+The launcher starts the Hermes host with all 14 plugins loaded — interactive
 chat, `-q` one-shots, `--continue` resume. Plugins are also drop-in installable:
 
 ```bash
@@ -78,7 +81,7 @@ cd plugins/repomap  && python -m unittest tests.test_core -v
 # ... 329 tests total across the suite
 ```
 
-Verified live (2026-08-11): **329/329 tests pass, 0 failures.**
+Verified live (2026-08-11): **346/346 tests pass, 0 failures.**
 
 | Plugin | Tests | Plugin | Tests |
 |---|---|---|---|
@@ -88,6 +91,7 @@ Verified live (2026-08-11): **329/329 tests pass, 0 failures.**
 | title-statusline | 27 | mcp-catalog | 26 |
 | provider-pool | 16 | repomap | 15 |
 | waitperk | 14 | perkline | 11 |
+| omni-media | 9 | omni-memory | 8 |
 
 ## Verified free-model routing (live-tested)
 
