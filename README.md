@@ -78,6 +78,27 @@ cd plugins/repomap  && python -m unittest tests.test_core -v
 # ... 329 tests total across the suite
 ```
 
+Verified live (2026-08-11): **329/329 tests pass, 0 failures.**
+
+| Plugin | Tests | Plugin | Tests |
+|---|---|---|---|
+| gh-ops | 60 | verify-runner | 38 |
+| context-loader | 34 | context-compact | 30 |
+| local-models | 29 | sandbox-gate | 29 |
+| title-statusline | 27 | mcp-catalog | 26 |
+| provider-pool | 16 | repomap | 15 |
+| waitperk | 14 | perkline | 11 |
+
+## Verified free-model routing (live-tested)
+
+| Role | Model | Live TTFB |
+|---|---|---|
+| Default | `deepseek-v4-flash` | ~12s |
+| Deep reasoning | `deepseek-v4-pro` | ~2s |
+| Frontier | `gpt-5.6-luna` | ~1.4s |
+| Coding | `kimi-k2.7-code` / `qwen3.7-plus` | ~12s / ~5s |
+| Vision | `minimax-m3` (only verified vision) | ~6s |
+
 ## The sponsorship model (how it earns)
 
 ```
