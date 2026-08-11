@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Security — XOMNI Docs</title>
+<meta name="description" content="XOMNI security model: sandboxing, secrets handling, model-pool trust, and responsible disclosure.">
+<link rel="icon" type="image/svg+xml" href="../favicon.svg">
+<link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="logo" href="../index.html"><span class="logo-x">X</span>OMNI</a>
+    <nav class="site-nav" id="site-nav" aria-label="Primary">
+      <a href="../index.html" class="nav-link" data-nav="index">Home</a>
+      <a href="install.html" class="nav-link" data-nav="install">Install</a>
+      <a href="byo-provider.html" class="nav-link" data-nav="byo">BYO Provider</a>
+      <a href="sponsorship.html" class="nav-link" data-nav="sponsorship">Sponsorship</a>
+      <a href="faq.html" class="nav-link" data-nav="faq">FAQ</a>
+      <a href="security.html" class="nav-link" data-nav="security">Security</a>
+      <a href="../skills.html" class="nav-link" data-nav="skills">Skills</a>
+      <a class="nav-cta" href="https://github.com/painbaba/xomni" target="_blank" rel="noopener">GitHub ↗</a>
+    </nav>
+    <button class="nav-toggle" id="nav-toggle" aria-expanded="false" aria-controls="site-nav" aria-label="Toggle navigation">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+
+<main id="main">
+  <div class="container page">
+    <aside class="docs-side" aria-label="Docs navigation">
+      <p class="docs-h">Docs</p>
+      <a href="install.html" class="docs-link">Install</a>
+      <a href="byo-provider.html" class="docs-link">BYO Provider</a>
+      <a href="sponsorship.html" class="docs-link">Sponsorship</a>
+      <a href="faq.html" class="docs-link">FAQ</a>
+      <a href="security.html" class="docs-link active">Security</a>
+      <p class="docs-h">Site</p>
+      <a href="../skills.html" class="docs-link">Skills</a>
+      <a href="../index.html" class="docs-link">Home</a>
+    </aside>
+
+    <article class="docs-body">
+      <h1>Security</h1>
+      <p class="lead">XOMNI runs with the same privileges you give it — no more. This page describes the threat model and the controls in place.</p>
+
+      <h2 id="model">Threat model</h2>
+      <ul class="check-list">
+        <li><strong>Prompt injection.</strong> Untrusted content (web pages, files, emails) can try to steer the agent. XOMNI treats tool output as data, not instructions.</li>
+        <li><strong>Secret exfiltration.</strong> Keys and tokens must never reach prompts, logs, or sponsor lines.</li>
+        <li><strong>Supply chain.</strong> The free-model pool and plugins must be verifiable and re-verifiable.</li>
+        <li><strong>Local compromise.</strong> A malicious plugin or model output must not silently escalate privileges.</li>
+      </ul>
+
+      <h2 id="sandbox">Sandboxing</h2>
+      <p>The <span class="mono">sandbox-gate</span> plugin sits between the agent and your system. Risky actions — writes outside the workspace, shell commands with side effects, network calls to unknown hosts — are gated behind a policy:</p>
+      <ul class="check-list">
+        <li>Actions outside the workspace require explicit approval.</li>
+        <li>Policies are per-project and stored in config, never in prompts.</li>
+        <li>The gate logs every decision locally for later review.</li>
+      </ul>
+
+      <h2 id="secrets">Secrets handling</h2>
+      <ul class="check-list">
+        <li>API keys are referenced as <span class="mono">env:VAR</span> or stored in the OS keychain — never in plaintext config files.</li>
+        <li>Secrets are redacted from logs, transcripts, and statusline output.</li>
+        <li>The <span class="mono">omni-memory</span> plugin scrubs credential-shaped strings before persisting anything.</li>
+      </ul>
+
+      <h2 id="models">Model pool trust</h2>
+      <p>The 25 free models are verified against <span class="mono">opencode.ai/zen/go/v1</span> before use and re-verified on a schedule; a model that fails verification is dropped from the pool. Requests carry only the data you route — sponsor lines, telemetry, and prompts are never mixed into the model request path unless you opt in.</p>
+
+      <h2 id="sponsor">Sponsor-line isolation</h2>
+      <p>Sponsor messages are rendered locally by <span class="mono">perkline</span> and are treated as untrusted display strings. They can't touch the model pool, your files, or your keys. Sponsorship is off by default.</p>
+
+      <h2 id="updates">Updates</h2>
+      <p>Pull updates with <span class="mono">git pull --ff-only</span>; config, keys, and memory live outside the checkout and are never overwritten by updates. Security fixes are announced in the repository release notes.</p>
+
+      <h2 id="disclosure">Responsible disclosure</h2>
+      <p>Found a vulnerability? Please report it privately before disclosing publicly — open a <strong>security advisory</strong> on <a href="https://github.com/painbaba/xomni" target="_blank" rel="noopener">github.com/painbaba/xomni</a> rather than a public issue. Include the affected version, a minimal repro, and the impact. We'll acknowledge within 48 hours and aim for a fix in the next release.</p>
+    </article>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <div>
+      <p class="footer-brand"><span class="logo-x">X</span>OMNI</p>
+      <p class="muted">one agent. every feature. every free model.</p>
+    </div>
+    <div class="footer-cols">
+      <div class="footer-col">
+        <p class="footer-h">Docs</p>
+        <a href="install.html">Install</a>
+        <a href="byo-provider.html">BYO Provider</a>
+        <a href="sponsorship.html">Sponsorship</a>
+      </div>
+      <div class="footer-col">
+        <p class="footer-h">More</p>
+        <a href="faq.html">FAQ</a>
+        <a href="security.html">Security</a>
+        <a href="../skills.html">Skills</a>
+      </div>
+      <div class="footer-col">
+        <p class="footer-h">Project</p>
+        <a href="https://github.com/painbaba/xomni" target="_blank" rel="noopener">GitHub</a>
+        <a href="../index.html">Home</a>
+      </div>
+    </div>
+  </div>
+  <p class="footer-bottom muted">© <span data-year>2026</span> XOMNI · compose, don't merge.</p>
+</footer>
+
+<script src="../js/site.js"></script>
+</body>
+</html>

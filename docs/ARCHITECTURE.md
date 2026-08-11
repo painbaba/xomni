@@ -1,6 +1,6 @@
 # Architecture
 
-The unified agent is **one host core + edge modules**. This is the only merge
+The unified host is **one host core + edge modules**. This is the only merge
 strategy that produces working software from six different codebases; a literal
 source merge (Python + Go + Rust, 2.7 GB across the six repos) would be an
 unmaintainable monolith. The AGENTS.md of the host project states the rule

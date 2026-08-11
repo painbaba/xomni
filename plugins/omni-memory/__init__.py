@@ -1,4 +1,4 @@
-"""OmniMemory — OpenClaw-style personal memory, local and free.
+"""OmniMemory — XOMNI personal-memory plugin (OpenClaw-style), local and free.
 
 Hooks: pre_llm_call (inject a memory brief into non-trivial turns),
 post_tool_call (auto-remember nothing by default — facts are stored on

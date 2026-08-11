@@ -7,15 +7,17 @@ compacted into a summary and injected into the CURRENT turn's
 user-message api_content only — cache-safe, never mutates stored
 history (mirrors the verified prompt-enhancer ``pre_llm_call`` pattern).
 
-Real summaries run through ``ctx.llm.complete`` (temperature 0.2,
-host-owned — no plugin key needed). If the LLM call fails or returns
-empty, a deterministic fallback is used: the verbatim recent tail plus
-counts of the omitted older messages.
+PERF CONTRACT (incident fix): the hook is fully deterministic and never
+calls the LLM — the auto path injects the verbatim-tail + omission-counts
+summary at ~0ms. LLM-quality summaries (via ``ctx.llm.complete``,
+temperature 0.2, host-owned — no plugin key needed) run ONLY on explicit
+``/ctxcompact now``. If that LLM call fails or returns empty, the same
+deterministic fallback is used.
 
 Commands:
   /ctxcompact                  status
   /ctxcompact on|off           toggle auto mode
-  /ctxcompact now              compact immediately; injected into your next message
+  /ctxcompact now              compact immediately (LLM summary); injected into your next message
   /ctxcompact threshold <n>    set the message-count threshold
   /ctxcompact reset            re-arm: clear cooldown + per-session fire marker
 
@@ -75,9 +77,10 @@ HELP_TEXT = """context-compact — long-session context/RAM discipline
 /ctxcompact reset            re-arm: clear cooldown and per-session fire marker
 
 Auto mode: when the conversation passes the threshold, the OLDER
-messages are summarized (host model, temp 0.2; deterministic
-tail+counts fallback) and the summary rides the current turn's
-api_content only — stored history is never mutated (cache-safe)."""
+messages are compacted deterministically (verbatim tail + omission
+counts — no LLM call in the hook) and the summary rides the current
+turn's api_content only — stored history is never mutated (cache-safe).
+Use /ctxcompact now for an LLM-quality summary (explicit command)."""
 
 
 def _should_skip(raw: object) -> bool:
@@ -126,23 +129,36 @@ def _summarize_older(older: list) -> str | None:
         return None
 
 
-def _build_compaction(history: list, state: dict) -> str | None:
+def _build_compaction(history: list, state: dict, use_llm: bool = False) -> str | None:
     """Compaction context for ``history`` given ``state``.
 
     Returns ``None`` when there is nothing to compact (history fits
     inside the tail window).
+
+    ``use_llm=False`` (the default, used by the auto hook) is strictly
+    deterministic and zero-latency: no ctx.llm.complete call ever runs
+    inside a hook. LLM-quality summaries are only produced when the user
+    explicitly runs ``/ctxcompact now`` (use_llm=True).
     """
     tail_n = core._coerce_int(state, "tail_n", core.DEFAULT_STATE["tail_n"])
     older, tail = core.split_history(history, tail_n)
     if not older:
         return None
-    summary_text = _summarize_older(older)
+    summary_text = None
+    if use_llm:
+        summary_text = _summarize_older(older)
     return core.format_summary(len(older), core.render_tail(tail), summary_text)
 
 
 def _on_pre_llm_call(**kwargs):
     """pre_llm_call hook: inject a compacted summary of the OLDER portion
-    into the CURRENT turn's api_content. Returns None unless it fires."""
+    into the CURRENT turn's api_content. Returns None unless it fires.
+
+    PERF CONTRACT (incident fix): this hook NEVER calls ctx.llm.complete.
+    Compaction is deterministic (verbatim tail + omission counts) and
+    therefore ~0ms; LLM-quality summaries are produced only by the explicit
+    /ctxcompact now command.
+    """
     global _LAST_HISTORY
     history = kwargs.get("conversation_history") or []
     _LAST_HISTORY = list(history)  # shallow snapshot for /ctxcompact now
@@ -218,7 +234,9 @@ def _handle_compact(raw: str) -> str:
     if cmd == "now":
         if not _LAST_HISTORY:
             return "no conversation history seen yet — send a message first, then /ctxcompact now."
-        context = _build_compaction(_LAST_HISTORY, state.data)
+        # Explicit user intent: this is the ONLY path that spends an LLM
+        # call on summarization (never inside a hook).
+        context = _build_compaction(_LAST_HISTORY, state.data, use_llm=True)
         if not context:
             return "nothing to compact yet (history fits inside the verbatim tail window)."
         state.data["pending_force"] = context

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{TITLE} — XOMNI Component Lab</title>
+<style>
+{TOKENS}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-sans);padding:48px 24px;line-height:1.6}
+.mono,code{font-family:var(--font-mono)}
+h1{font-size:clamp(32px,5vw,52px);letter-spacing:-0.02em;margin-bottom:8px}
+.sub{color:var(--muted);margin-bottom:40px}
+.lab{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:32px;max-width:1200px}
+.panel{background:var(--surface-1);border:1px solid var(--border);border-radius:var(--radius-2);padding:24px}
+.panel h3{font-size:16px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:16px}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+button{font-family:var(--font-sans);font-size:14px;padding:10px 16px;border-radius:var(--radius-1);cursor:pointer;min-height:44px}
+.btn-primary{background:var(--accent);color:#000;border:1px solid var(--accent);font-weight:600}
+.btn-primary:hover{background:var(--accent-hover)}
+.btn-ghost{background:transparent;color:var(--ink);border:1px solid var(--border)}
+.btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
+.btn-danger{background:transparent;color:var(--danger);border:1px solid var(--danger)}
+input,select,textarea{font-family:var(--font-sans);font-size:14px;padding:10px 12px;background:var(--surface-2);color:var(--ink);border:1px solid var(--border);border-radius:var(--radius-1);min-height:44px}
+input:focus{outline:2px solid var(--accent);outline-offset:2px}
+.badge{display:inline-block;font-family:var(--font-mono);font-size:12px;padding:4px 10px;border-radius:999px;border:1px solid var(--border)}
+.badge-accent{color:var(--accent);border-color:var(--accent)}
+.badge-warn{color:var(--warning);border-color:var(--warning)}
+.badge-danger{color:var(--danger);border-color:var(--danger)}
+.card{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-2);padding:20px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:10px;border-bottom:1px solid var(--border)}
+th{color:var(--muted);font-weight:600}
+@media (prefers-reduced-motion: reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+<h1>{TITLE}</h1>
+<p class="sub">Component lab — buttons, inputs, badges, cards, tables.</p>
+<div class="lab">
+  <section class="panel"><h3>Buttons</h3>
+    <div class="row"><button class="btn-primary">Primary</button><button class="btn-ghost">Ghost</button><button class="btn-danger">Danger</button></div>
+  </section>
+  <section class="panel"><h3>Inputs</h3>
+    <div class="row"><input placeholder="Text input"><input type="email" placeholder="email@xomni.dev"></div>
+    <div class="row"><select><option>Option A</option><option>Option B</option></select></div>
+  </section>
+  <section class="panel"><h3>Badges</h3>
+    <div class="row"><span class="badge badge-accent">FREE</span><span class="badge badge-warn">FREE-TIER+ADDON</span><span class="badge badge-danger">PAID</span></div>
+  </section>
+  <section class="panel"><h3>Cards</h3>
+    <div class="card"><h3>Card title</h3><p style="color:var(--muted);font-size:14px">A short description of what this component does.</p></div>
+  </section>
+  <section class="panel"><h3>Table</h3>
+    <table><tr><th>Name</th><th>Status</th></tr><tr><td>item-a</td><td style="color:var(--success)">ok</td></tr><tr><td>item-b</td><td style="color:var(--warning)">warn</td></tr></table>
+  </section>
+</div>
+<script>
+(function(){if(!matchMedia('(prefers-reduced-motion: reduce)').matches){document.querySelectorAll('.panel').forEach(function(p,i){p.style.opacity='0';p.style.transform='translateY(10px)';p.style.transition='opacity 400ms cubic-bezier(.16,1,.3,1),transform 400ms cubic-bezier(.16,1,.3,1)';setTimeout(function(){p.style.opacity='1';p.style.transform='none'},70*i)})}})();
+</script>
+</body>
+</html>

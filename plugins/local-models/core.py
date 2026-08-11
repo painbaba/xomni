@@ -4,7 +4,7 @@ Ollama and LM Studio both expose OpenAI-compatible REST endpoints on
 localhost (no API key required). This module probes those endpoints
 (``GET {base}/models``), remembers extra user-configured servers in a
 plugin-local ``servers.json``, and generates per-agent config snippets so the
-unified agent (Hermes, OpenCode, ...) can route to local free models too.
+XOMNI (Hermes, OpenCode, ...) can route to local free models too.
 
 PORT CONSTANTS (documented):
     OLLAMA_BASE_URL     http://127.0.0.1:11434/v1 — Ollama's OpenAI-compatible

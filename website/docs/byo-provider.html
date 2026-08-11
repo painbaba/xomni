@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BYO Provider — XOMNI Docs</title>
+<meta name="description" content="Bring your own LLM provider keys to XOMNI: add providers to the pool, set priorities, and mix local models.">
+<link rel="icon" type="image/svg+xml" href="../favicon.svg">
+<link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="logo" href="../index.html"><span class="logo-x">X</span>OMNI</a>
+    <nav class="site-nav" id="site-nav" aria-label="Primary">
+      <a href="../index.html" class="nav-link" data-nav="index">Home</a>
+      <a href="install.html" class="nav-link" data-nav="install">Install</a>
+      <a href="byo-provider.html" class="nav-link" data-nav="byo">BYO Provider</a>
+      <a href="sponsorship.html" class="nav-link" data-nav="sponsorship">Sponsorship</a>
+      <a href="faq.html" class="nav-link" data-nav="faq">FAQ</a>
+      <a href="security.html" class="nav-link" data-nav="security">Security</a>
+      <a href="../skills.html" class="nav-link" data-nav="skills">Skills</a>
+      <a class="nav-cta" href="https://github.com/painbaba/xomni" target="_blank" rel="noopener">GitHub ↗</a>
+    </nav>
+    <button class="nav-toggle" id="nav-toggle" aria-expanded="false" aria-controls="site-nav" aria-label="Toggle navigation">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+
+<main id="main">
+  <div class="container page">
+    <aside class="docs-side" aria-label="Docs navigation">
+      <p class="docs-h">Docs</p>
+      <a href="install.html" class="docs-link">Install</a>
+      <a href="byo-provider.html" class="docs-link active">BYO Provider</a>
+      <a href="sponsorship.html" class="docs-link">Sponsorship</a>
+      <a href="faq.html" class="docs-link">FAQ</a>
+      <a href="security.html" class="docs-link">Security</a>
+      <p class="docs-h">Site</p>
+      <a href="../skills.html" class="docs-link">Skills</a>
+      <a href="../index.html" class="docs-link">Home</a>
+    </aside>
+
+    <article class="docs-body">
+      <h1>Bring Your Own Provider</h1>
+      <p class="lead">XOMNI ships with 25 verified free models, but the <span class="mono">provider-pool</span> plugin is built for your keys too. Add any OpenAI-compatible endpoint — hosted or local — and the pool routes around it automatically.</p>
+
+      <h2 id="why">Why bring your own?</h2>
+      <ul class="check-list">
+        <li><strong>Higher ceilings.</strong> Paid models can beat free ones on hard tasks; the pool prefers free unless you say otherwise.</li>
+        <li><strong>Privacy.</strong> Route sensitive work to your own endpoint or a local model.</li>
+        <li><strong>Reliability.</strong> If a free model drops out mid-task, the pool fails over to the next provider.</li>
+        <li><strong>Compatibility.</strong> Any OpenAI-compatible API works — no vendor SDKs.</li>
+      </ul>
+
+      <h2 id="add">Add a provider</h2>
+      <p>Keys live in the XOMNI config file (outside the repo checkout). Add a provider block:</p>
+      <div class="code-block">
+        <div class="code-head"><span class="dot"></span><span class="code-title">xomni.config.json</span><button class="copy-btn" data-copy="{&#10;  &quot;providers&quot;: [&#10;    {&quot;id&quot;: &quot;my-openai&quot;, &quot;baseUrl&quot;: &quot;https://api.openai.com/v1&quot;, &quot;apiKey&quot;: &quot;env:OPENAI_API_KEY&quot;, &quot;priority&quot;: 5},&#10;    {&quot;id&quot;: &quot;my-local&quot;, &quot;baseUrl&quot;: &quot;http://localhost:11434/v1&quot;, &quot;priority&quot;: 9}&#10;  ]&#10;}">copy</button></div>
+        <pre><code>{
+  <span class="k">"providers"</span>: [
+    { <span class="k">"id"</span>: <span class="s">"my-openai"</span>, <span class="k">"baseUrl"</span>: <span class="s">"https://api.openai.com/v1"</span>,
+      <span class="k">"apiKey"</span>: <span class="s">"env:OPENAI_API_KEY"</span>, <span class="k">"priority"</span>: 5 },
+    { <span class="k">"id"</span>: <span class="s">"my-local"</span>, <span class="k">"baseUrl"</span>: <span class="s">"http://localhost:11434/v1"</span>,
+      <span class="k">"priority"</span>: 9 }
+  ]
+}</code></pre>
+      </div>
+      <p><span class="mono">apiKey</span> accepts an <span class="mono">env:VAR</span> reference so secrets never sit in plaintext files. Lower <span class="mono">priority</span> numbers are tried first. Local endpoints don't need a key at all.</p>
+
+      <h2 id="local">Local models</h2>
+      <p>The <span class="mono">local-models</span> plugin lets you mix GGUF models running on your own machine into the same pool. XOMNI treats them as just another provider:</p>
+      <ul class="check-list">
+        <li>Serve a GGUF via any OpenAI-compatible local server (e.g. llama.cpp or Ollama).</li>
+        <li>Add it as a provider with <span class="mono">"local": true</span>.</li>
+        <li>Use the <span class="mono">local-only</span> routing flag for tasks that must never leave the machine.</li>
+      </ul>
+
+      <h2 id="verify">Verify the pool</h2>
+      <div class="code-block">
+        <div class="code-head"><span class="dot dot-green"></span><span class="code-title">bash</span><button class="copy-btn" data-copy="xomni models --list&#10;xomni models --verify">copy</button></div>
+        <pre><code><span class="prompt">$</span> xomni models --list
+<span class="prompt">$</span> xomni models --verify   <span class="cmt"># re-checks every provider, free and BYO</span></code></pre>
+      </div>
+      <p>Failed providers are marked down and skipped until they pass again. The pool re-verifies automatically on a schedule.</p>
+
+      <h2 id="secrets">Keeping secrets safe</h2>
+      <p>Never commit keys. Use <span class="mono">env:</span> references, or the interactive <span class="mono">xomni config set provider.&lt;id&gt;.apiKey</span> command, which stores the key in your OS keychain where available. See <a href="security.html">Security</a> for the full threat model.</p>
+    </article>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <div>
+      <p class="footer-brand"><span class="logo-x">X</span>OMNI</p>
+      <p class="muted">one agent. every feature. every free model.</p>
+    </div>
+    <div class="footer-cols">
+      <div class="footer-col">
+        <p class="footer-h">Docs</p>
+        <a href="install.html">Install</a>
+        <a href="byo-provider.html">BYO Provider</a>
+        <a href="sponsorship.html">Sponsorship</a>
+      </div>
+      <div class="footer-col">
+        <p class="footer-h">More</p>
+        <a href="faq.html">FAQ</a>
+        <a href="security.html">Security</a>
+        <a href="../skills.html">Skills</a>
+      </div>
+      <div class="footer-col">
+        <p class="footer-h">Project</p>
+        <a href="https://github.com/painbaba/xomni" target="_blank" rel="noopener">GitHub</a>
+        <a href="../index.html">Home</a>
+      </div>
+    </div>
+  </div>
+  <p class="footer-bottom muted">© <span data-year>2026</span> XOMNI · compose, don't merge.</p>
+</footer>
+
+<script src="../js/site.js"></script>
+</body>
+</html>

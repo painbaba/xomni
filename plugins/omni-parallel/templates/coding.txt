@@ -1,0 +1,25 @@
+TASK: {brief}
+REPO: {repo}
+OUT: {out}
+MODE: coding
+
+GOAL
+- {brief}
+
+CONSTRAINTS
+- work only inside <out>; never modify files outside it
+- write self-contained code with no new external dependencies unless the brief says so
+
+DELIVERABLE CONTRACT
+- {contract}
+
+ISOLATION NOTE
+- you are one parallel coder among several; sibling outputs are NOT available
+- keep your changes inside <out> so parallel workers never collide
+
+TESTS SECTION
+- run your tests; report the exact command and a pass/fail line (e.g. "pytest: 5 passed")
+- if a test cannot run in <out>, say why
+
+FINAL VERDICT
+- last line of your summary: VERDICT: done | partial | blocked

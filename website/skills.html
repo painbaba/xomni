@@ -1,0 +1,1101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>XOMNI SKILLS — 170 Capabilities</title>
+<meta name="description" content="The full XOMNI skills catalog: 170 skills across 42 domains.">
+<style>
+:root{--bg:#0b0f1a;--panel:#121826;--card:#161e30;--border:#26304a;--text:#e6ebf5;--muted:#8b96b0;--accent:#6ea8fe;--accent2:#c084fc;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,-apple-system,sans-serif;line-height:1.55;}
+.wrap{max-width:1200px;margin:0 auto;padding:48px 24px 80px;}
+header h1{font-size:2.2rem;letter-spacing:.5px;}
+header h1 .x{background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent;}
+header p{color:var(--muted);margin:10px 0 28px;}
+.controls{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:28px;}
+input,select{background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:10px;padding:12px 16px;font-size:1rem;outline:none;}
+input{flex:1;min-width:240px;}
+input:focus,select:focus{border-color:var(--accent);}
+#count{color:var(--muted);margin-bottom:20px;font-size:.95rem;}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;}
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px 20px;display:flex;flex-direction:column;gap:8px;transition:transform .12s ease,border-color .12s ease;}
+.card:hover{transform:translateY(-2px);border-color:var(--accent);}
+.card h3{font-size:1.05rem;word-break:break-word;}
+.card .desc{color:var(--muted);font-size:.92rem;flex:1;}
+.card .tag{align-self:flex-start;font-size:.72rem;text-transform:uppercase;letter-spacing:.8px;color:var(--accent2);border:1px solid var(--border);border-radius:999px;padding:3px 10px;}
+.empty{color:var(--muted);padding:40px;text-align:center;}
+footer{margin-top:48px;color:var(--muted);font-size:.85rem;text-align:center;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1><span class="x">XOMNI</span> SKILLS</h1>
+    <p>The complete XOMNI capability catalog — 170 skills across 42 domains, generated from <code>skills/</code> by <code>scripts/gen_skills.py</code>.</p>
+  </header>
+
+  <div class="controls">
+    <input id="search" type="search" placeholder="Search skills by name, description, or tag…" autocomplete="off">
+    <select id="domain">
+      <option value="">All domains</option>
+      <option value="agents-sdk">agents-sdk</option><option value="apple">apple</option><option value="autonomous-ai-agents">autonomous-ai-agents</option><option value="cloudflare">cloudflare</option><option value="cloudflare-email-service">cloudflare-email-service</option><option value="cloudflare-one">cloudflare-one</option><option value="cloudflare-one-migrations">cloudflare-one-migrations</option><option value="creative">creative</option><option value="data-science">data-science</option><option value="devops">devops</option><option value="durable-objects">durable-objects</option><option value="email">email</option><option value="faceless-explainer">faceless-explainer</option><option value="github">github</option><option value="hyperframes">hyperframes</option><option value="hyperframes-animation">hyperframes-animation</option><option value="hyperframes-cli">hyperframes-cli</option><option value="hyperframes-core">hyperframes-core</option><option value="hyperframes-creative">hyperframes-creative</option><option value="hyperframes-keyframes">hyperframes-keyframes</option><option value="hyperframes-registry">hyperframes-registry</option><option value="media">media</option><option value="media-use">media-use</option><option value="mlops">mlops</option><option value="mlops-inference">mlops-inference</option><option value="mobile">mobile</option><option value="motion-graphics">motion-graphics</option><option value="note-taking">note-taking</option><option value="productivity">productivity</option><option value="research">research</option><option value="sandbox-sdk">sandbox-sdk</option><option value="scraping">scraping</option><option value="scraping-for-ai-knowledge-base">scraping-for-ai-knowledge-base</option><option value="security">security</option><option value="smart-home">smart-home</option><option value="social-media">social-media</option><option value="software-development">software-development</option><option value="turnstile-spin">turnstile-spin</option><option value="web-perf">web-perf</option><option value="workers-best-practices">workers-best-practices</option><option value="wrangler">wrangler</option><option value="yuanbao">yuanbao</option>
+    </select>
+  </div>
+
+  <div id="count"></div>
+  <div id="grid" class="grid"></div>
+  <footer>XOMNI · data also available at <a href="data/skills.json">data/skills.json</a></footer>
+</div>
+
+<script>
+const SKILLS = [
+ {
+  "name": "agents-sdk",
+  "category": "agents-sdk",
+  "description": "Build AI agents on Cloudflare Workers using the Agents SDK. Load when creating stateful agents, durable workflows, real-time WebSocket apps, scheduled tasks, MCP servers, chat applications, voice agents, or browser automation. Covers Agent class, state management, callable RPC, Workflows, durable execution, queues, retries, observability, and React hooks. Biases towards retrieval from Cloudflare docs over pre-trained knowledge.",
+  "dir": "agents-sdk"
+ },
+ {
+  "name": "apple-notes",
+  "category": "apple",
+  "description": "Manage Apple Notes via memo CLI: create, search, edit.",
+  "dir": "apple/apple-notes"
+ },
+ {
+  "name": "apple-reminders",
+  "category": "apple",
+  "description": "Apple Reminders via remindctl: add, list, complete.",
+  "dir": "apple/apple-reminders"
+ },
+ {
+  "name": "findmy",
+  "category": "apple",
+  "description": "Track Apple devices/AirTags via FindMy.app on macOS.",
+  "dir": "apple/findmy"
+ },
+ {
+  "name": "imessage",
+  "category": "apple",
+  "description": "Send and receive iMessages/SMS via the imsg CLI on macOS.",
+  "dir": "apple/imessage"
+ },
+ {
+  "name": "macos-computer-use",
+  "category": "apple",
+  "description": "Drive the macOS desktop in the background — screenshots, mouse, keyboard,\nscroll, drag — without stealing the user's cursor, keyboard focus, or\nSpace. Works with any tool-capable model. Load this skill whenever the\n`computer_use` tool is available.",
+  "dir": "apple/macos-computer-use"
+ },
+ {
+  "name": "agent-battle-lab",
+  "category": "autonomous-ai-agents",
+  "description": "Run local agent-vs-agent battles (GHOST vs DEFENDERS).",
+  "dir": "autonomous-ai-agents/agent-battle-lab"
+ },
+ {
+  "name": "agent-civilization-simulation",
+  "category": "autonomous-ai-agents",
+  "description": "Agent civilization sims with citizens, wallets, councils",
+  "dir": "autonomous-ai-agents/agent-civilization-simulation"
+ },
+ {
+  "name": "agent-earning-swarm",
+  "category": "autonomous-ai-agents",
+  "description": "Operate the SurvivalSwarm earning-agent swarm (24/7 daemon).",
+  "dir": "autonomous-ai-agents/agent-earning-swarm"
+ },
+ {
+  "name": "agent-experiment-labs",
+  "category": "autonomous-ai-agents",
+  "description": "Sandboxed unconstrained-agent labs and live battles.",
+  "dir": "autonomous-ai-agents/agent-experiment-labs"
+ },
+ {
+  "name": "agent-framework-composition",
+  "category": "autonomous-ai-agents",
+  "description": "When asked to merge coding agents or build a tool prototype.",
+  "dir": "autonomous-ai-agents/agent-framework-composition"
+ },
+ {
+  "name": "anti-block-browsing",
+  "category": "autonomous-ai-agents",
+  "description": "Browse blocked sites: Camoufox, Nanobrowser, OpenCLI.",
+  "dir": "autonomous-ai-agents/anti-block-browsing"
+ },
+ {
+  "name": "autonomous-agent-economy",
+  "category": "autonomous-ai-agents",
+  "description": "Use when building agent swarms that must earn money or die.",
+  "dir": "autonomous-ai-agents/autonomous-agent-economy"
+ },
+ {
+  "name": "camofox-browser-ops",
+  "category": "autonomous-ai-agents",
+  "description": "Use when running or fixing the Camofox browser server.",
+  "dir": "autonomous-ai-agents/camofox-browser-ops"
+ },
+ {
+  "name": "camofox-server-ops",
+  "category": "autonomous-ai-agents",
+  "description": "Operate the Camofox anti-detection browser server.",
+  "dir": "autonomous-ai-agents/camofox-server-ops"
+ },
+ {
+  "name": "claude-code",
+  "category": "autonomous-ai-agents",
+  "description": "Delegate coding to Claude Code CLI (features, PRs).",
+  "dir": "autonomous-ai-agents/claude-code"
+ },
+ {
+  "name": "codex",
+  "category": "autonomous-ai-agents",
+  "description": "Delegate coding to OpenAI Codex CLI (features, PRs).",
+  "dir": "autonomous-ai-agents/codex"
+ },
+ {
+  "name": "computer-use",
+  "category": "autonomous-ai-agents",
+  "description": "Drive the user's desktop in the background — clicking, typing,\nscrolling, dragging — without stealing the cursor, keyboard focus,\nor switching virtual desktops / Spaces. Cross-platform: macOS,\nWindows, Linux. Works with any tool-capable model. Load this skill\nwhenever the `computer_use` tool is available.",
+  "dir": "autonomous-ai-agents/computer-use"
+ },
+ {
+  "name": "gemini-browser-control",
+  "category": "autonomous-ai-agents",
+  "description": "Manus-style vision-driven browser control: Camoufox (anti-detect) + Gemini 3.6 flash as eyes, 6-key rotation. Use when sites block DOM automation or a task needs visual reasoning over a page.",
+  "dir": "autonomous-ai-agents/gemini-browser-control"
+ },
+ {
+  "name": "hermes-agent",
+  "category": "autonomous-ai-agents",
+  "description": "Use, configure, theme, extend, and orchestrate Hermes Agent.",
+  "dir": "autonomous-ai-agents/hermes-agent"
+ },
+ {
+  "name": "hermes-gateway-pairing",
+  "category": "autonomous-ai-agents",
+  "description": "Use when pairing a Hermes gateway QR (WhatsApp/Baileys).",
+  "dir": "autonomous-ai-agents/hermes-gateway-pairing"
+ },
+ {
+  "name": "hermes-messaging-pairing",
+  "category": "autonomous-ai-agents",
+  "description": "Use when pairing Hermes gateway bridges (WhatsApp QR).",
+  "dir": "autonomous-ai-agents/hermes-messaging-pairing"
+ },
+ {
+  "name": "hermes-plugin-development",
+  "category": "autonomous-ai-agents",
+  "description": "Use when building Hermes plugins: slash commands, hooks.",
+  "dir": "autonomous-ai-agents/hermes-plugin-development"
+ },
+ {
+  "name": "hermes-plugin-swarm",
+  "category": "autonomous-ai-agents",
+  "description": "Build multiple Hermes plugins via parallel agent swarms.",
+  "dir": "autonomous-ai-agents/hermes-plugin-swarm"
+ },
+ {
+  "name": "hermes-session-recovery",
+  "category": "autonomous-ai-agents",
+  "description": "Use when session_search 0-hits: query state.db directly.",
+  "dir": "autonomous-ai-agents/hermes-session-recovery"
+ },
+ {
+  "name": "hermes-whatsapp-pairing",
+  "category": "autonomous-ai-agents",
+  "description": "Pair Hermes to personal WhatsApp via Baileys bridge QR.",
+  "dir": "autonomous-ai-agents/hermes-whatsapp-pairing"
+ },
+ {
+  "name": "mcp-server-wiring",
+  "category": "autonomous-ai-agents",
+  "description": "Use when wiring MCP servers into agents (Hermes, Claude).",
+  "dir": "autonomous-ai-agents/mcp-server-wiring"
+ },
+ {
+  "name": "opencode",
+  "category": "autonomous-ai-agents",
+  "description": "Delegate coding to OpenCode CLI (features, PR review).",
+  "dir": "autonomous-ai-agents/opencode"
+ },
+ {
+  "name": "parallel-implementation-swarms",
+  "category": "autonomous-ai-agents",
+  "description": "Run parallel implementation swarms with a verification gate.",
+  "dir": "autonomous-ai-agents/parallel-implementation-swarms"
+ },
+ {
+  "name": "cloudflare",
+  "category": "cloudflare",
+  "description": "Comprehensive Cloudflare platform skill covering Workers, Pages, storage (KV, D1, R2), AI (Workers AI, Vectorize, Agents SDK), feature flags (Flagship), networking (Tunnel, Spectrum), security (WAF, DDoS), and infrastructure-as-code (Terraform, Pulumi). Use for any Cloudflare development task. Biases towards retrieval from Cloudflare docs over pre-trained knowledge.",
+  "dir": "cloudflare"
+ },
+ {
+  "name": "cloudflare-email-service",
+  "category": "cloudflare-email-service",
+  "description": "Send and receive transactional emails with Cloudflare Email Service (Email Sending + Email Routing). Use when building email sending (Workers binding or REST API), email routing, Agents SDK email handling, or integrating email into any app — Workers, Node.js, Python, Go, etc. Also use for email deliverability, SPF/DKIM/DMARC, wrangler email setup, MCP email tools, or when a coding agent needs to send emails. Even for simple requests like \"add email to my Worker\" — this skill has critical config details.",
+  "dir": "cloudflare-email-service"
+ },
+ {
+  "name": "cloudflare-one",
+  "category": "cloudflare-one",
+  "description": "Guides Cloudflare One Zero Trust and SASE work across Access, Gateway, WARP, Tunnel, Cloudflare WAN, DLP, CASB, device posture, and identity. Use when designing, configuring, troubleshooting, or reviewing Cloudflare One deployments. Retrieval-first: use current Cloudflare docs/API schemas instead of embedded product docs.",
+  "dir": "cloudflare-one"
+ },
+ {
+  "name": "cloudflare-one-migrations",
+  "category": "cloudflare-one-migrations",
+  "description": "Plans migrations from Zscaler ZIA/ZPA, Palo Alto, legacy VPN, SWG, or SASE stacks to Cloudflare One. Use for migration assessments, policy mapping, rollout plans, and parity/gap analysis.",
+  "dir": "cloudflare-one-migrations"
+ },
+ {
+  "name": "architecture-diagram",
+  "category": "creative",
+  "description": "Dark-themed SVG architecture/cloud/infra diagrams as HTML.",
+  "dir": "creative/architecture-diagram"
+ },
+ {
+  "name": "ascii-art",
+  "category": "creative",
+  "description": "ASCII art: pyfiglet, cowsay, boxes, image-to-ascii.",
+  "dir": "creative/ascii-art"
+ },
+ {
+  "name": "ascii-video",
+  "category": "creative",
+  "description": "ASCII video: convert video/audio to colored ASCII MP4/GIF.",
+  "dir": "creative/ascii-video"
+ },
+ {
+  "name": "baoyu-infographic",
+  "category": "creative",
+  "description": "Infographics: 21 layouts x 21 styles (信息图, 可视化).",
+  "dir": "creative/baoyu-infographic"
+ },
+ {
+  "name": "claude-design",
+  "category": "creative",
+  "description": "Design one-off HTML artifacts (landing, deck, prototype).",
+  "dir": "creative/claude-design"
+ },
+ {
+  "name": "comfyui",
+  "category": "creative",
+  "description": "Generate images, video, and audio via diffusion workflows.",
+  "dir": "creative/comfyui"
+ },
+ {
+  "name": "design-md",
+  "category": "creative",
+  "description": "Author/validate/export Google's DESIGN.md token spec files.",
+  "dir": "creative/design-md"
+ },
+ {
+  "name": "excalidraw",
+  "category": "creative",
+  "description": "Hand-drawn Excalidraw JSON diagrams (arch, flow, seq).",
+  "dir": "creative/excalidraw"
+ },
+ {
+  "name": "humanizer",
+  "category": "creative",
+  "description": "Humanize text: strip AI-isms and add real voice.",
+  "dir": "creative/humanizer"
+ },
+ {
+  "name": "hyperframes-video-pipeline",
+  "category": "creative",
+  "description": "Build HyperFrames videos: promos, explainers, documentaries.",
+  "dir": "creative/hyperframes-video-pipeline"
+ },
+ {
+  "name": "hyperframes-video-production",
+  "category": "creative",
+  "description": "Use when producing videos with HeyGen HyperFrames.",
+  "dir": "creative/hyperframes-video-production"
+ },
+ {
+  "name": "manim-video",
+  "category": "creative",
+  "description": "Manim CE animations: 3Blue1Brown math/algo videos.",
+  "dir": "creative/manim-video"
+ },
+ {
+  "name": "p5js",
+  "category": "creative",
+  "description": "p5.js sketches: gen art, shaders, interactive, 3D.",
+  "dir": "creative/p5js"
+ },
+ {
+  "name": "persistent-world-fiction",
+  "category": "creative",
+  "description": "Use when writing in-world docs of persistent fiction worlds.",
+  "dir": "creative/persistent-world-fiction"
+ },
+ {
+  "name": "popular-web-designs",
+  "category": "creative",
+  "description": "54 real design systems (Stripe, Linear, Vercel) as HTML/CSS.",
+  "dir": "creative/popular-web-designs"
+ },
+ {
+  "name": "pretext",
+  "category": "creative",
+  "description": "Build creative browser demos with DOM-free text layout.",
+  "dir": "creative/pretext"
+ },
+ {
+  "name": "sketch",
+  "category": "creative",
+  "description": "Throwaway HTML mockups: 2-3 design variants to compare.",
+  "dir": "creative/sketch"
+ },
+ {
+  "name": "songwriting-and-ai-music",
+  "category": "creative",
+  "description": "Songwriting craft and Suno AI music prompts.",
+  "dir": "creative/songwriting-and-ai-music"
+ },
+ {
+  "name": "touchdesigner-mcp",
+  "category": "creative",
+  "description": "Control TouchDesigner via twozero MCP.",
+  "dir": "creative/touchdesigner-mcp"
+ },
+ {
+  "name": "jupyter-live-kernel",
+  "category": "data-science",
+  "description": "Iterative Python via live Jupyter kernel (hamelnb).",
+  "dir": "data-science/jupyter-live-kernel"
+ },
+ {
+  "name": "git-diff-discipline",
+  "category": "devops",
+  "description": "Use when applying code edits: keep diffs small, reviewed.",
+  "dir": "devops/git-diff-discipline"
+ },
+ {
+  "name": "kanban-orchestrator",
+  "category": "devops",
+  "description": "Decomposition playbook + anti-temptation rules for an orchestrator profile routing work through Kanban. The \"don't do the work yourself\" rule and the basic lifecycle are auto-injected into every kanban worker's system prompt; this skill is the deeper playbook when you're specifically playing the orchestrator role.",
+  "dir": "devops/kanban-orchestrator"
+ },
+ {
+  "name": "kanban-worker",
+  "category": "devops",
+  "description": "Pitfalls, examples, and edge cases for Hermes Kanban workers. The lifecycle itself is auto-injected into every worker's system prompt as KANBAN_GUIDANCE (from agent/prompt_builder.py); this skill is what you load when you want deeper detail on specific scenarios.",
+  "dir": "devops/kanban-worker"
+ },
+ {
+  "name": "windows-app-launch-debugging",
+  "category": "devops",
+  "description": "Use when a Windows app won't open or crashes on launch.",
+  "dir": "devops/windows-app-launch-debugging"
+ },
+ {
+  "name": "windows-app-troubleshooting",
+  "category": "devops",
+  "description": "Use when a Windows app won't launch or needs OS/VM fixes.",
+  "dir": "devops/windows-app-troubleshooting"
+ },
+ {
+  "name": "windows-git-bash-interop",
+  "category": "devops",
+  "description": "MSYS path traps when git-bash calls Windows python/node.",
+  "dir": "devops/windows-git-bash-interop"
+ },
+ {
+  "name": "windows-gitbash-interop",
+  "category": "devops",
+  "description": "Windows git-bash — cygpath, fake lint, GUI pipes.",
+  "dir": "devops/windows-gitbash-interop"
+ },
+ {
+  "name": "windows-gitbash-terminal",
+  "category": "devops",
+  "description": "Use when git-bash calls Windows python/node from this host.",
+  "dir": "devops/windows-gitbash-terminal"
+ },
+ {
+  "name": "durable-objects",
+  "category": "durable-objects",
+  "description": "Create and review Cloudflare Durable Objects. Use when building stateful coordination (chat rooms, multiplayer games, booking systems), implementing RPC methods, SQLite storage, alarms, WebSockets, or reviewing DO code for best practices. Covers Workers integration, wrangler config, and testing with Vitest. Biases towards retrieval from Cloudflare docs over pre-trained knowledge.",
+  "dir": "durable-objects"
+ },
+ {
+  "name": "himalaya",
+  "category": "email",
+  "description": "Himalaya CLI: IMAP/SMTP email from terminal.",
+  "dir": "email/himalaya"
+ },
+ {
+  "name": "faceless-explainer",
+  "category": "faceless-explainer",
+  "description": "Turn arbitrary text — an article, notes, a topic, a brief — into a faceless explainer video: there is no site or footage to capture, so the visuals are invented per scene (typography, abstract graphics, diagrams, data-viz). Use for topic explainers, concept breakdowns, how-tos, listicles. Not a video built from a website (/product-launch-video — promo or tour). Unclear → /hyperframes.",
+  "dir": "faceless-explainer"
+ },
+ {
+  "name": "codebase-inspection",
+  "category": "github",
+  "description": "Inspect codebases w/ pygount: LOC, languages, ratios.",
+  "dir": "github/codebase-inspection"
+ },
+ {
+  "name": "github-auth",
+  "category": "github",
+  "description": "GitHub auth setup: HTTPS tokens, SSH keys, gh CLI login.",
+  "dir": "github/github-auth"
+ },
+ {
+  "name": "github-code-review",
+  "category": "github",
+  "description": "Review PRs: diffs, inline comments via gh or REST.",
+  "dir": "github/github-code-review"
+ },
+ {
+  "name": "github-issues",
+  "category": "github",
+  "description": "Create, triage, label, assign GitHub issues via gh or REST.",
+  "dir": "github/github-issues"
+ },
+ {
+  "name": "github-pr-workflow",
+  "category": "github",
+  "description": "GitHub PR lifecycle: branch, commit, open, CI, merge.",
+  "dir": "github/github-pr-workflow"
+ },
+ {
+  "name": "github-repo-management",
+  "category": "github",
+  "description": "Clone/create/fork repos; manage remotes, releases.",
+  "dir": "github/github-repo-management"
+ },
+ {
+  "name": "hyperframes",
+  "category": "hyperframes",
+  "description": "Mandatory entry point: read this first for any request to make, create, edit, animate, or render a video, animation, or motion graphic, including a promo, explainer, captioned clip, title card, overlay, slideshow or interactive deck, Remotion port, or any HyperFrames HTML composition. Also use it to inspect, diagnose, validate, preview, publish, or batch-render an existing HyperFrames project. Inputs may be a website URL, GitHub PR, Figma design or URL, text or brief, existing footage, or music. It resumes project state, captures intent when applicable, selects and installs the owning workflow, and routes domain capabilities. HyperFrames is the default output framework unless the user explicitly chooses another framework for the deliverable or asks only to record a browser session.",
+  "dir": "hyperframes"
+ },
+ {
+  "name": "hyperframes-animation",
+  "category": "hyperframes-animation",
+  "description": "All animation knowledge for HyperFrames — atomic motion rules, multi-phase scene blueprints, scene transitions, broader motion-design techniques, AND the seven runtime adapters (GSAP default, plus Lottie, Three.js, Anime.js, CSS keyframes, Web Animations API, TypeGPU). Use for any motion or animation task: pick 2-4 rules and compose, or load a blueprint, or look up runtime-specific API (e.g. GSAP eases / Lottie player / Three.js mixer). Also covers auditing an existing composition's choreography (animation map) and 24 named text-animation effects. HyperFrames-native: single paused timeline, seek-safe, deterministic.",
+  "dir": "hyperframes-animation"
+ },
+ {
+  "name": "hyperframes-cli",
+  "category": "hyperframes-cli",
+  "description": "Use the HyperFrames CLI development loop: init, add, catalog, capture, lint, check, snapshot, compare, grade-compare, preview, play, present, beats, keyframes, single or batch render, publish, cloud, cloudrun, feedback, lambda, doctor, browser, info, upgrade, skills, compositions, docs, benchmark, telemetry, transcribe, auth, tts, and remove-background. Also use when diagnosing build or render failures. validate, inspect, and layout are deprecated aliases; use check. Covers local, HeyGen-hosted cloud, AWS Lambda, and Google Cloud Run rendering.",
+  "dir": "hyperframes-cli"
+ },
+ {
+  "name": "hyperframes-core",
+  "category": "hyperframes-core",
+  "description": "The HyperFrames composition contract — build one renderable project. Use for composition structure, the `data-*` timing attributes, `class=\"clip\"`, tracks, sub-compositions, variables, framework-owned media playback, deterministic-render rules, and validation. Also covers Tailwind projects and the STORYBOARD.md / SCRIPT.md plan formats. Read before writing composition HTML.",
+  "dir": "hyperframes-core"
+ },
+ {
+  "name": "hyperframes-creative",
+  "category": "hyperframes-creative",
+  "description": "Non-animation creative direction for HyperFrames videos. Use for design spec (frame.md / design.md) handling, palettes, typography, narration, beat planning, audio-reactive visuals, composition patterns, and brand / style decisions. For atomic motion patterns and scene blueprints, use `hyperframes-animation`.",
+  "dir": "hyperframes-creative"
+ },
+ {
+  "name": "hyperframes-keyframes",
+  "category": "hyperframes-keyframes",
+  "description": "Use when a HyperFrames composition needs seek-safe 2D/3D keyframes, GSAP timelines, CSS keyframes, Anime.js, WAAPI, FLIP, paths, masks, SVG morph/draw, text trails, 3D depth, or `hyperframes keyframes` diagnostics. Don't use for broad scene strategy, brand design, media sourcing, captions, or general video planning.",
+  "dir": "hyperframes-keyframes"
+ },
+ {
+  "name": "hyperframes-registry",
+  "category": "hyperframes-registry",
+  "description": "Install, discover, and wire registry blocks and components into HyperFrames compositions. Use when running hyperframes add or hyperframes catalog, installing one item or every block matching a tag, wiring an installed item into index.html, or working with hyperframes.json. Covers discovery, install locations, block sub-composition wiring, component snippet merging, and authoring a new block or component to contribute upstream (idea → scaffold → validate → PR).",
+  "dir": "hyperframes-registry"
+ },
+ {
+  "name": "auto-video-clipping",
+  "category": "media",
+  "description": "Use for auto-clipping long videos into Shorts.",
+  "dir": "media/auto-video-clipping"
+ },
+ {
+  "name": "clipping-campaigns",
+  "category": "media",
+  "description": "Use for paid clipping campaigns or the auto-clip pipeline.",
+  "dir": "media/clipping-campaigns"
+ },
+ {
+  "name": "free-media-sourcing",
+  "category": "media",
+  "description": "Use when sourcing free media and verifying URLs + licenses.",
+  "dir": "media/free-media-sourcing"
+ },
+ {
+  "name": "gif-search",
+  "category": "media",
+  "description": "Search/download GIFs from Tenor via curl + jq.",
+  "dir": "media/gif-search"
+ },
+ {
+  "name": "heartmula",
+  "category": "media",
+  "description": "HeartMuLa: Suno-like song generation from lyrics + tags.",
+  "dir": "media/heartmula"
+ },
+ {
+  "name": "instagram-reel-analysis",
+  "category": "media",
+  "description": "Check if an Instagram reel's claim is real or possible.",
+  "dir": "media/instagram-reel-analysis"
+ },
+ {
+  "name": "local-ai-video-generation",
+  "category": "media",
+  "description": "Pick local AI video models (Wan, Hunyuan, LTX) in ComfyUI.",
+  "dir": "media/local-ai-video-generation"
+ },
+ {
+  "name": "shorts-clipping",
+  "category": "media",
+  "description": "Use for auto video clipping or clipping-income research.",
+  "dir": "media/shorts-clipping"
+ },
+ {
+  "name": "songsee",
+  "category": "media",
+  "description": "Audio spectrograms/features (mel, chroma, MFCC) via CLI.",
+  "dir": "media/songsee"
+ },
+ {
+  "name": "video-content-analysis",
+  "category": "media",
+  "description": "Determine what a video shows without watching (reels, X).",
+  "dir": "media/video-content-analysis"
+ },
+ {
+  "name": "video-documentary-production",
+  "category": "media",
+  "description": "Use when building long-form narrated videos (10-40 min).",
+  "dir": "media/video-documentary-production"
+ },
+ {
+  "name": "youtube-content",
+  "category": "media",
+  "description": "YouTube transcripts to summaries, threads, blogs.",
+  "dir": "media/youtube-content"
+ },
+ {
+  "name": "media-use",
+  "category": "media-use",
+  "description": "Agent Media OS, the single skill for every media need in a HyperFrames project. Resolve BGM, SFX, image, icon, brand logo, voice, color grade, or LUT into a frozen local file or paste-ready block + ledger record (one verb, `resolve`); generate via TTS / music / image models when the catalog misses; produce voiceover, transcription, captions, and background removal through one shared audio engine; operate on media (cut / reframe / transform); and reuse assets across projects. Also use for vague feedback that real footage looks dark, flat, boring, should feel retro/camcorder/print/ASCII, needs privacy, or needs a media reveal.",
+  "dir": "media-use"
+ },
+ {
+  "name": "audiocraft-audio-generation",
+  "category": "mlops",
+  "description": "AudioCraft: MusicGen text-to-music, AudioGen text-to-sound.",
+  "dir": "mlops/models/audiocraft"
+ },
+ {
+  "name": "evaluating-llms-harness",
+  "category": "mlops",
+  "description": "lm-eval-harness: benchmark LLMs (MMLU, GSM8K, etc.).",
+  "dir": "mlops/evaluation/evaluating-llms-harness"
+ },
+ {
+  "name": "evaluating-llms-harness",
+  "category": "mlops",
+  "description": "lm-eval-harness: benchmark LLMs (MMLU, GSM8K, etc.).",
+  "dir": "mlops/evaluation/lm-evaluation-harness"
+ },
+ {
+  "name": "huggingface-hub",
+  "category": "mlops",
+  "description": "HuggingFace hf CLI: search/download/upload models, datasets.",
+  "dir": "mlops/huggingface-hub"
+ },
+ {
+  "name": "llama-cpp",
+  "category": "mlops",
+  "description": "llama.cpp local GGUF inference + HF Hub model discovery.",
+  "dir": "mlops/inference/llama-cpp"
+ },
+ {
+  "name": "llm-api-key-pools",
+  "category": "mlops",
+  "description": "Pool free-tier LLM API keys into a model workforce.",
+  "dir": "mlops/llm-api-key-pools"
+ },
+ {
+  "name": "llm-api-pooling",
+  "category": "mlops",
+  "description": "Use when pooling multiple LLM API keys into a workforce.",
+  "dir": "mlops/llm-api-pooling"
+ },
+ {
+  "name": "model-workforce",
+  "category": "mlops",
+  "description": "Pool and benchmark multiple LLM API keys into a workforce.",
+  "dir": "mlops/model-workforce"
+ },
+ {
+  "name": "segment-anything-model",
+  "category": "mlops",
+  "description": "SAM: zero-shot image segmentation via points, boxes, masks.",
+  "dir": "mlops/models/segment-anything"
+ },
+ {
+  "name": "serving-llms-vllm",
+  "category": "mlops",
+  "description": "vLLM: high-throughput LLM serving, OpenAI API, quantization.",
+  "dir": "mlops/inference/serving-llms-vllm"
+ },
+ {
+  "name": "serving-llms-vllm",
+  "category": "mlops",
+  "description": "vLLM: high-throughput LLM serving, OpenAI API, quantization.",
+  "dir": "mlops/inference/vllm"
+ },
+ {
+  "name": "weights-and-biases",
+  "category": "mlops",
+  "description": "W&B: log ML experiments, sweeps, model registry, dashboards.",
+  "dir": "mlops/evaluation/weights-and-biases"
+ },
+ {
+  "name": "nvidia-nim",
+  "category": "mlops-inference",
+  "description": "NVIDIA NIM inference - free keys, per-account quirks.",
+  "dir": "mlops-inference/nvidia-nim"
+ },
+ {
+  "name": "android-ai-device",
+  "category": "mobile",
+  "description": "Use when making an Android fully AI or linking it via adb.",
+  "dir": "mobile/android-ai-device"
+ },
+ {
+  "name": "motion-graphics",
+  "category": "motion-graphics",
+  "description": "A short, design-led motion graphic where motion is the message — kinetic typography, stat count-up, chart/data-viz hit, logo sting / brand lockup, lower-third / callout / social overlay, animated map (highlight regions, connect places, zoom to a location), animated tweet / news-article / headline, webpage / UI animation (scroll, cursor, callouts), or fusing a real image's geometry into a chart. Usually under 10s (up to ~30s), no narration or live-action subject; renders to MP4 or transparent overlay. Longer / narrated / multi-scene → /general-video. Unclear → /hyperframes.",
+  "dir": "motion-graphics"
+ },
+ {
+  "name": "obsidian",
+  "category": "note-taking",
+  "description": "Read, search, create, and edit notes in the Obsidian vault.",
+  "dir": "note-taking/obsidian"
+ },
+ {
+  "name": "airtable",
+  "category": "productivity",
+  "description": "Airtable REST API via curl. Records CRUD, filters, upserts.",
+  "dir": "productivity/airtable"
+ },
+ {
+  "name": "docx",
+  "category": "productivity",
+  "description": "Create, read, edit Word .docx documents and templates.",
+  "dir": "productivity/docx"
+ },
+ {
+  "name": "google-workspace",
+  "category": "productivity",
+  "description": "Gmail, Calendar, Drive, Docs, Sheets via gws CLI or Python.",
+  "dir": "productivity/google-workspace"
+ },
+ {
+  "name": "maps",
+  "category": "productivity",
+  "description": "Geocode, POIs, routes, timezones via OpenStreetMap/OSRM.",
+  "dir": "productivity/maps"
+ },
+ {
+  "name": "nano-pdf",
+  "category": "productivity",
+  "description": "Edit PDF text/typos/titles via nano-pdf CLI (NL prompts).",
+  "dir": "productivity/nano-pdf"
+ },
+ {
+  "name": "notion",
+  "category": "productivity",
+  "description": "Notion API + ntn CLI: pages, databases, markdown, Workers.",
+  "dir": "productivity/notion"
+ },
+ {
+  "name": "ocr-and-documents",
+  "category": "productivity",
+  "description": "Extract text from PDFs/scans (pymupdf, marker-pdf).",
+  "dir": "productivity/ocr-and-documents"
+ },
+ {
+  "name": "pdf",
+  "category": "productivity",
+  "description": "Create, merge, split, fill, and secure PDF files.",
+  "dir": "productivity/pdf"
+ },
+ {
+  "name": "powerpoint",
+  "category": "productivity",
+  "description": "Create, read, edit .pptx decks, slides, notes, templates.",
+  "dir": "productivity/powerpoint"
+ },
+ {
+  "name": "teams-meeting-pipeline",
+  "category": "productivity",
+  "description": "Operate the Teams meeting summary pipeline via Hermes CLI — summarize meetings, inspect pipeline status, replay jobs, manage Microsoft Graph subscriptions.",
+  "dir": "productivity/teams-meeting-pipeline"
+ },
+ {
+  "name": "xlsx",
+  "category": "productivity",
+  "description": "Create, read, edit Excel .xlsx spreadsheets and CSVs.",
+  "dir": "productivity/xlsx"
+ },
+ {
+  "name": "arxiv",
+  "category": "research",
+  "description": "Search arXiv papers by keyword, author, category, or ID.",
+  "dir": "research/arxiv"
+ },
+ {
+  "name": "blogwatcher",
+  "category": "research",
+  "description": "Monitor blogs and RSS/Atom feeds via blogwatcher-cli tool.",
+  "dir": "research/blogwatcher"
+ },
+ {
+  "name": "bug-bounty-target-research",
+  "category": "research",
+  "description": "Use when selecting bug-bounty targets or prepping a hunt.",
+  "dir": "research/bug-bounty-target-research"
+ },
+ {
+  "name": "crypto-derivatives-research",
+  "category": "research",
+  "description": "Use when researching crypto liquidation pools, OI, funding.",
+  "dir": "research/crypto-derivatives-research"
+ },
+ {
+  "name": "crypto-futures-market-data",
+  "category": "research",
+  "description": "Use for crypto futures funding, OI, liquidation data.",
+  "dir": "research/crypto-futures-market-data"
+ },
+ {
+  "name": "crypto-futures-market-research",
+  "category": "research",
+  "description": "Binance Futures scans: funding, OI, crowding, leverage.",
+  "dir": "research/crypto-futures-market-research"
+ },
+ {
+  "name": "ecommerce-price-research",
+  "category": "research",
+  "description": "Best/cheapest product research across Indian e-commerce.",
+  "dir": "research/ecommerce-price-research"
+ },
+ {
+  "name": "india-ecommerce-price-research",
+  "category": "research",
+  "description": "Use when comparing Indian e-commerce prices or history.",
+  "dir": "research/india-ecommerce-price-research"
+ },
+ {
+  "name": "india-ecommerce-research",
+  "category": "research",
+  "description": "Use when researching products/prices on Indian e-commerce.",
+  "dir": "research/india-ecommerce-research"
+ },
+ {
+  "name": "indian-insurer-unclaimed-data",
+  "category": "research",
+  "description": "Hunt bulk unclaimed-amounts lists from Indian insurers.",
+  "dir": "research/indian-insurer-unclaimed-data"
+ },
+ {
+  "name": "llm-wiki",
+  "category": "research",
+  "description": "Karpathy's LLM Wiki: build/query interlinked markdown KB.",
+  "dir": "research/llm-wiki"
+ },
+ {
+  "name": "parallel-research-swarm",
+  "category": "research",
+  "description": "Parallel AI agents research any question into a report.",
+  "dir": "research/parallel-research-swarm"
+ },
+ {
+  "name": "polymarket",
+  "category": "research",
+  "description": "Query Polymarket: markets, prices, orderbooks, history.",
+  "dir": "research/polymarket"
+ },
+ {
+  "name": "research-paper-writing",
+  "category": "research",
+  "description": "Write ML papers for NeurIPS/ICML/ICLR: design→submit.",
+  "dir": "research/research-paper-writing"
+ },
+ {
+  "name": "stock-technical-analysis",
+  "category": "research",
+  "description": "Use when producing a live-verified stock technical report.",
+  "dir": "research/stock-technical-analysis"
+ },
+ {
+  "name": "technical-feasibility-research",
+  "category": "research",
+  "description": "Can-we-build-X feasibility verdicts with proof, not surveys.",
+  "dir": "research/technical-feasibility-research"
+ },
+ {
+  "name": "web-research",
+  "category": "research",
+  "description": "Use when gathering verified sources for research dossiers.",
+  "dir": "research/web-research"
+ },
+ {
+  "name": "sandbox-sdk",
+  "category": "sandbox-sdk",
+  "description": "Build sandboxed applications for secure code execution. Load when building AI code execution, code interpreters, CI/CD systems, interactive dev environments, or executing untrusted code. Covers Sandbox SDK lifecycle, commands, files, code interpreter, and preview URLs. Biases towards retrieval from Cloudflare docs over pre-trained knowledge.",
+  "dir": "sandbox-sdk"
+ },
+ {
+  "name": "anti-detection-browsing",
+  "category": "scraping",
+  "description": "Use when sites block automated browsing (Cloudflare, bots).",
+  "dir": "scraping/anti-detection-browsing"
+ },
+ {
+  "name": "scraping-for-ai-knowledge-base",
+  "category": "scraping-for-ai-knowledge-base",
+  "description": "Build a structured data foundation (SQLite + scraped content) for an AI product from public web sources, especially in constrained-budget / blocked-sites / copyright-sensitive environments. Use when scraping for an AI knowledge base, ingesting public educational/reference content, designing a SQLite schema to back RAG or AI features, or planning data collection for an India-market or other budget-constrained AI product.",
+  "dir": "scraping-for-ai-knowledge-base"
+ },
+ {
+  "name": "agent-battle-arena",
+  "category": "security",
+  "description": "Ghost vs defender agent battles on local labs, live views.",
+  "dir": "security/agent-battle-arena"
+ },
+ {
+  "name": "asan-libfuzzer-verification",
+  "category": "security",
+  "description": "Verify memory-safety bugs with ASAN+libFuzzer; fuzz more.",
+  "dir": "security/asan-libfuzzer-verification"
+ },
+ {
+  "name": "bug-bounty-hunting",
+  "category": "security",
+  "description": "Hunt bug bounties on disclosed programs like HackerOne.",
+  "dir": "security/bug-bounty-hunting"
+ },
+ {
+  "name": "fuzzing-campaign-ops",
+  "category": "security",
+  "description": "Manage libFuzzer/ASAN fuzz campaigns on a remote VM.",
+  "dir": "security/fuzzing-campaign-ops"
+ },
+ {
+  "name": "lan-android-exploitation",
+  "category": "security",
+  "description": "Use when attacking Android devices or routers on a LAN.",
+  "dir": "security/lan-android-exploitation"
+ },
+ {
+  "name": "libfuzzer-asan-fuzzing",
+  "category": "security",
+  "description": "Use when fuzzing C/C++ libraries with ASAN+libFuzzer.",
+  "dir": "security/libfuzzer-asan-fuzzing"
+ },
+ {
+  "name": "live-service-hardening",
+  "category": "security",
+  "description": "Use when hardening a live web service under active attack.",
+  "dir": "security/live-service-hardening"
+ },
+ {
+  "name": "network-stealth-testing",
+  "category": "security",
+  "description": "Test LAN IP/MAC spoofing capability with detection angles.",
+  "dir": "security/network-stealth-testing"
+ },
+ {
+  "name": "redacted-secret-inspection",
+  "category": "security",
+  "description": "Use when reading secret files; emit only REDACTED-xxxx.",
+  "dir": "security/redacted-secret-inspection"
+ },
+ {
+  "name": "sandbox-city-expedition",
+  "category": "security",
+  "description": "Use for recurring read-only security expedition cycles.",
+  "dir": "security/sandbox-city-expedition"
+ },
+ {
+  "name": "openhue",
+  "category": "smart-home",
+  "description": "Control Philips Hue lights, scenes, rooms via OpenHue CLI.",
+  "dir": "smart-home/openhue"
+ },
+ {
+  "name": "xurl",
+  "category": "social-media",
+  "description": "X/Twitter via xurl CLI: raw post search, posting, DM, media.",
+  "dir": "social-media/xurl"
+ },
+ {
+  "name": "aarch64-qemu-verification",
+  "category": "software-development",
+  "description": "Use when verifying fault/UB claims via qemu-aarch64.",
+  "dir": "software-development/aarch64-qemu-verification"
+ },
+ {
+  "name": "cdp-browser-automation",
+  "category": "software-development",
+  "description": "Automate Chromium via CDP — trusted input, extensions.",
+  "dir": "software-development/cdp-browser-automation"
+ },
+ {
+  "name": "data-collection-strategy",
+  "category": "software-development",
+  "description": "How to approach data collection, scraping, and knowledge-base building for AI products — especially when sources are blocklisted, copyrighted, or fragmented. Use when user says \"scrape all X\", \"collect data for Y\", \"build a knowledge base\", or \"get all study material for Z\". Forces product-defining questions before any scraping, defaults to sequential over parallel, and pivots to manual download or paid sampling when sources block. Concrete Indian edtech source landscape in references/.",
+  "dir": "software-development/data-collection-strategy"
+ },
+ {
+  "name": "dogfood",
+  "category": "software-development",
+  "description": "Exploratory QA of web apps: find bugs, evidence, reports.",
+  "dir": "software-development/dogfood"
+ },
+ {
+  "name": "hermes-agent-skill-authoring",
+  "category": "software-development",
+  "description": "Author in-repo SKILL.md files: frontmatter and structure.",
+  "dir": "software-development/hermes-agent-skill-authoring"
+ },
+ {
+  "name": "inspecting-hermes-desktop-dom",
+  "category": "software-development",
+  "description": "Read the live Hermes desktop DOM/CSS over CDP.",
+  "dir": "software-development/inspecting-hermes-desktop-dom"
+ },
+ {
+  "name": "node-inspect-debugger",
+  "category": "software-development",
+  "description": "Debug Node.js via --inspect + Chrome DevTools Protocol CLI.",
+  "dir": "software-development/node-inspect-debugger"
+ },
+ {
+  "name": "plan",
+  "category": "software-development",
+  "description": "Write a markdown plan to .hermes/plans/; no execution.",
+  "dir": "software-development/plan"
+ },
+ {
+  "name": "python-debugpy",
+  "category": "software-development",
+  "description": "Debug Python: pdb REPL + debugpy remote (DAP).",
+  "dir": "software-development/python-debugpy"
+ },
+ {
+  "name": "python-http-server-patterns",
+  "category": "software-development",
+  "description": "Fix Python http.server handler hangs and body-loss bugs.",
+  "dir": "software-development/python-http-server-patterns"
+ },
+ {
+  "name": "requesting-code-review",
+  "category": "software-development",
+  "description": "Pre-commit review: security scan, quality gates, auto-fix.",
+  "dir": "software-development/requesting-code-review"
+ },
+ {
+  "name": "simplify-code",
+  "category": "software-development",
+  "description": "Parallel 4-agent cleanup of recent code changes.",
+  "dir": "software-development/simplify-code"
+ },
+ {
+  "name": "spike",
+  "category": "software-development",
+  "description": "Throwaway experiments to validate an idea before build.",
+  "dir": "software-development/spike"
+ },
+ {
+  "name": "systematic-debugging",
+  "category": "software-development",
+  "description": "4-phase root cause debugging: understand bugs before fixing.",
+  "dir": "software-development/systematic-debugging"
+ },
+ {
+  "name": "test-driven-development",
+  "category": "software-development",
+  "description": "TDD: enforce RED-GREEN-REFACTOR, tests before code.",
+  "dir": "software-development/test-driven-development"
+ },
+ {
+  "name": "unified-agent-plugins",
+  "category": "software-development",
+  "description": "Use when extending the unified-agent/plugins collection.",
+  "dir": "software-development/unified-agent-plugins"
+ },
+ {
+  "name": "turnstile-spin",
+  "category": "turnstile-spin",
+  "description": "Set up Cloudflare Turnstile end-to-end in a project. Scan the codebase, create the widget via the Cloudflare API, embed it where user requests need bot verification (form submissions, SPA actions, API endpoints, download links, comment or vote submissions, etc.), wire canonical server-side siteverify in the customer's existing backend, validate, and persist the skill. Load this when a user asks to add Turnstile, set up CAPTCHA, protect a form or endpoint from bots, or fix a Turnstile integration. Mirrors developers.cloudflare.com/turnstile/spin.",
+  "dir": "turnstile-spin"
+ },
+ {
+  "name": "web-perf",
+  "category": "web-perf",
+  "description": "Analyzes web performance using Chrome DevTools MCP. Measures Core Web Vitals (LCP, INP, CLS) and supplementary metrics (FCP, TBT, Speed Index), identifies render-blocking resources, network dependency chains, layout shifts, caching issues, and accessibility gaps. Use when asked to audit, profile, debug, or optimize page load performance, Lighthouse scores, or site speed. Biases towards retrieval from current documentation over pre-trained knowledge.",
+  "dir": "web-perf"
+ },
+ {
+  "name": "workers-best-practices",
+  "category": "workers-best-practices",
+  "description": "Reviews and authors Cloudflare Workers code against production best practices. Load when writing new Workers, reviewing Worker code, configuring wrangler.jsonc, or checking for common Workers anti-patterns (streaming, floating promises, global state, secrets, bindings, observability). Biases towards retrieval from Cloudflare docs over pre-trained knowledge.",
+  "dir": "workers-best-practices"
+ },
+ {
+  "name": "wrangler",
+  "category": "wrangler",
+  "description": "Cloudflare Workers CLI for deploying, developing, and managing Workers, KV, R2, D1, Vectorize, Hyperdrive, Workers AI, Containers, Queues, Workflows, Pipelines, and Secrets Store. Load before running wrangler commands to ensure correct syntax and best practices. Biases towards retrieval from Cloudflare docs over pre-trained knowledge.",
+  "dir": "wrangler"
+ },
+ {
+  "name": "yuanbao",
+  "category": "yuanbao",
+  "description": "Yuanbao (元宝) groups: @mention users, query info/members.",
+  "dir": "yuanbao"
+ }
+];
+
+const searchEl = document.getElementById('search');
+const domainEl = document.getElementById('domain');
+const gridEl = document.getElementById('grid');
+const countEl = document.getElementById('count');
+
+function render() {
+  const q = searchEl.value.trim().toLowerCase();
+  const d = domainEl.value;
+  const items = SKILLS.filter(s => {
+    if (d && s.category !== d) return false;
+    if (!q) return true;
+    return (s.name + ' ' + s.description + ' ' + s.category).toLowerCase().includes(q);
+  });
+  countEl.textContent = items.length === SKILLS.length
+    ? `Showing all ${SKILLS.length} skills`
+    : `${items.length} of ${SKILLS.length} skills`;
+  gridEl.innerHTML = items.map(s =>
+    `<div class="card"><span class="tag">${s.category}</span><h3>${s.name}</h3><div class="desc">${s.description || '—'}</div></div>`
+  ).join('') || '<div class="empty">No skills match your filters.</div>';
+}
+
+searchEl.addEventListener('input', render);
+domainEl.addEventListener('change', render);
+render();
+</script>
+</body>
+</html>

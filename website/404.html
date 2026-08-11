@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>404 — XOMNI</title>
+<meta name="description" content="Page not found.">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="logo" href="index.html"><span class="logo-x">X</span>OMNI</a>
+    <nav class="site-nav" id="site-nav" aria-label="Primary">
+      <a href="index.html" class="nav-link" data-nav="index">Home</a>
+      <a href="docs/install.html" class="nav-link" data-nav="install">Install</a>
+      <a href="docs/byo-provider.html" class="nav-link" data-nav="byo">BYO Provider</a>
+      <a href="docs/sponsorship.html" class="nav-link" data-nav="sponsorship">Sponsorship</a>
+      <a href="docs/faq.html" class="nav-link" data-nav="faq">FAQ</a>
+      <a href="docs/security.html" class="nav-link" data-nav="security">Security</a>
+      <a href="skills.html" class="nav-link" data-nav="skills">Skills</a>
+      <a class="nav-cta" href="https://github.com/painbaba/xomni" target="_blank" rel="noopener">GitHub ↗</a>
+    </nav>
+    <button class="nav-toggle" id="nav-toggle" aria-expanded="false" aria-controls="site-nav" aria-label="Toggle navigation">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+
+<main id="main">
+  <section class="notfound">
+    <div class="container">
+      <div class="code-block notfound-term">
+        <div class="code-head"><span class="dot dot-red"></span><span class="code-title">xomni --fetch $path</span></div>
+        <pre><code><span class="prompt">$</span> xomni --fetch <span class="s">"$path"</span>
+<span class="err">error:</span> 404 — page not found
+hint:   the file you asked for doesn't exist in this repo.
+        check the path, or start from the index:
+
+        <span class="prompt">$</span> xomni --open https://painbaba.github.io/xomni/</code></pre>
+      </div>
+      <h1 class="nf-title">404 — not found</h1>
+      <p class="lead">This page doesn't exist, or it moved. The agent looked everywhere.</p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="index.html">Back to index</a>
+        <a class="btn" href="skills.html">Browse skills</a>
+        <a class="btn" href="docs/install.html">Install XOMNI</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <div>
+      <p class="footer-brand"><span class="logo-x">X</span>OMNI</p>
+      <p class="muted">one agent. every feature. every free model.</p>
+    </div>
+    <div class="footer-cols">
+      <div class="footer-col">
+        <p class="footer-h">Docs</p>
+        <a href="docs/install.html">Install</a>
+        <a href="docs/byo-provider.html">BYO Provider</a>
+        <a href="docs/sponsorship.html">Sponsorship</a>
+      </div>
+      <div class="footer-col">
+        <p class="footer-h">More</p>
+        <a href="docs/faq.html">FAQ</a>
+        <a href="docs/security.html">Security</a>
+        <a href="skills.html">Skills</a>
+      </div>
+      <div class="footer-col">
+        <p class="footer-h">Project</p>
+        <a href="https://github.com/painbaba/xomni" target="_blank" rel="noopener">GitHub</a>
+        <a href="index.html">Home</a>
+      </div>
+    </div>
+  </div>
+  <p class="footer-bottom muted">© <span data-year>2026</span> XOMNI · compose, don't merge.</p>
+</footer>
+
+<script src="js/site.js"></script>
+</body>
+</html>

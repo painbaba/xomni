@@ -1,0 +1,20 @@
+TASK: {brief}
+REPO: {repo}
+OUT: {out}
+
+GOAL
+- {brief}
+
+CONSTRAINTS
+- work only inside <out>; never modify files outside it
+- use only the stdlib / already-installed dependencies; no network unless the brief says so
+
+DELIVERABLE CONTRACT
+- {contract}
+
+ISOLATION NOTE
+- you are one parallel worker among several; sibling outputs are NOT available to you
+- if you need something from another task, say so in your summary instead of blocking
+
+FINAL VERDICT
+- last line of your summary: VERDICT: done | partial | blocked

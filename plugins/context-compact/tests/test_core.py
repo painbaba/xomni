@@ -248,11 +248,9 @@ class HookWiringTests(unittest.TestCase):
         self.assertIn("context", result)
         self.assertIsInstance(result["context"], str)
         self.assertTrue(result["context"].startswith("[compacted history]"))
-        self.assertIn("compacted recap of the older messages", result["context"])
-        # real summary path: host-owned llm, temperature 0.2, purpose set
-        self.assertEqual(len(self.llm.calls), 1)
-        self.assertEqual(self.llm.calls[0]["temperature"], 0.2)
-        self.assertEqual(self.llm.calls[0]["purpose"], "context compaction")
+        self.assertIn("35 earlier message(s) omitted", result["context"])
+        # PERF CONTRACT: the auto hook never calls the LLM (incident fix).
+        self.assertEqual(len(self.llm.calls), 0)
         # state stamped: cooldown clock + session marker + counter
         data = self._state_data()
         self.assertGreater(data["last_compact_ts"], 0)
@@ -281,7 +279,7 @@ class HookWiringTests(unittest.TestCase):
         # cooldown check): still inside the 60s window -> no-op
         second = self.pkg._on_pre_llm_call(**_hook_kwargs(history, session_id="s-b"))
         self.assertIsNone(second)
-        self.assertEqual(len(self.llm.calls), 1)
+        self.assertEqual(len(self.llm.calls), 0)
 
     def test_paused_blocks(self):
         st = self.pkg._get_state()
@@ -302,15 +300,16 @@ class HookWiringTests(unittest.TestCase):
         st.save()
         again = self.pkg._on_pre_llm_call(**_hook_kwargs(history, session_id="s-1"))
         self.assertIsNone(again)
-        self.assertEqual(len(self.llm.calls), 1)
+        self.assertEqual(len(self.llm.calls), 0)
         # /compact reset re-arms the session
         self.pkg._handle_compact("reset")
         rearmed = self.pkg._on_pre_llm_call(**_hook_kwargs(history, session_id="s-1"))
         self.assertIsNotNone(rearmed)
-        self.assertEqual(len(self.llm.calls), 2)
+        self.assertEqual(len(self.llm.calls), 0)
 
-    def test_fallback_summary_on_llm_failure(self):
-        self.llm.fail = True
+    def test_auto_hook_never_calls_llm_even_on_failure_style_history(self):
+        # Even with a full-length history the hook stays deterministic:
+        # zero LLM calls, fallback text injected.
         history = _history(45)
         result = self.pkg._on_pre_llm_call(**_hook_kwargs(history))
         self.assertIsNotNone(result)
@@ -318,7 +317,7 @@ class HookWiringTests(unittest.TestCase):
         self.assertTrue(ctx.startswith("[compacted history]"))
         self.assertIn("35 earlier message(s) omitted", ctx)  # 45 - 10 tail
         self.assertIn("[user]", ctx)                          # verbatim tail present
-        self.assertEqual(len(self.llm.calls), 1)              # attempted once, fell back
+        self.assertEqual(len(self.llm.calls), 0)              # never attempted
 
     def test_never_mutates_stored_history(self):
         history = _history(45)
@@ -388,6 +387,25 @@ class CommandTests(unittest.TestCase):
         self.assertEqual(result["context"], pending)
         self.assertEqual(len(self.llm.calls), 1)  # only the /compact now summary call
         self.assertNotIn("pending_force", self._state_data())
+
+    def test_now_is_the_llm_path_with_host_contract(self):
+        # PERF CONTRACT: /ctxcompact now is the ONLY path that calls the
+        # LLM — host-owned, temperature 0.2, purpose set.
+        self.pkg._LAST_HISTORY = _history(45)
+        out = self.pkg._handle_compact("now")
+        self.assertIn("[compaction ready", out)
+        self.assertEqual(len(self.llm.calls), 1)
+        self.assertEqual(self.llm.calls[0]["temperature"], 0.2)
+        self.assertEqual(self.llm.calls[0]["purpose"], "context compaction")
+        # a failed LLM still yields the deterministic fallback, and the
+        # auto hook afterwards adds no further calls
+        self.pkg.llm = _FakeLlm()
+        self.pkg.llm.fail = True
+        self.pkg._CTX = _FakeCtx(self.pkg.llm)
+        self.pkg._handle_compact("reset")
+        out2 = self.pkg._handle_compact("now")
+        self.assertIn("earlier message(s) omitted", out2)
+        self.assertEqual(len(self.pkg.llm.calls), 1)  # attempted once, fell back
 
     def test_reset_clears_cooldown_and_session(self):
         st = self.pkg._get_state()

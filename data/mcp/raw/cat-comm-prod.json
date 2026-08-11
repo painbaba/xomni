@@ -1,0 +1,610 @@
+[
+  {
+    "name": "slack",
+    "category": "COMMUNICATION",
+    "purpose": "Chat & messaging via Slack (channels, threads, DMs, search, reactions)",
+    "description": "Go-based MCP server for Slack workspaces: list/read channels and DMs, fetch unread messages, search history, post and react (posting gated behind an env flag). Uses app-level bot tokens.",
+    "price_model": "FREE",
+    "install_command": "git clone https://github.com/korotovsky/slack-mcp-server.git && cd slack-mcp-server && go run mcp/mcp-server.go --transport stdio",
+    "connect_steps": [
+      "Register <name> in Hermes: config.yaml -> mcp_servers.slack (command + env), or `hermes mcp add slack -- '<command>'`.",
+      "Env: SLACK_BOT_TOKEN (bot xoxb-...) and SLACK_APP_TOKEN (app-level xapp-...); create a Slack app with channels:history, channels:read, chat:write scopes; set SLACK_MCP_REACTION_TOOL=1 to enable reactions.",
+      "Install Go 1.21+; the binary ships via GitHub releases if you prefer a compiled build.",
+      "Restart Hermes, confirm with `hermes mcp list`, then exercise a tool (e.g. a read-only list/search call) to verify."
+    ],
+    "url": "https://github.com/korotovsky/slack-mcp-server",
+    "stars": 1780,
+    "source": "github",
+    "source_url": "https://github.com/korotovsky/slack-mcp-server",
+    "verified": true
+  },
+  {
+    "name": "discord",
+    "category": "COMMUNICATION",
+    "purpose": "Discord bot gateway: read/send messages, manage channels and guilds",
+    "description": "Docker-based MCP server that connects as a Discord bot: list/send messages, manage channels, roles and members via a bot token.",
+    "price_model": "FREE",
+    "install_command": "docker run --rm -i -e DISCORD_TOKEN=<YOUR_DISCORD_BOT_TOKEN> -e DISCORD_GUILD_ID=<OPTIONAL_DEFAULT_SERVER_ID> saseq/discord-mcp:latest",
+    "connect_steps": [
+      "Register <name> in Hermes: config.yaml -> mcp_servers.discord (command + env), or `hermes mcp add discord -- '<command>'`.",
+      "Env: DISCORD_TOKEN (bot token from Discord Developer Portal) and optional DISCORD_GUILD_ID; invite the bot to the target server with proper intents.",
+      "Requires Docker Desktop running on the Hermes host.",
+      "Restart Hermes, confirm with `hermes mcp list`, then exercise a tool (e.g. a read-only list/search call) to verify."
+    ],
+    "url": "https://github.com/SaseQ/discord-mcp",
+    "stars": 443,
+    "source": "github",
+    "source_url": "https://github.com/SaseQ/discord-mcp",
+    "verified": true
+  },
+  {
+    "name": "teams",
+    "category": "COMMUNICATION",
+    "purpose": "Microsoft Teams: read/send chats and channel messages",
+    "description": "Official-style npx MCP server for Teams: browse teams/channels, read and send chat + channel messages, with full-scope or --read-only auth.",
+    "price_model": "FREE",
+    "install_command": "npx @floriscornel/teams-mcp@latest authenticate && npx @floriscornel/teams-mcp@latest",
+    "connect_steps": [
+      "Register <name> in Hermes: config.yaml -> mcp_servers.teams (command + env), or `hermes mcp add teams -- '<command>'`.",
+      "Run `npx @floriscornel/teams-mcp@latest authenticate` once on the host to complete the Microsoft device-login OAuth flow; tokens are cached locally.",
+      "Use --read-only for least-privilege setups; `check` shows auth status.",
+      "Restart Hermes, confirm with `hermes mcp list`, then exercise a tool (e.g. a read-only list/search call) to verify."
+    ],
+    "url": "https://github.com/floriscornel/teams-mcp",
+    "stars": 125,
+    "source": "github",
+    "source_url": "https://github.com/floriscornel/teams-mcp",
+    "verified": true
+  },
+  {
+    "name": "gmail",
+    "category": "COMMUNICATION",
+    "purpose": "Gmail: read/send email, manage labels and threads",
+    "description": "Gmail AutoAuth MCP server: OAuth2 with auto browser launch, read/search/send mail, label and thread management. Credentials persist globally in ~/.gmail-mcp/.",
+    "price_model": "FREE",
+    "install_command": "npx -y @gongrzhe/server-gmail-autoauth-mcp",
+    "connect_steps": [
+      "Register <name> in Hermes: config.yaml -> mcp_servers.gmail (command + env), or `hermes mcp add gmail -- '<command>'`.",
+      "Place gcp-oauth.keys.json (Google Cloud OAuth client, Gmail API enabled) in ~/.gmail-mcp/; first run opens a browser for consent, then stores credentials.json globally.",
+      "Scopes requested: gmail.readonly + gmail.send + labels/modify.",
+      "Restart Hermes, confirm with `hermes mcp list`, then exercise a tool (e.g. a read-only list/search call) to verify."
+    ],
+    "url": "https://github.com/GongRzhe/Gmail-MCP-Server",
+    "stars": 1166,
+    "source": "github",
+    "source_url": "https://github.com/GongRzhe/Gmail-MCP-Server",
+    "verified": true
+  },
+  {
+    "name": "outlook",
+    "category": "COMMUNICATION",
+    "purpose": "Outlook/Microsoft 365: mail, calendar, contacts via Graph + Power Automate",
+    "description": "Node-based MCP server connecting to Microsoft 365 (Outlook mail/calendar, contacts) through the Microsoft Graph API with Azure app registration.",
+    "price_model": "FREE",
+    "install_command": "git clone https://github.com/ryaker/outlook-mcp.git && cd outlook-mcp && npm install && node index.js",
+    "connect_steps": [
+      "Register <name> in Hermes: config.yaml -> mcp_servers.outlook (command + env), or `hermes mcp add outlook -- '<command>'`.",
+      "Register an app in Azure Portal (Graph API Mail/Calendars permissions), copy .env.example to .env and fill TENANT_ID / CLIENT_ID / CLIENT_SECRET / user mailbox.",
+      "Requires Node 18+ on the host.",
+      "Restart Hermes, confirm with `hermes mcp list`, then exercise a tool (e.g. a read-only list/search call) to verify."
+    ],
+    "url": "https://github.com/ryaker/outlook-mcp",
+    "stars": 422,
+    "source": "github",
+    "source_url": "https://github.com/ryaker/outlook-mcp",
+    "verified": true
+  },
+  {
+    "name": "microsoft-365",
+    "category": "COMMUNICATION",
+    "purpose": "Microsoft 365 umbrella: Teams, Outlook, Calendar, OneDrive via Graph",
+    "description": "Comprehensive MCP server for Microsoft Graph: Teams chats/channels, Outlook mail, calendar events, OneDrive/SharePoint files, org directory. Dynamic permission requests per enabled tool set.",
+    "price_model": "FREE",
+    "install_command": "npx @softeria/ms-365-mcp-server",
+    "connect_steps": [
+      "Register <name> in Hermes: config.yaml -> mcp_servers.ms-365 (command + env), or `hermes mcp add ms-365 -- '<command>'`.",
+      "OAuth via Microsoft Entra app (client id/secret or device flow); run `npx @softeria/ms-365-mcp-server --list-permissions` to see required Graph scopes for your preset.",
+      "Presets: --preset mail / teams / calendar; --org-mode for tenant-wide access.",
+      "Restart Hermes, confirm with `hermes mcp list`, then exercise a tool (e.g. a read-only list/search call) to verify."
+    ],
+    "url": "https://github.com/Softeria/ms-365-mcp-server",
+    "stars": 909,
+    "source": "github",
+    "source_url": "https://github.com/Softeria/ms-365-mcp-server",
+    "verified": true
+  },
+  {
+    "name": "telegram",
+    "category": "COMMUNICATION",
+    "purpose": "Telegram: send/receive messages, manage chats as a user or bot",
+    "description": "Python MCP server driving a Telegram user session (or bot): read chats, send messages/media, manage dialogs. Includes session-string generator and Docker option.",
+    "price_model": "FREE",
+    "install_command": "git clone https://github.com/chigwell/telegram-mcp.git && cd telegram-mcp && uv run main.py",
+    "connect_steps": [
+      "Register <name> in Hermes: config.yaml -> mcp_servers.telegram (command + env), or `hermes mcp add telegram -- '<command>'`.",
+      "Get TELEGRAM_API_ID + TELEGRAM_API_HASH from my.telegram.org; generate a session with `uv run session_string_generator.py` and export TELEGRAM_SESSION_STRING (or TELEGRAM_BOT_TOKEN).",
+      "Docker alternative: `docker run -d --name telegram-mcp --env-file .env -e MCP_TRANSPORT=http -e MCP_HOST=0.0.0.0 -p 127.0.0.1:8765:8765 telegram-mcp:latest`.",
+      "Restart Hermes, confirm with `hermes mcp list`, then exercise a tool (e.g. a read-only list/search call) to verify."
+    ],
+    "url": "https://github.com/chigwell/telegram-mcp",
+    "stars": 1441,
+    "source": "github",
+    "source_url": "https://github.com/chigwell/telegram-mcp",
+    "verified": true
+  },
+  {
+    "name": "whatsapp",
+    "category": "COMMUNICATION",
+    "purpose": "WhatsApp: send/receive messages via WhatsApp Web pairing",
+    "description": "MCP server bridging WhatsApp Web (Go bridge + Python server): send and read messages from linked chats; pair by scanning a QR code with the phone.",
+    "price_model": "FREE",
+    "install_command": "git clone https://github.com/lharries/whatsapp-mcp.git && cd whatsapp-mcp && uv run main.py",
+    "connect_steps": [
+      "Register <name> in Hermes: config.yaml -> mcp_servers.whatsapp (command + env), or `hermes mcp add whatsapp -- '<command>'`.",
+      "Run the Go bridge (go run main.go in whatsapp-bridge/) first, then start the server; scan the WhatsApp Web QR with the target phone to pair.",
+      "Requires Go + uv; phone must stay online for the session.",
+      "Restart Hermes, confirm with `hermes mcp list`, then exercise a tool (e.g. a read-only list/search call) to verify."
+    ],
+    "url": "https://github.com/lharries/whatsapp-mcp",
+    "stars": 6138,
+    "source": "github",
+    "source_url": "https://github.com/lharries/whatsapp-mcp",
+    "verified": true
+  },
+  {
+    "name": "resend",
+    "category": "COMMUNICATION",
+    "purpose": "Transactional email sending via Resend API (send, schedule, domains)",
+    "description": "Official Resend MCP: compose and send transactional email, manage audiences/domains, check delivery through the Resend API. One API key to start.",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "npx -y resend-mcp",
+    "connect_steps": [
+      "Register <name> in Hermes: config.yaml -> mcp_servers.resend (command + env), or `hermes mcp add resend -- '<command>'`.",
+      "Env: RESEND_API_KEY=re_... (from resend.com/api-keys); optionally verify a sending domain.",
+      "Free tier: 3,000 emails/month \u2014 paid plans for volume.",
+      "Restart Hermes, confirm with `hermes mcp list`, then exercise a tool (e.g. a read-only list/search call) to verify."
+    ],
+    "url": "https://github.com/resend/mcp",
+    "stars": 559,
+    "source": "github-official",
+    "source_url": "https://github.com/resend/mcp",
+    "verified": true
+  },
+  {
+    "name": "mailgun",
+    "category": "COMMUNICATION",
+    "purpose": "Email sending + validation via Mailgun API",
+    "description": "Official Mailgun MCP server: send email through Mailgun domains, manage mailing lists and validate addresses.",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "npx -y @mailgun/mcp-server",
+    "connect_steps": [
+      "Register <name> in Hermes: config.yaml -> mcp_servers.mailgun (command + env), or `hermes mcp add mailgun -- '<command>'`.",
+      "Env: MAILGUN_API_KEY (from app.mailgun.com settings) and optional MAILGUN_DOMAIN.",
+      "Free tier: 100 emails/day \u2014 paid plans above.",
+      "Restart Hermes, confirm with `hermes mcp list`, then exercise a tool (e.g. a read-only list/search call) to verify."
+    ],
+    "url": "https://github.com/mailgun/mailgun-mcp-server",
+    "stars": 57,
+    "source": "github-official",
+    "source_url": "https://github.com/mailgun/mailgun-mcp-server",
+    "verified": true
+  },
+  {
+    "name": "zoom",
+    "category": "COMMUNICATION",
+    "purpose": "Zoom: meetings, users, account settings via Server-to-Server OAuth",
+    "description": "Community Zoom MCP server using Zoom Server-to-Server OAuth 2.0: list/manage meetings and users, query account settings and configurations.",
+    "price_model": "FREE",
+    "install_command": "git clone https://github.com/echelon-ai-labs/zoom-mcp.git && cd zoom-mcp && uv pip install -e .",
+    "connect_steps": [
+      "Register <name> in Hermes: config.yaml -> mcp_servers.zoom (command + env), or `hermes mcp add zoom -- '<command>'`.",
+      "Create a Zoom Server-to-Server OAuth app (admin scopes) and export ZOOM_CLIENT_ID / ZOOM_CLIENT_SECRET / ZOOM_ACCOUNT_ID.",
+      "Python 3.11+; dev-style install \u2014 no published PyPI/npx package yet.",
+      "Restart Hermes, confirm with `hermes mcp list`, then exercise a tool (e.g. a read-only list/search call) to verify."
+    ],
+    "url": "https://github.com/echelon-ai-labs/zoom-mcp",
+    "stars": 28,
+    "source": "github",
+    "source_url": "https://github.com/echelon-ai-labs/zoom-mcp",
+    "verified": true
+  },
+  {
+    "name": "google-workspace",
+    "category": "PRODUCTIVITY",
+    "purpose": "Google Workspace suite: Gmail, Calendar, Drive, Docs, Sheets, Tasks in one server",
+    "description": "Highest-starred Google MCP server: tiered tool sets (core/extended/complete) covering Gmail, Calendar, Drive, Docs, Sheets, Tasks, plus management ops. Single OAuth setup.",
+    "price_model": "FREE",
+    "install_command": "uvx workspace-mcp --tool-tier core",
+    "connect_steps": [
+      "Register <name> in Hermes: config.yaml -> mcp_servers.google-workspace (command + env), or `hermes mcp add google-workspace -- '<command>'`.",
+      "OAuth: create a Google Cloud OAuth client (enable Gmail/Calendar/Drive/Docs/Sheets APIs) or reuse gcp-oauth.keys.json; first run opens browser consent.",
+      "Select scope with --tools gmail drive calendar or --tool-tier extended/complete.",
+      "Restart Hermes, confirm with `hermes mcp list`, then exercise a tool (e.g. a read-only list/search call) to verify."
+    ],
+    "url": "https://github.com/taylorwilsdon/google_workspace_mcp",
+    "stars": 3000,
+    "source": "github",
+    "source_url": "https://github.com/taylorwilsdon/google_workspace_mcp",
+    "verified": true
+  },
+  {
+    "name": "google-docs",
+    "category": "PRODUCTIVITY",
+    "purpose": "Google Docs: create/edit documents, manage permissions",
+    "description": "Dedicated Google Docs MCP: create and edit documents, read content, share and manage access via Google Docs API.",
+    "price_model": "FREE",
+    "install_command": "npx -y @a-bonus/google-docs-mcp",
+    "connect_steps": [
+      "Register <name> in Hermes: config.yaml -> mcp_servers.google-docs (command + env), or `hermes mcp add google-docs -- '<command>'`.",
+      "One-time OAuth: run `npx -y @a-bonus/google-docs-mcp auth` and complete browser consent (Google Cloud client JSON required).",
+      "Docs API must be enabled in the Google Cloud project.",
+      "Restart Hermes, confirm with `hermes mcp list`, then exercise a tool (e.g. a read-only list/search call) to verify."
+    ],
+    "url": "https://github.com/a-bonus/google-docs-mcp",
+    "stars": 636,
+    "source": "github",
+    "source_url": "https://github.com/a-bonus/google-docs-mcp",
+    "verified": true
+  },
+  {
+    "name": "google-drive",
+    "category": "PRODUCTIVITY",
+    "purpose": "Google Drive: list/search files, read and upload content",
+    "description": "Dedicated Google Drive MCP: browse and search Drive files, read text/PDF content, upload and manage files through the Drive API.",
+    "price_model": "FREE",
+    "install_command": "npx -y @piotr-agier/google-drive-mcp",
+    "connect_steps": [
+      "Register <name> in Hermes: config.yaml -> mcp_servers.google-drive (command + env), or `hermes mcp add google-drive -- '<command>'`.",
+      "One-time OAuth: run `npx -y @piotr-agier/google-drive-mcp auth` and complete browser consent (Google Cloud client JSON required).",
+      "Drive API must be enabled in the Google Cloud project.",
+      "Restart Hermes, confirm with `hermes mcp list`, then exercise a tool (e.g. a read-only list/search call) to verify."
+    ],
+    "url": "https://github.com/piotr-agier/google-drive-mcp",
+    "stars": 201,
+    "source": "github",
+    "source_url": "https://github.com/piotr-agier/google-drive-mcp",
+    "verified": true
+  },
+  {
+    "name": "notion",
+    "category": "PRODUCTIVITY",
+    "purpose": "Notion: pages, databases, search, blocks",
+    "description": "Official Notion MCP server: search workspaces, read/write pages and databases, manage blocks and comments via Notion API.",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "npx @notionhq/notion-mcp-server",
+    "connect_steps": [
+      "Register <name> in Hermes: config.yaml -> mcp_servers.notion (command + env), or `hermes mcp add notion -- '<command>'`.",
+      "Env: NOTION_TOKEN (internal integration token from notion.so/my-integrations); grant the integration access to the target pages/workspace.",
+      "Free plan for personal use; team workspaces need paid plans.",
+      "Restart Hermes, confirm with `hermes mcp list`, then exercise a tool (e.g. a read-only list/search call) to verify."
+    ],
+    "url": "https://github.com/makenotion/notion-mcp-server",
+    "stars": 4586,
+    "source": "github-official",
+    "source_url": "https://github.com/makenotion/notion-mcp-server",
+    "verified": true
+  },
+  {
+    "name": "linear",
+    "category": "PRODUCTIVITY",
+    "purpose": "Linear: issues, cycles, projects, teams",
+    "description": "MCP server for Linear issue tracking: create/update issues, manage cycles, projects and teams through the Linear GraphQL API.",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "npx linear-mcp-server",
+    "connect_steps": [
+      "Register <name> in Hermes: config.yaml -> mcp_servers.linear (command + env), or `hermes mcp add linear -- '<command>'`.",
+      "Env: LINEAR_API_KEY (create at linear.app/<team>/settings/api).",
+      "Linear free tier for small teams; paid for larger orgs.",
+      "Restart Hermes, confirm with `hermes mcp list`, then exercise a tool (e.g. a read-only list/search call) to verify."
+    ],
+    "url": "https://github.com/jerhadf/linear-mcp-server",
+    "stars": 347,
+    "source": "github",
+    "source_url": "https://github.com/jerhadf/linear-mcp-server",
+    "verified": true
+  },
+  {
+    "name": "jira",
+    "category": "PRODUCTIVITY",
+    "purpose": "Jira: issues, projects, sprints, search",
+    "description": "mcp-atlassian Jira mode: query and create Jira issues, browse projects, boards and sprints with smart search (CQL).",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "uvx mcp-atlassian",
+    "connect_steps": [
+      "Register <name> in Hermes: config.yaml -> mcp_servers.jira (command + env), or `hermes mcp add jira -- '<command>'`.",
+      "Env: JIRA_URL (e.g. https://your.atlassian.net), JIRA_USERNAME (email) + JIRA_API_TOKEN (API token from id.atlassian.com).",
+      "Cloud free tier (<=10 users) supported; Data Center on paid licenses.",
+      "Restart Hermes, confirm with `hermes mcp list`, then exercise a tool (e.g. a read-only list/search call) to verify."
+    ],
+    "url": "https://github.com/sooperset/mcp-atlassian",
+    "stars": 5726,
+    "source": "github",
+    "source_url": "https://github.com/sooperset/mcp-atlassian",
+    "verified": true
+  },
+  {
+    "name": "confluence",
+    "category": "PRODUCTIVITY",
+    "purpose": "Confluence: pages, spaces, search",
+    "description": "mcp-atlassian Confluence mode: search and read Confluence pages and spaces, create/update page content.",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "uvx mcp-atlassian",
+    "connect_steps": [
+      "Register <name> in Hermes: config.yaml -> mcp_servers.confluence (command + env), or `hermes mcp add confluence -- '<command>'`.",
+      "Same env as Jira entry: JIRA_URL / JIRA_USERNAME / JIRA_API_TOKEN (shared Atlassian account); point JIRA_URL at your site.",
+      "One server instance exposes both Jira and Confluence toolsets.",
+      "Restart Hermes, confirm with `hermes mcp list`, then exercise a tool (e.g. a read-only list/search call) to verify."
+    ],
+    "url": "https://github.com/sooperset/mcp-atlassian",
+    "stars": 5726,
+    "source": "github",
+    "source_url": "https://github.com/sooperset/mcp-atlassian",
+    "verified": true
+  },
+  {
+    "name": "asana",
+    "category": "PRODUCTIVITY",
+    "purpose": "Asana: tasks, projects, sections, workspaces",
+    "description": "MCP server for Asana: list and create tasks/projects, move tasks between sections, manage workspaces via Asana REST API.",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "npx -y @roychri/mcp-server-asana",
+    "connect_steps": [
+      "Register <name> in Hermes: config.yaml -> mcp_servers.asana (command + env), or `hermes mcp add asana -- '<command>'`.",
+      "Env: ASANA_ACCESS_TOKEN (PAT from asana.com/my-profile/settings > Personal access tokens).",
+      "Free tier for individuals; paid for teams.",
+      "Restart Hermes, confirm with `hermes mcp list`, then exercise a tool (e.g. a read-only list/search call) to verify."
+    ],
+    "url": "https://github.com/roychri/mcp-server-asana",
+    "stars": 145,
+    "source": "github",
+    "source_url": "https://github.com/roychri/mcp-server-asana",
+    "verified": true
+  },
+  {
+    "name": "trello",
+    "category": "PRODUCTIVITY",
+    "purpose": "Trello: boards, lists, cards, comments",
+    "description": "Bun-powered MCP server for Trello: full board/list/card CRUD, card watch and rate-limit handling built in (npx-compatible).",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "bunx @delorenj/mcp-server-trello",
+    "connect_steps": [
+      "Register <name> in Hermes: config.yaml -> mcp_servers.trello (command + env), or `hermes mcp add trello -- '<command>'`.",
+      "Env: TRELLO_API_KEY and TRELLO_TOKEN (generate both at trello.com/app-key).",
+      "bunx preferred (fast); npx works identically.",
+      "Restart Hermes, confirm with `hermes mcp list`, then exercise a tool (e.g. a read-only list/search call) to verify."
+    ],
+    "url": "https://github.com/delorenj/mcp-server-trello",
+    "stars": 432,
+    "source": "github",
+    "source_url": "https://github.com/delorenj/mcp-server-trello",
+    "verified": true
+  },
+  {
+    "name": "monday",
+    "category": "PRODUCTIVITY",
+    "purpose": "Monday.com: boards, items, updates, groups",
+    "description": "MCP server for monday.com: list boards, create items/sub-items, read groups and post updates using the Monday API.",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "uv run mcp-server-monday",
+    "connect_steps": [
+      "Register <name> in Hermes: config.yaml -> mcp_servers.monday (command + env), or `hermes mcp add monday -- '<command>'`.",
+      "Env: MONDAY_API_KEY (personal API token from monday.com developer docs) + MONDAY_WORKSPACE_NAME (subdomain).",
+      "Requires uv; clone repo and `uv sync` first. Free tier limited to 2 seats.",
+      "Restart Hermes, confirm with `hermes mcp list`, then exercise a tool (e.g. a read-only list/search call) to verify."
+    ],
+    "url": "https://github.com/Prat011/mcp-server-monday",
+    "stars": 34,
+    "source": "github",
+    "source_url": "https://github.com/Prat011/mcp-server-monday",
+    "verified": true
+  },
+  {
+    "name": "basecamp",
+    "category": "PRODUCTIVITY",
+    "purpose": "Basecamp 3: projects, todos, messages",
+    "description": "Python MCP server for Basecamp 3: browse projects and details, read/manage todos and messages via OAuth-authenticated Basecamp API.",
+    "price_model": "PAID",
+    "install_command": "git clone https://github.com/georgeantonopoulos/Basecamp-MCP-Server.git && cd Basecamp-MCP-Server && python setup.py",
+    "connect_steps": [
+      "Register <name> in Hermes: config.yaml -> mcp_servers.basecamp (command + env), or `hermes mcp add basecamp -- '<command>'`.",
+      "Register an OAuth app at launchpad.37signals.com/integrations; export BASECAMP_CLIENT_ID / BASECAMP_CLIENT_SECRET and complete the OAuth flow (or provide refresh token).",
+      "Basecamp 3 has no free tier (trial only) \u2014 paid subscription required.",
+      "Restart Hermes, confirm with `hermes mcp list`, then exercise a tool (e.g. a read-only list/search call) to verify."
+    ],
+    "url": "https://github.com/georgeantonopoulos/Basecamp-MCP-Server",
+    "stars": 95,
+    "source": "github",
+    "source_url": "https://github.com/georgeantonopoulos/Basecamp-MCP-Server",
+    "verified": true
+  },
+  {
+    "name": "todoist",
+    "category": "PRODUCTIVITY",
+    "purpose": "Todoist: tasks, projects, labels, filters",
+    "description": "MCP server for Todoist: create/complete tasks, manage projects, labels and filters via the Todoist REST API.",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "npm install -g @abhiz123/todoist-mcp-server",
+    "connect_steps": [
+      "Register <name> in Hermes: config.yaml -> mcp_servers.todoist (command + env), or `hermes mcp add todoist -- '<command>'`.",
+      "Env: TODOIST_API_TOKEN (from todoist.com/app/settings > Integrations > API token).",
+      "Free tier for personal lists; paid for collaboration.",
+      "Restart Hermes, confirm with `hermes mcp list`, then exercise a tool (e.g. a read-only list/search call) to verify."
+    ],
+    "url": "https://github.com/abhiz123/todoist-mcp-server",
+    "stars": 391,
+    "source": "github",
+    "source_url": "https://github.com/abhiz123/todoist-mcp-server",
+    "verified": true
+  },
+  {
+    "name": "obsidian",
+    "category": "PRODUCTIVITY",
+    "purpose": "Obsidian vault: read/write notes, search, tags",
+    "description": "MCP server for local Obsidian vaults: read and write notes, full-text search, list tags and files via the Obsidian Local REST API plugin.",
+    "price_model": "FREE",
+    "install_command": "uvx mcp-obsidian",
+    "connect_steps": [
+      "Register <name> in Hermes: config.yaml -> mcp_servers.obsidian (command + env), or `hermes mcp add obsidian -- '<command>'`.",
+      "Install the Local REST API community plugin in Obsidian, enable it, and export OBSIDIAN_API_KEY (from plugin settings).",
+      "Add vault path via --vault option or OBSIDIAN_PATH env if autodetect fails.",
+      "Restart Hermes, confirm with `hermes mcp list`, then exercise a tool (e.g. a read-only list/search call) to verify."
+    ],
+    "url": "https://github.com/MarkusPfundstein/mcp-obsidian",
+    "stars": 4287,
+    "source": "github",
+    "source_url": "https://github.com/MarkusPfundstein/mcp-obsidian",
+    "verified": true
+  },
+  {
+    "name": "apple-notes",
+    "category": "PRODUCTIVITY",
+    "purpose": "Apple Notes: create/read/search notes (macOS)",
+    "description": "Bun-based MCP server for Apple Notes on macOS: index notes, search, create and update notes with attachments.",
+    "price_model": "FREE",
+    "install_command": "git clone https://github.com/RafalWilinski/mcp-apple-notes.git && cd mcp-apple-notes && bun install",
+    "connect_steps": [
+      "Register <name> in Hermes: config.yaml -> mcp_servers.apple-notes (command + env), or `hermes mcp add apple-notes -- '<command>'`.",
+      "Point the server at the local index.ts (config args: [\"/Users/<user>/apple-notes-mcp/index.ts\"]); first run: ask the agent to 'Index my notes'.",
+      "macOS-only (AppleScript/JXA based) \u2014 requires Bun runtime.",
+      "Restart Hermes, confirm with `hermes mcp list`, then exercise a tool (e.g. a read-only list/search call) to verify."
+    ],
+    "url": "https://github.com/RafalWilinski/mcp-apple-notes",
+    "stars": 410,
+    "source": "github",
+    "source_url": "https://github.com/RafalWilinski/mcp-apple-notes",
+    "verified": true
+  },
+  {
+    "name": "github",
+    "category": "PRODUCTIVITY",
+    "purpose": "GitHub: repos, issues, PRs, Projects, Actions, code search",
+    "description": "Official GitHub MCP server: full GitHub API surface including Issues, Pull Requests, Projects (v2), Actions, Gists and code search \u2014 the Projects integration lives here.",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "docker run -i --rm -e GITHUB_PERSONAL_ACCESS_TOKEN ghcr.io/github/github-mcp-server",
+    "connect_steps": [
+      "Register <name> in Hermes: config.yaml -> mcp_servers.github (command + env), or `hermes mcp add github -- '<command>'`.",
+      "Env: GITHUB_PERSONAL_ACCESS_TOKEN (PAT with repo/project scopes) or GITHUB_TOKEN for GitHub Actions.",
+      "Remote hosted option available; Docker image ghcr.io/github/github-mcp-server:latest.",
+      "Restart Hermes, confirm with `hermes mcp list`, then exercise a tool (e.g. a read-only list/search call) to verify."
+    ],
+    "url": "https://github.com/github/github-mcp-server",
+    "stars": 32148,
+    "source": "github-official",
+    "source_url": "https://github.com/github/github-mcp-server",
+    "verified": true
+  },
+  {
+    "name": "airtable",
+    "category": "PRODUCTIVITY",
+    "purpose": "Airtable: bases, tables, records CRUD",
+    "description": "MCP server for Airtable: list bases/tables, create/read/update/delete records, with optional HTTP transport.",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "npx airtable-mcp-server",
+    "connect_steps": [
+      "Register <name> in Hermes: config.yaml -> mcp_servers.airtable (command + env), or `hermes mcp add airtable -- '<command>'`.",
+      "Env: AIRTABLE_API_KEY (PAT from airtable.com/create/tokens) + AIRTABLE_BASE_ID (or export MCP_BASE_ID).",
+      "Free tier (1,000 records/base); paid plans for larger bases.",
+      "Restart Hermes, confirm with `hermes mcp list`, then exercise a tool (e.g. a read-only list/search call) to verify."
+    ],
+    "url": "https://github.com/domdomegg/airtable-mcp-server",
+    "stars": 455,
+    "source": "github",
+    "source_url": "https://github.com/domdomegg/airtable-mcp-server",
+    "verified": true
+  },
+  {
+    "name": "hubspot",
+    "category": "PRODUCTIVITY",
+    "purpose": "HubSpot CRM: contacts, companies, deals, pipeline",
+    "description": "Docker-first HubSpot MCP server: create/query contacts and companies, inspect deals and pipeline stages via HubSpot API.",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "docker run -e HUBSPOT_ACCESS_TOKEN=your_token buryhuang/mcp-hubspot:latest",
+    "connect_steps": [
+      "Register <name> in Hermes: config.yaml -> mcp_servers.hubspot (command + env), or `hermes mcp add hubspot -- '<command>'`.",
+      "Env: HUBSPOT_ACCESS_TOKEN (private app token from app.hubspot.com private apps).",
+      "Free CRM tier included; advanced features on paid plans.",
+      "Restart Hermes, confirm with `hermes mcp list`, then exercise a tool (e.g. a read-only list/search call) to verify."
+    ],
+    "url": "https://github.com/baryhuang/mcp-hubspot",
+    "stars": 127,
+    "source": "github",
+    "source_url": "https://github.com/baryhuang/mcp-hubspot",
+    "verified": true
+  },
+  {
+    "name": "salesforce",
+    "category": "PRODUCTIVITY",
+    "purpose": "Salesforce: records, SOQL, org metadata",
+    "description": "Official Salesforce MCP server (salesforcecli): query records with SOQL, run Apex/Data Cloud queries, inspect org metadata.",
+    "price_model": "PAID",
+    "install_command": "npx -y @salesforce/mcp",
+    "connect_steps": [
+      "Register <name> in Hermes: config.yaml -> mcp_servers.salesforce (command + env), or `hermes mcp add salesforce -- '<command>'`.",
+      "Env: SF_ACCESS_TOKEN + SF_ORG_ALIAS or SF_INSTANCE_URL, or authenticate with `sf org login` (Salesforce CLI) before starting.",
+      "Requires a Salesforce org (paid licenses; Developer Edition free sandbox works).",
+      "Restart Hermes, confirm with `hermes mcp list`, then exercise a tool (e.g. a read-only list/search call) to verify."
+    ],
+    "url": "https://github.com/salesforcecli/mcp",
+    "stars": 454,
+    "source": "github-official",
+    "source_url": "https://github.com/salesforcecli/mcp",
+    "verified": true
+  },
+  {
+    "name": "evernote",
+    "category": "PRODUCTIVITY",
+    "purpose": "Evernote: search and read notes",
+    "description": "Local Python MCP server for Evernote: natural-language search and read access to notes with persistent OAuth and token refresh.",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "git clone https://github.com/brentmid/evernote-mcp-server.git && cd evernote-mcp-server && npx node index.js",
+    "connect_steps": [
+      "Register <name> in Hermes: config.yaml -> mcp_servers.evernote (command + env), or `hermes mcp add evernote -- '<command>'`.",
+      "OAuth flow on first run (client key/secret from Evernote developer portal) \u2014 tokens persist in .env; DEV_MODE=true for offline testing.",
+      "Free tier supports note search; premium for larger limits.",
+      "Restart Hermes, confirm with `hermes mcp list`, then exercise a tool (e.g. a read-only list/search call) to verify."
+    ],
+    "url": "https://github.com/brentmid/evernote-mcp-server",
+    "stars": 55,
+    "source": "github",
+    "source_url": "https://github.com/brentmid/evernote-mcp-server",
+    "verified": true
+  },
+  {
+    "name": "toggl",
+    "category": "PRODUCTIVITY",
+    "purpose": "Toggl Track: time entries, projects, workspaces",
+    "description": "MCP server for Toggl Track: create/read time entries, list projects and workspaces, daily reports.",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "npm install -g @verygoodplugins/mcp-toggl",
+    "connect_steps": [
+      "Register <name> in Hermes: config.yaml -> mcp_servers.toggl (command + env), or `hermes mcp add toggl -- '<command>'`.",
+      "Env: TOGGL_API_TOKEN (from toggl.com/app/settings > API token).",
+      "Free tier for personal tracking; teams on paid plans.",
+      "Restart Hermes, confirm with `hermes mcp list`, then exercise a tool (e.g. a read-only list/search call) to verify."
+    ],
+    "url": "https://github.com/verygoodplugins/mcp-toggl",
+    "stars": 31,
+    "source": "github",
+    "source_url": "https://github.com/verygoodplugins/mcp-toggl",
+    "verified": true
+  },
+  {
+    "name": "office",
+    "category": "PRODUCTIVITY",
+    "purpose": "Microsoft Office desktop: Word/Excel/Outlook automation (Windows)",
+    "description": "OfficeMCP: control the locally installed MS Office suite on Windows \u2014 create/edit Word docs, Excel workbooks, Outlook mail \u2014 via SSE transport.",
+    "price_model": "FREE",
+    "install_command": "uvx officemcp sse",
+    "connect_steps": [
+      "Register <name> in Hermes: config.yaml -> mcp_servers.office (command + env), or `hermes mcp add office -- '<command>'`.",
+      "Windows host with MS Office installed; optional --port/--folder flags (e.g. uvx officemcp sse --port 7777 --folder D:\\docs).",
+      "Uses COM automation \u2014 only works on Windows with Office 2016+.",
+      "Restart Hermes, confirm with `hermes mcp list`, then exercise a tool (e.g. a read-only list/search call) to verify."
+    ],
+    "url": "https://github.com/OfficeMCP/OfficeMCP",
+    "stars": 109,
+    "source": "github",
+    "source_url": "https://github.com/OfficeMCP/OfficeMCP",
+    "verified": true
+  }
+]

@@ -90,6 +90,14 @@ _STACK_RULES = [
     ("sql", (".sql",)),
 ]
 
+# TTL cache for stack_tags: the hook fires on EVERY pre_llm_call and
+# post_tool_call; a full os.walk of the cwd (possibly a home directory
+# with hundreds of thousands of files) on every event was a top-3
+# contributor to the ~100x slowdown incident. Repo stacks change rarely,
+# so a 5-minute cache is behavior-preserving and drops the walk to ~0ms.
+TAGS_TTL_SECONDS = 300.0
+_TAGS_CACHE: dict[str, tuple[float, list[str]]] = {}
+
 
 class Ledger:
     def __init__(self):
@@ -129,17 +137,30 @@ class Ledger:
 
 
 def stack_tags(root: str) -> list[str]:
-    """Local, private stack detection (extension scan only). Nothing leaves the machine."""
-    skip = {".git", "node_modules", "venv", ".venv", "__pycache__", "dist", "build", "target", ".next", "vendor"}
+    """Local, private stack detection (extension scan only). Nothing leaves the machine.
+
+    Results are cached per-root for ``TAGS_TTL_SECONDS``: the hook fires on
+    every work event, and a raw os.walk of a large cwd (e.g. a home
+    directory) costs seconds per call — one of the incident's hot paths.
+    """
+    now = time.time()
+    hit = _TAGS_CACHE.get(root)
+    if hit and now - hit[0] < TAGS_TTL_SECONDS:
+        return hit[1]
+    skip = {".git", "node_modules", "venv", ".venv", "__pycache__", "dist", "build",
+            "target", ".next", "vendor", "appdata", ".cache", ".npm", ".ollama",
+            ".cargo", ".rustup", ".conda", ".local", "site-packages"}
     tags: set[str] = set()
     for dirpath, dirnames, filenames in os.walk(root):
-        dirnames[:] = [d for d in dirnames if d not in skip]
+        dirnames[:] = [d for d in dirnames if d.lower() not in skip]
         for fn in filenames:
             low = fn.lower()
             for tag, needles in _STACK_RULES:
                 if low in needles or low.endswith(tuple(n for n in needles if n.startswith("."))):
                     tags.add(tag)
-    return sorted(tags)
+    result = sorted(tags)
+    _TAGS_CACHE[root] = (now, result)
+    return result
 
 
 def eligible_sponsors(led: Ledger, repo_tags: list[str] | None = None) -> list[dict]:
@@ -184,8 +205,14 @@ def current_sponsor(led: Ledger, repo_tags: list[str] | None = None) -> dict | N
     return elig[0] if elig else None
 
 
-def record_render(led: Ledger, repo_tags: list[str] | None = None, now: float | None = None) -> dict:
-    """A render = the sponsor line was on screen for a work event. CPM tier counts here."""
+def record_render(led: Ledger, repo_tags: list[str] | None = None, now: float | None = None,
+                  write_line: bool = True) -> dict:
+    """A render = the sponsor line was on screen for a work event. CPM tier counts here.
+
+    ``write_line=False`` defers the ``current.txt`` write to the caller so
+    the hook can throttle it (at most once per FLUSH_INTERVAL + on session
+    end) instead of rewriting the file on every work event.
+    """
     now = now if now is not None else time.time()
     if led.state.get("paused"):
         return {"counted": False, "sponsor": None}
@@ -197,7 +224,8 @@ def record_render(led: Ledger, repo_tags: list[str] | None = None, now: float | 
     if sp.get("model") == "cpm":
         _charge(led, sp, sp.get("price", 0.0) / 1000.0)  # price per 1000 renders
     _push_receipt(led, _receipt(led, sp["id"], "render", now))
-    _write_line(led, sp)
+    if write_line:
+        _write_line(led, sp)
     led.dirty = True
     return {"counted": True, "sponsor": sp}
 

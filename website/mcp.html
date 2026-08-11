@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MCP Catalog · XOMNI</title>
+<meta name="description" content="The XOMNI MCP catalog — 311 MCP servers, searchable and filterable, free forever.">
+<style>
+  :root{
+    --bg:#050607;
+    --surface-0:#0A0C0E;
+    --surface-1:#101316;
+    --surface-2:#171B1F;
+    --border:#23282E;
+    --ink:#E8EAED;
+    --ink-2:#A6ADB5;
+    --ink-3:#7B828A;
+    --accent:#00E5A0;
+    --accent-hover:#00FFB0;
+    --accent-dim:#00B87E;
+    --danger:#FF6B6B;
+    --warning:#FFB454;
+    --mono:ui-monospace,"Cascadia Code","Cascadia Mono",Consolas,Menlo,monospace;
+    --sans:ui-sans-serif,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --radius:10px;
+    --shadow:0 8px 28px rgba(0,0,0,.45);
+  }
+  *{box-sizing:border-box;min-width:0}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:var(--sans);
+    font-size:16px;
+    line-height:1.55;
+    overflow-wrap:anywhere;
+  }
+  @media (prefers-reduced-motion:reduce){
+    html{scroll-behavior:auto}
+    *,*::before,*::after{animation:none!important;transition:none!important}
+  }
+  :focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{color:var(--accent-hover);text-decoration:underline}
+
+  /* ---------- nav ---------- */
+  .nav{
+    position:sticky;top:0;z-index:50;
+    background:rgba(5,6,7,.88);
+    backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--border);
+  }
+  .nav-inner{
+    max-width:1120px;margin:0 auto;padding:0 18px;
+    display:flex;align-items:center;gap:18px;min-height:60px;
+  }
+  .brand{
+    font-family:var(--mono);font-weight:700;font-size:19px;letter-spacing:.5px;
+    color:var(--ink);white-space:nowrap;
+  }
+  .brand:hover{text-decoration:none}
+  .brand em{font-style:normal;color:var(--accent)}
+  .nav-links{display:flex;gap:4px;margin-left:auto;flex-wrap:wrap;justify-content:flex-end}
+  .nav-links a{
+    color:var(--ink-2);font-size:14.5px;padding:10px 12px;border-radius:8px;
+    min-height:44px;display:inline-flex;align-items:center;
+  }
+  .nav-links a:hover{color:var(--ink);background:var(--surface-1);text-decoration:none}
+  .nav-links a[aria-current="page"]{
+    color:var(--accent);background:rgba(0,229,160,.08);
+    box-shadow:inset 0 0 0 1px rgba(0,229,160,.25);
+  }
+  .skip{position:absolute;left:-9999px;top:0;background:var(--accent);color:#000;padding:10px 14px;z-index:100;border-radius:0 0 8px 0;font-weight:600}
+  .skip:focus{left:0}
+
+  /* ---------- hero ---------- */
+  .hero{max-width:1120px;margin:0 auto;padding:56px 18px 28px}
+  .kicker{
+    font-family:var(--mono);font-size:12.5px;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--accent-dim);margin:0 0 10px;
+  }
+  h1{font-size:clamp(30px,5vw,44px);line-height:1.1;margin:0 0 12px;letter-spacing:-.5px}
+  .sub{color:var(--ink-2);font-size:17px;max-width:640px;margin:0}
+  .stats{
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+    gap:12px;margin-top:30px;
+  }
+  .stat{
+    background:var(--surface-0);border:1px solid var(--border);border-radius:var(--radius);
+    padding:16px 18px;
+  }
+  .stat b{
+    display:block;font-family:var(--mono);font-variant-numeric:tabular-nums;
+    font-size:26px;color:var(--accent);line-height:1.1;
+  }
+  .stat span{color:var(--ink-3);font-size:13px;letter-spacing:.04em;text-transform:uppercase}
+
+  /* ---------- controls ---------- */
+  .controls{max-width:1120px;margin:0 auto;padding:8px 18px 4px}
+  .search-wrap{position:relative}
+  .search{
+    width:100%;min-height:52px;padding:13px 18px 13px 48px;
+    background:var(--surface-1);color:var(--ink);
+    border:1px solid var(--border);border-radius:var(--radius);
+    font-size:16px;font-family:var(--sans);
+  }
+  .search::placeholder{color:var(--ink-3)}
+  .search:focus{border-color:var(--accent-dim);outline:none;box-shadow:0 0 0 3px rgba(0,229,160,.15)}
+  .search-ico{
+    position:absolute;left:16px;top:50%;transform:translateY(-50%);
+    color:var(--ink-3);pointer-events:none;display:flex;
+  }
+  .filters{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px;align-items:center}
+  .chip{
+    min-height:44px;padding:9px 16px;border-radius:999px;cursor:pointer;
+    background:var(--surface-1);color:var(--ink-2);
+    border:1px solid var(--border);font-size:14px;font-family:var(--sans);
+    display:inline-flex;align-items:center;gap:7px;transition:border-color .15s,color .15s,background .15s;
+  }
+  .chip:hover{border-color:var(--ink-3);color:var(--ink)}
+  .chip[aria-pressed="true"]{
+    background:rgba(0,229,160,.1);color:var(--accent);
+    border-color:rgba(0,229,160,.5);
+  }
+  .chip .dot{width:8px;height:8px;border-radius:50%;flex:none}
+  .dot-free{background:var(--accent)}
+  .dot-tier{background:var(--warning)}
+  .dot-paid{background:var(--danger)}
+  select{
+    min-height:44px;padding:9px 38px 9px 14px;border-radius:999px;
+    background:var(--surface-1) url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%237B828A' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 14px center;
+    color:var(--ink-2);border:1px solid var(--border);font-size:14px;font-family:var(--sans);
+    cursor:pointer;appearance:none;-webkit-appearance:none;
+  }
+  select:hover{border-color:var(--ink-3)}
+  select:focus{border-color:var(--accent-dim);outline:none}
+  .toggle{position:relative;display:inline-flex;align-items:center;gap:10px;cursor:pointer;min-height:44px;padding:0 6px;color:var(--ink-2);font-size:14px;user-select:none}
+  .toggle input{position:absolute;opacity:0;width:0;height:0}
+  .track{
+    width:40px;height:22px;border-radius:999px;background:var(--surface-2);
+    border:1px solid var(--border);position:relative;transition:background .15s;flex:none;
+  }
+  .track::after{
+    content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;
+    background:var(--ink-3);transition:transform .15s,background .15s;
+  }
+  .toggle input:checked + .track{background:rgba(0,229,160,.25);border-color:rgba(0,229,160,.6)}
+  .toggle input:checked + .track::after{transform:translateX(18px);background:var(--accent)}
+  .toggle input:focus-visible + .track{outline:2px solid var(--accent);outline-offset:2px}
+  .result-line{
+    display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+    margin:22px 0 4px;color:var(--ink-3);font-size:14px;
+  }
+  .result-line .count{font-family:var(--mono);font-variant-numeric:tabular-nums;color:var(--ink-2)}
+  .clear-btn{
+    margin-left:auto;min-height:44px;padding:8px 14px;border-radius:8px;cursor:pointer;
+    background:transparent;color:var(--ink-2);border:1px solid var(--border);font-size:13.5px;font-family:var(--sans);
+  }
+  .clear-btn:hover{color:var(--danger);border-color:var(--danger)}
+
+  /* ---------- cards ---------- */
+  .grid{max-width:1120px;margin:0 auto;padding:10px 18px 8px;display:grid;gap:12px}
+  .card{
+    background:var(--surface-0);border:1px solid var(--border);border-radius:var(--radius);
+    padding:18px 20px;display:flex;flex-direction:column;gap:9px;
+    transition:border-color .15s;
+  }
+  .card:hover{border-color:#2E353C}
+  .card-top{display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap}
+  .card-name{
+    font-family:var(--mono);font-size:16.5px;font-weight:600;color:var(--ink);
+    word-break:break-all;
+  }
+  .card-name a{color:var(--ink)}
+  .card-name a:hover{color:var(--accent);text-decoration:none}
+  .badges{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto}
+  .badge{
+    font-family:var(--mono);font-size:11.5px;letter-spacing:.05em;font-weight:600;
+    padding:4px 9px;border-radius:999px;border:1px solid transparent;
+    white-space:nowrap;display:inline-flex;align-items:center;gap:5px;
+  }
+  .badge-cat{color:var(--ink-2);background:var(--surface-1);border-color:var(--border)}
+  .badge-free{color:var(--accent);background:rgba(0,229,160,.08);border-color:rgba(0,229,160,.35)}
+  .badge-tier{color:var(--warning);background:rgba(255,180,84,.08);border-color:rgba(255,180,84,.35)}
+  .badge-paid{color:var(--danger);background:rgba(255,107,107,.08);border-color:rgba(255,107,107,.35)}
+  .badge-ver{color:var(--accent-dim);background:var(--surface-1);border-color:var(--border)}
+  .card-purpose{color:var(--ink-2);font-size:15px;margin:0}
+  .card-desc{
+    color:var(--ink-3);font-size:14px;margin:0;
+    display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;
+  }
+  .card-foot{display:flex;align-items:center;gap:10px;margin-top:2px}
+  .stars{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:13px;color:var(--warning);display:inline-flex;align-items:center;gap:5px}
+  .src-link{font-size:13.5px;margin-left:auto}
+  details.connect{margin-top:2px;border:1px solid var(--border);border-radius:8px;background:var(--surface-1)}
+  details.connect summary{
+    cursor:pointer;padding:10px 14px;font-size:13.5px;color:var(--ink-2);
+    font-family:var(--mono);letter-spacing:.03em;user-select:none;
+    display:flex;align-items:center;gap:8px;min-height:44px;
+  }
+  details.connect summary:hover{color:var(--accent)}
+  details.connect summary::before{content:"▸";color:var(--accent-dim);transition:transform .15s}
+  details.connect[open] summary::before{transform:rotate(90deg)}
+  .connect-body{padding:4px 14px 14px;display:flex;flex-direction:column;gap:10px}
+  .steps{margin:0;padding:0 0 0 20px;display:flex;flex-direction:column;gap:7px}
+  .steps li{color:var(--ink-2);font-size:14px}
+  .codeblock{position:relative;background:#0A0C0E;border:1px solid var(--border);border-radius:8px;padding:12px 74px 12px 12px}
+  .codeblock code{
+    display:block;font-family:var(--mono);font-size:12.8px;color:var(--accent);
+    white-space:pre-wrap;word-break:break-all;line-height:1.5;
+  }
+  .copy-btn{
+    position:absolute;top:8px;right:8px;min-height:34px;padding:5px 10px;
+    border-radius:6px;cursor:pointer;font-size:12px;font-family:var(--mono);
+    background:var(--surface-2);color:var(--ink-2);border:1px solid var(--border);
+  }
+  .copy-btn:hover{color:var(--accent);border-color:var(--accent-dim)}
+  .copy-btn.copied{color:#000;background:var(--accent);border-color:var(--accent)}
+
+  .empty{
+    text-align:center;padding:64px 20px;color:var(--ink-3);
+    border:1px dashed var(--border);border-radius:var(--radius);background:var(--surface-0);
+  }
+  .empty b{color:var(--ink-2);font-size:17px;display:block;margin-bottom:6px}
+  .load-more-wrap{max-width:1120px;margin:0 auto;padding:16px 18px 40px;text-align:center}
+  .load-more{
+    min-height:48px;padding:11px 30px;border-radius:999px;cursor:pointer;
+    background:rgba(0,229,160,.08);color:var(--accent);
+    border:1px solid rgba(0,229,160,.4);font-size:15px;font-family:var(--sans);font-weight:600;
+  }
+  .load-more:hover{background:rgba(0,229,160,.16);color:var(--accent-hover)}
+  .load-more[hidden]{display:none}
+
+  /* ---------- footer ---------- */
+  footer{border-top:1px solid var(--border);margin-top:40px;background:var(--surface-0)}
+  .foot-inner{
+    max-width:1120px;margin:0 auto;padding:26px 18px;display:flex;
+    gap:10px;flex-wrap:wrap;align-items:center;color:var(--ink-3);font-size:13.5px;
+  }
+  .foot-inner a{color:var(--ink-2)}
+  .foot-inner .right{margin-left:auto}
+
+  @media (max-width:560px){
+    .nav-inner{flex-wrap:wrap;padding-top:8px;padding-bottom:8px}
+    .nav-links{width:100%;justify-content:flex-start;margin-left:0}
+    .badges{margin-left:0}
+  }
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to catalog</a>
+
+<header class="nav">
+  <div class="nav-inner">
+    <a class="brand" href="index.html">X<em>OMNI</em></a>
+    <nav class="nav-links" aria-label="Primary">
+      <a href="index.html">Home</a>
+      <a href="skills.html">Skills</a>
+      <a href="docs/install.html">Install</a>
+      <a href="mcp.html" aria-current="page">MCP</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+  <section class="hero">
+    <p class="kicker">Model Context Protocol</p>
+    <h1>MCP Catalog</h1>
+    <p class="sub">Every MCP server the XOMNI team has vetted and wired into the runtime — searchable, filterable, and free forever. Search by name, keyword, or vibe; the catalog understands synonyms like “db”, “chat”, and “browser”.</p>
+    <div class="stats" id="stats" aria-label="Catalog statistics">
+      <div class="stat"><b id="st-total">311</b><span>servers</span></div>
+      <div class="stat"><b id="st-verified">253</b><span>verified</span></div>
+      <div class="stat"><b id="st-cats">12</b><span>categories</span></div>
+      <div class="stat"><b id="st-free">191</b><span>free</span></div>
+    </div>
+  </section>
+
+  <section class="controls" aria-label="Search and filters">
+    <div class="search-wrap">
+      <span class="search-ico" aria-hidden="true">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      </span>
+      <input id="q" class="search" type="search" placeholder="Search 311 servers — try “git”, “db”, “chat”, “free”…" autocomplete="off" spellcheck="false" aria-label="Search MCP servers">
+    </div>
+    <div class="filters">
+      <div role="group" aria-label="Price filter">
+        <button class="chip" data-price="ALL" aria-pressed="true">All prices</button>
+        <button class="chip" data-price="FREE" aria-pressed="false"><span class="dot dot-free" aria-hidden="true"></span>FREE</button>
+        <button class="chip" data-price="FREE-TIER+ADDON" aria-pressed="false"><span class="dot dot-tier" aria-hidden="true"></span>Free-tier + addon</button>
+        <button class="chip" data-price="PAID" aria-pressed="false"><span class="dot dot-paid" aria-hidden="true"></span>PAID</button>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" id="only-verified">
+        <span class="track" aria-hidden="true"></span>
+        Verified only
+      </label>
+      <select id="cat" aria-label="Category filter">
+        <option value="ALL">All categories</option>
+        <option>AI-MODELS</option>
+        <option>BROWSER-AUTOMATION</option>
+        <option>CLOUD-INFRA</option>
+        <option>CODING</option>
+        <option>COMMUNICATION</option>
+        <option>DATABASES</option>
+        <option>DEVOPS</option>
+        <option>FINANCE</option>
+        <option>MEDIA</option>
+        <option>MISC</option>
+        <option>PRODUCTIVITY</option>
+        <option>SEARCH-RESEARCH</option>
+      </select>
+      <select id="sort" aria-label="Sort order">
+        <option value="stars-desc">★ stars · high → low</option>
+        <option value="stars-asc">★ stars · low → high</option>
+        <option value="name">name A → Z</option>
+      </select>
+    </div>
+    <p class="result-line" id="result-line" role="status" aria-live="polite">
+      <span class="count" id="count">Loading catalog…</span>
+      <button class="clear-btn" id="clear" type="button" hidden>Clear filters</button>
+    </p>
+  </section>
+
+  <section class="grid" id="grid" aria-label="MCP server cards"></section>
+  <div class="load-more-wrap">
+    <button class="load-more" id="load-more" type="button" hidden>Load more</button>
+  </div>
+</main>
+
+<footer>
+  <div class="foot-inner">
+    <span>XOMNI — MIT licensed · $0 forever</span>
+    <span class="right"><a href="https://github.com/painbaba/xomni">github.com/painbaba/xomni</a></span>
+  </div>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ---------------- data ---------------- */
+  var DATA = [];
+  var state = {
+    q: "",
+    price: "ALL",
+    cat: "ALL",
+    verifiedOnly: false,
+    sort: "stars-desc",
+    shown: 50
+  };
+  var PAGE = 50;
+
+  /* ---------------- synonym map ---------------- */
+  var SYNONYMS = [
+    { re: /\b(git|github|repo|repository|code|vscode|ide)\b/i, cats: ["CODING", "DEVOPS"] },
+    { re: /\b(db|database|sql|postgres|mysql|query|warehouse)\b/i, cats: ["DATABASES"] },
+    { re: /\b(chat|slack|discord|teams|message|telegram|whatsapp)\b/i, cats: ["COMMUNICATION"] },
+    { re: /\b(ai|llm|model|gpt|claude|agent|inference)\b/i, cats: ["AI-MODELS"] },
+    { re: /\b(search|web|google|brave|crawl|scrape|research)\b/i, cats: ["SEARCH-RESEARCH"] },
+    { re: /\b(money|finance|stock|trading|bank|payment|invest|crypto)\b/i, cats: ["FINANCE"] },
+    { re: /\b(browser|automation|puppeteer|playwright|selenium|chrome)\b/i, cats: ["BROWSER-AUTOMATION"] },
+    { re: /\b(cloud|aws|azure|gcp|k8s|kubernetes|serverless|infra)\b/i, cats: ["CLOUD-INFRA"] },
+    { re: /\b(docs|notes|calendar|notion|obsidian|email|office)\b/i, cats: ["PRODUCTIVITY"] },
+    { re: /\b(media|video|audio|music|image|youtube|spotify)\b/i, cats: ["MEDIA"] },
+    { re: /\b(devops|ci|deploy|pipeline|terraform|docker|monitor|ops)\b/i, cats: ["DEVOPS"] },
+    { re: /^\s*free\s*$/i, price: "FREE" },
+    { re: /^\s*paid\s*$/i, price: "PAID" },
+    { re: /\b(tier|addon|freemium)\b/i, price: "FREE-TIER+ADDON" }
+  ];
+  var PRICE_WORDS = { free: "FREE", paid: "PAID", tier: "FREE-TIER+ADDON", addon: "FREE-TIER+ADDON", freemium: "FREE-TIER+ADDON" };
+
+  /* ---------------- scoring ---------------- */
+  function scoreServer(s, tokens) {
+    var total = 0, matched = 0;
+    var name = s.name.toLowerCase(), cat = (s.category || "").toLowerCase();
+    var purpose = (s.purpose || "").toLowerCase(), desc = (s.description || "").toLowerCase();
+    for (var i = 0; i < tokens.length; i++) {
+      var t = tokens[i], best = 0;
+      if (t === "") continue;
+      if (name === t) best = 1000;                       /* exact name */
+      else if (name.indexOf(t) === 0) best = 500;        /* name prefix */
+      else if (name.indexOf(t) !== -1) best = 300;       /* name substring */
+      else if (cat.indexOf(t) !== -1) best = 200;        /* category match */
+      else if (purpose.indexOf(t) !== -1) best = 120;    /* purpose match */
+      else if (desc.indexOf(t) !== -1) best = 60;        /* description match */
+      /* synonym boost: keyword → category / price-model match */
+      for (var j = 0; j < SYNONYMS.length; j++) {
+        var syn = SYNONYMS[j];
+        if (syn.re.test(t)) {
+          var boosted = false;
+          if (syn.cats && s.category && syn.cats.indexOf(s.category) !== -1) boosted = true;
+          if (syn.price && s.price_model === syn.price) boosted = true;
+          if (boosted) best = Math.max(best, 260);       /* synonym category/price boost */
+        }
+      }
+      if (best > 0) matched++;
+      total += best;
+    }
+    /* price words typed plainly (e.g. "free", "paid") also match the price model */
+    for (var k = 0; k < tokens.length; k++) {
+      var w = tokens[k];
+      if (PRICE_WORDS[w] && s.price_model === PRICE_WORDS[w]) total += 80;
+    }
+    return { score: total, matched: matched };
+  }
+
+  /* ---------------- filtering + sorting ---------------- */
+  function filtered() {
+    var tokens = state.q.toLowerCase().split(/\s+/).filter(function (x) { return x; });
+    var out = [];
+    for (var i = 0; i < DATA.length; i++) {
+      var s = DATA[i];
+      if (state.price !== "ALL" && s.price_model !== state.price) continue;
+      if (state.cat !== "ALL" && s.category !== state.cat) continue;
+      if (state.verifiedOnly && !s.verified) continue;
+      if (tokens.length) {
+        var r = scoreServer(s, tokens);
+        if (r.matched < tokens.length) continue;  /* every token must match something */
+        s.__score = r.score;
+      } else {
+        s.__score = 0;
+      }
+      out.push(s);
+    }
+    out.sort(function (a, b) {
+      if (tokens.length && a.__score !== b.__score) return b.__score - a.__score;
+      if (state.sort === "name") return a.name.localeCompare(b.name);
+      var sa = a.stars || 0, sb = b.stars || 0;
+      if (sa !== sb) return state.sort === "stars-asc" ? sa - sb : sb - sa;
+      return a.name.localeCompare(b.name);
+    });
+    return out;
+  }
+
+  /* ---------------- rendering ---------------- */
+  var grid = document.getElementById("grid");
+  var countEl = document.getElementById("count");
+  var clearBtn = document.getElementById("clear");
+  var loadMore = document.getElementById("load-more");
+
+  function esc(x) {
+    return String(x == null ? "" : x)
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  }
+  function fmtStars(n) {
+    if (!n) return null;
+    return n >= 1000 ? (n / 1000).toFixed(1).replace(/\.0$/, "") + "k" : String(n);
+  }
+  function priceBadge(p) {
+    if (p === "FREE") return '<span class="badge badge-free">FREE</span>';
+    if (p === "FREE-TIER+ADDON") return '<span class="badge badge-tier">free-tier + addon</span>';
+    return '<span class="badge badge-paid">PAID</span>';
+  }
+  function cardHTML(s) {
+    var stars = fmtStars(s.stars);
+    var steps = Array.isArray(s.connect_steps) && s.connect_steps.length
+      ? s.connect_steps.map(function (st) {
+          var t = String(st).replace(/^\s*\d+[.)]\s*/, "");
+          return "<li>" + esc(t) + "</li>";
+        }).join("")
+      : "<li>See the server’s docs for setup.</li>";
+    var cmd = s.install_command ? esc(s.install_command) : "";
+    return (
+      '<article class="card" data-name="' + esc(s.name) + '">' +
+        '<div class="card-top">' +
+          '<h3 class="card-name"><a href="' + esc(s.url || "#") + '" target="_blank" rel="noopener noreferrer">' + esc(s.name) + '</a></h3>' +
+          '<div class="badges">' +
+            '<span class="badge badge-cat">' + esc(s.category || "MISC") + '</span>' +
+            priceBadge(s.price_model) +
+            (s.verified ? '<span class="badge badge-ver" title="Verified by XOMNI">✓ verified</span>' : "") +
+          '</div>' +
+        '</div>' +
+        '<p class="card-purpose">' + esc(s.purpose || "") + '</p>' +
+        (s.description ? '<p class="card-desc">' + esc(s.description) + '</p>' : "") +
+        '<div class="card-foot">' +
+          (stars ? '<span class="stars">★ ' + stars + '</span>' : "") +
+          '<a class="src-link" href="' + esc(s.url || "#") + '" target="_blank" rel="noopener noreferrer">source ↗</a>' +
+        '</div>' +
+        '<details class="connect">' +
+          '<summary>How to connect</summary>' +
+          '<div class="connect-body">' +
+            '<ol class="steps">' + steps + '</ol>' +
+            (cmd ? '<div class="codeblock"><code>' + cmd + '</code><button class="copy-btn" type="button" data-copy="' + esc(cmd) + '">copy</button></div>' : "") +
+          '</div>' +
+        '</details>' +
+      '</article>'
+    );
+  }
+
+  function render() {
+    var list = filtered();
+    var slice = list.slice(0, state.shown);
+    grid.innerHTML = slice.map(cardHTML).join("");
+    countEl.textContent = "Showing " + slice.length + " of " + list.length;
+    clearBtn.hidden = !(state.q || state.price !== "ALL" || state.cat !== "ALL" || state.verifiedOnly);
+    loadMore.hidden = list.length <= state.shown;
+    if (!list.length) {
+      grid.innerHTML = '<div class="empty"><b>No MCPs match — try fewer filters</b>Clear the search or switch the price chip back to “All prices”.</div>';
+    }
+    loadMore.dataset.total = list.length;
+  }
+
+  /* ---------------- events ---------------- */
+  var debounce;
+  document.getElementById("q").addEventListener("input", function (e) {
+    clearTimeout(debounce);
+    var v = e.target.value;
+    debounce = setTimeout(function () {
+      state.q = v; state.shown = PAGE; render();
+    }, 150);
+  });
+
+  document.querySelectorAll(".chip").forEach(function (chip) {
+    chip.addEventListener("click", function () {
+      document.querySelectorAll(".chip").forEach(function (c) { c.setAttribute("aria-pressed", "false"); });
+      chip.setAttribute("aria-pressed", "true");
+      state.price = chip.dataset.price; state.shown = PAGE; render();
+    });
+  });
+
+  document.getElementById("cat").addEventListener("change", function (e) {
+    state.cat = e.target.value; state.shown = PAGE; render();
+  });
+  document.getElementById("sort").addEventListener("change", function (e) {
+    state.sort = e.target.value; render();
+  });
+  document.getElementById("only-verified").addEventListener("change", function (e) {
+    state.verifiedOnly = e.target.checked; state.shown = PAGE; render();
+  });
+
+  loadMore.addEventListener("click", function () {
+    state.shown += PAGE; render();
+    loadMore.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  });
+
+  document.getElementById("clear").addEventListener("click", function () {
+    state.q = ""; state.price = "ALL"; state.cat = "ALL";
+    state.verifiedOnly = false; state.sort = "stars-desc"; state.shown = PAGE;
+    document.getElementById("q").value = "";
+    document.querySelectorAll(".chip").forEach(function (c) {
+      c.setAttribute("aria-pressed", String(c.dataset.price === "ALL"));
+    });
+    document.getElementById("cat").value = "ALL";
+    document.getElementById("sort").value = "stars-desc";
+    document.getElementById("only-verified").checked = false;
+    render();
+    document.getElementById("q").focus();
+  });
+
+  /* copy-to-clipboard (event delegation) */
+  grid.addEventListener("click", function (e) {
+    var btn = e.target.closest ? e.target.closest(".copy-btn") : null;
+    if (!btn) return;
+    var text = btn.dataset.copy || "";
+    function ok() {
+      btn.textContent = "copied ✓";
+      btn.classList.add("copied");
+      setTimeout(function () {
+        btn.textContent = "copy";
+        btn.classList.remove("copied");
+      }, 1600);
+    }
+    function fallback() {
+      var ta = document.createElement("textarea");
+      ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+      document.body.appendChild(ta); ta.select();
+      try { document.execCommand("copy"); ok(); } catch (err) {}
+      document.body.removeChild(ta);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(ok, fallback);
+    } else { fallback(); }
+  });
+
+  /* ---------------- load data ---------------- */
+  function setStats() {
+    var verified = 0, free = 0, cats = {};
+    for (var i = 0; i < DATA.length; i++) {
+      if (DATA[i].verified) verified++;
+      if (DATA[i].price_model === "FREE") free++;
+      cats[DATA[i].category] = 1;
+    }
+    document.getElementById("st-total").textContent = DATA.length;
+    document.getElementById("st-verified").textContent = verified;
+    document.getElementById("st-cats").textContent = Object.keys(cats).length;
+    document.getElementById("st-free").textContent = free;
+    document.querySelector("#q").placeholder = "Search " + DATA.length + " servers — try “git”, “db”, “chat”, “free”…";
+  }
+
+  function fail() {
+    grid.innerHTML = '<div class="empty"><b>Couldn’t load the catalog</b>' +
+      'The data file <code>data/mcps.json</code> didn’t load — serve this page over HTTP ' +
+      '(<code>python -m http.server</code>) and reload, or check that the file exists next to this page.' +
+      '<br><br><button class="load-more" type="button" onclick="location.reload()">Reload</button></div>';
+    countEl.textContent = "catalog unavailable";
+  }
+
+  fetch("data/mcps.json", { cache: "no-store" })
+    .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
+    .then(function (data) {
+      DATA = Array.isArray(data) ? data : [];
+      if (!DATA.length) throw new Error("empty data");
+      setStats();
+      render();
+    })
+    .catch(fail);
+})();
+</script>
+</body>
+</html>

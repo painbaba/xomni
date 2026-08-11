@@ -1,6 +1,12 @@
 # vendored full sources (2.8GB, kept on disk, licenses retained — not committed)
 vendor/
 
+# scratch (benchmarks, subagent temp work — never committed)
+.bench/
+.tmp/
+tmp/
+work/
+
 # python
 __pycache__/
 *.pyc

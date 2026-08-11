@@ -1,0 +1,3 @@
+name: omni-design
+version: "1.0.0"
+description: "XOMNI Omni Design — generate premium self-contained HTML artifacts from a brief (/design), audit any HTML against the 10-tell slop diagnostic (/design-audit). Zero hooks, zero per-turn cost."

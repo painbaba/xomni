@@ -1,0 +1,763 @@
+[
+  {
+    "name": "github-mcp",
+    "category": "CODING",
+    "purpose": "Repository, issue, PR and code-search access to GitHub",
+    "description": "GitHub's official first-party MCP server (github/github-mcp-server). 51 tools covering repos, issues, PRs, Actions, code scanning and notifications; lets the AI read code across branches, open/update PRs, triage issues and inspect CI runs under the user's existing GitHub permissions. Most popular MCP server in the ecosystem; rate limits apply on heavy use.",
+    "price_model": "FREE",
+    "install_command": "claude mcp add -s user -t http github https://api.githubcopilot.com/mcp/",
+    "connect_steps": [
+      "1. Run the claude mcp add command (or add remote URL to Cursor/Claude Desktop MCP settings).",
+      "2. Complete GitHub OAuth in the browser on first use.",
+      "3. Optionally use a Personal Access Token with minimum scopes (read-only unless you want the agent merging).",
+      "4. Restart client and verify tools (repos, issues, PRs) appear."
+    ],
+    "url": "https://github.com/github/github-mcp-server",
+    "stars": 28300,
+    "source": [
+      "blog:The 8 best MCP servers in 2026",
+      "https://zapier.com/blog/best-mcp-servers/"
+    ],
+    "source_url": false,
+    "verified": false
+  },
+  {
+    "name": "filesystem-mcp",
+    "category": "CODING",
+    "purpose": "Sandboxed read/write/search access to local files and directories",
+    "description": "Anthropic's first-party reference server: lets Claude read, write, list and search files inside a whitelisted directory. Highest-ROI server for solo devs per multiple reviews — removes copy-paste context loss. One of 7 reference servers still actively maintained after Anthropic archived 13 in 2025. Scope it to project dirs, never $HOME.",
+    "price_model": "FREE",
+    "install_command": "npx -y @modelcontextprotocol/server-filesystem /path/to/project",
+    "connect_steps": [
+      "1. Run the npx command with the allowed directory as argument.",
+      "2. Add the block to mcp.json with command:npx, args:['-y','@modelcontextprotocol/server-filesystem','<dir>'].",
+      "3. Restart client; verify read/write works inside the scoped dir only."
+    ],
+    "url": "https://github.com/modelcontextprotocol/servers",
+    "stars": 3200,
+    "source": [
+      "blog:Best MCP Servers for Claude Code in 2026 (Honest Picks)",
+      "https://dev.to/rikuq/best-mcp-servers-for-claude-code-in-2026-honest-picks-4kk0"
+    ],
+    "source_url": false,
+    "verified": false
+  },
+  {
+    "name": "context7-mcp",
+    "category": "CODING",
+    "purpose": "Version-accurate library documentation lookup to stop API hallucination",
+    "description": "Upstash's Context7 (44.5k+ stars, highest-starred MCP server). Fetches current, version-pinned docs for thousands of libraries at query time and injects them into context, so the model stops inventing APIs (e.g. Next.js 15 vs 13). No API key required; essential for fast-moving frameworks. Only as good as its index — fall back to Fetch for niche libs.",
+    "price_model": "FREE",
+    "install_command": "npx -y @upstash/context7-mcp",
+    "connect_steps": [
+      "1. Run the npx command (no API key needed).",
+      "2. Add block to mcp.json (command:npx, args:['-y','@upstash/context7-mcp']).",
+      "3. Restart client; test by asking for current docs of a library."
+    ],
+    "url": "https://github.com/upstash/context7",
+    "stars": 44561,
+    "source": [
+      "blog:Best MCP Servers for Claude Code in 2026 (Honest Picks)",
+      "https://dev.to/rikuq/best-mcp-servers-for-claude-code-in-2026-honest-picks-4kk0"
+    ],
+    "source_url": false,
+    "verified": false
+  },
+  {
+    "name": "git-mcp",
+    "category": "CODING",
+    "purpose": "Local git operations: diff, log, blame, status",
+    "description": "Anthropic reference server exposing read-only git operations (git diff, log, blame, status). Pairs with filesystem to give ~80% of code-review tooling for zero ongoing cost. Still one of the 7 actively maintained reference servers.",
+    "price_model": "FREE",
+    "install_command": "npx -y @modelcontextprotocol/server-git",
+    "connect_steps": [
+      "1. Run npx -y @modelcontextprotocol/server-git in the repo directory.",
+      "2. Add block to mcp.json.",
+      "3. Restart client; ask 'when did this function change last?' to test."
+    ],
+    "url": "https://github.com/modelcontextprotocol/servers",
+    "stars": null,
+    "source": [
+      "blog:Top 5 MCP Servers Worth Setting Up If You Work Solo",
+      "https://dev.to/robswierk/top-5-mcp-servers-worth-setting-up-if-you-work-solo-ch"
+    ],
+    "source_url": false,
+    "verified": false
+  },
+  {
+    "name": "serena-mcp",
+    "category": "CODING",
+    "purpose": "LSP-based code intelligence: symbols, find-references, jump-to-definition",
+    "description": "Community server (oraios/serena, 19.6k stars) wrapping Language Server Protocol per language. Closest thing to real code intelligence in MCP form: symbol lookup, find-references, jump-to-def, type info. Leaky abstraction (LSP grain vs LLM grain) but nothing else in the category works as well.",
+    "price_model": "FREE",
+    "install_command": "uvx serena",
+    "connect_steps": [
+      "1. Install via uvx serena.",
+      "2. Add block to mcp.json (command:uvx, args:['serena']).",
+      "3. Restart client; test with a jump-to-definition request."
+    ],
+    "url": "https://github.com/oraios/serena",
+    "stars": 19638,
+    "source": [
+      "blog:15 Best MCP Servers in 2026",
+      "https://www.kaigritun.com/mcp/best-mcp-servers-2026"
+    ],
+    "source_url": false,
+    "verified": false
+  },
+  {
+    "name": "gitlab-mcp",
+    "category": "CODING",
+    "purpose": "GitLab projects, merge requests, pipelines and CI/CD inspection",
+    "description": "MCP server for GitLab Premium/Ultimate users: AI-powered CI/CD pipeline inspection, merge request management and secure code review via OAuth 2.0. Ideal for enterprise teams with self-hosted GitLab and complex DevOps workflows.",
+    "price_model": "FREE",
+    "install_command": "see repo",
+    "connect_steps": [
+      "1. Add the server block to your client's MCP config (Claude Code .mcp.json, Cursor .cursor/mcp.json, or Claude Desktop claude_desktop_config.json).",
+      "2. Set required env vars / API keys (create a scoped key with minimum permissions).",
+      "3. Restart the client so the server starts on launch.",
+      "4. Ask the agent what MCP tools it has to confirm the server connected."
+    ],
+    "url": "https://gitlab.com/gitlab-org/components/ai/mcp-server",
+    "stars": null,
+    "source": [
+      "blog:The 22 best MCP servers (2025 and 2026)",
+      "https://desktopcommander.app/blog/best-mcp-servers/"
+    ],
+    "source_url": false,
+    "verified": false
+  },
+  {
+    "name": "postgres-mcp",
+    "category": "DATABASES",
+    "purpose": "Read-only natural-language SQL queries against PostgreSQL",
+    "description": "PostgreSQL MCP (Anthropic reference; community production build crystaldba/postgres-mcp, 3.8k stars) lets Claude run parameterized SELECT queries, explore schemas and inspect tables. Read-only by default — the safe mode for daily use. 'How many users signed up last week?' becomes one prompt instead of a dashboard visit.",
+    "price_model": "FREE",
+    "install_command": "npx -y @modelcontextprotocol/server-postgres \"postgresql://user:pass@host:5432/db\"",
+    "connect_steps": [
+      "1. Run npx command with your DATABASE_URL as arg (or set POSTGRES connection env).",
+      "2. Add block to mcp.json.",
+      "3. Use a read-only DB role; never grant write/DROP via the agent.",
+      "4. Restart client and test a SELECT query."
+    ],
+    "url": "https://github.com/crystaldba/postgres-mcp",
+    "stars": 3800,
+    "source": [
+      "blog:50 Best MCP Servers in 2026: The Definitive Directory",
+      "https://popularaitools.ai/blog/50-best-mcp-servers-2026"
+    ],
+    "source_url": false,
+    "verified": false
+  },
+  {
+    "name": "supabase-mcp",
+    "category": "DATABASES",
+    "purpose": "Full Supabase platform: Postgres, auth, storage, edge functions, migrations",
+    "description": "Official Supabase MCP server with 20+ tools: table design, SQL queries, migrations, database branching, project management and TypeScript type generation. Native pgvector for semantic search; enforces row-level security so the AI can't read data it shouldn't. Remote endpoint scopes to a single project, keeping blast radius small.",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "see repo",
+    "connect_steps": [
+      "1. Use hosted endpoint https://mcp.supabase.com/mcp (or run the open-source server locally).",
+      "2. Add as remote connector; sign in to your Supabase project (OAuth).",
+      "3. Grant a read-only role for exploration before enabling migrations.",
+      "4. Verify tools appear; test a schema/question query."
+    ],
+    "url": "https://supabase.com/docs/guides/getting-started/mcp",
+    "stars": 4200,
+    "source": [
+      "blog:50 Best MCP Servers in 2026: The Definitive Directory",
+      "https://popularaitools.ai/blog/50-best-mcp-servers-2026"
+    ],
+    "source_url": false,
+    "verified": false
+  },
+  {
+    "name": "sqlite-mcp",
+    "category": "DATABASES",
+    "purpose": "SQL queries against local SQLite databases",
+    "description": "Anthropic reference server for SQLite — the go-to for local project DBs and content-ops trackers. Read-only mode is the right default; writes should go through app code or migrations, not ad-hoc agent calls.",
+    "price_model": "FREE",
+    "install_command": "npx -y @modelcontextprotocol/server-sqlite <db-file>",
+    "connect_steps": [
+      "1. Run npx command pointing at your .db file.",
+      "2. Add block to mcp.json.",
+      "3. Restart client; test with a query against your DB."
+    ],
+    "url": "https://github.com/modelcontextprotocol/servers",
+    "stars": null,
+    "source": [
+      "blog:Best MCP Servers for Claude Code in 2026 (Honest Picks)",
+      "https://dev.to/rikuq/best-mcp-servers-for-claude-code-in-2026-honest-picks-4kk0"
+    ],
+    "source_url": false,
+    "verified": false
+  },
+  {
+    "name": "mongodb-mcp",
+    "category": "DATABASES",
+    "purpose": "MongoDB document queries, aggregations and collection management",
+    "description": "MongoDB MCP connects AI to MongoDB Atlas and local instances for document queries, aggregations and collection management. Enables schema exploration and NoSQL query design — good for rapid prototyping with unstructured data.",
+    "price_model": "FREE",
+    "install_command": "see repo",
+    "connect_steps": [
+      "1. Add the server block to your client's MCP config (Claude Code .mcp.json, Cursor .cursor/mcp.json, or Claude Desktop claude_desktop_config.json).",
+      "2. Set required env vars / API keys (create a scoped key with minimum permissions).",
+      "3. Restart the client so the server starts on launch.",
+      "4. Ask the agent what MCP tools it has to confirm the server connected."
+    ],
+    "url": "https://github.com/mongodb-js/mongodb-mcp-server",
+    "stars": 1200,
+    "source": [
+      "blog:The 22 best MCP servers (2025 and 2026)",
+      "https://desktopcommander.app/blog/best-mcp-servers/"
+    ],
+    "source_url": false,
+    "verified": false
+  },
+  {
+    "name": "playwright-mcp",
+    "category": "BROWSER-AUTOMATION",
+    "purpose": "Full browser control: navigate, click, fill forms, screenshot, run JS",
+    "description": "Microsoft's official Playwright MCP (26.6k stars). Spawns a real Chromium/Firefox/WebKit browser; uses the accessibility tree for reliable element targeting instead of screenshots. Use for AI-driven QA, JS-rendered scraping, visual regression and E2E flows. Heavy — ~500ms per action and big screenshots, so install per-task, not globally.",
+    "price_model": "FREE",
+    "install_command": "npx @playwright/mcp@latest",
+    "connect_steps": [
+      "1. Run npx @playwright/mcp@latest (bundles browser binaries on first run).",
+      "2. Add block to mcp.json.",
+      "3. Restart client; test with a navigate-and-screenshot task.",
+      "4. Enable only when you have browser-shaped work to save context tokens."
+    ],
+    "url": "https://github.com/microsoft/playwright-mcp",
+    "stars": 26625,
+    "source": [
+      "blog:15 Best MCP Servers in 2026",
+      "https://www.kaigritun.com/mcp/best-mcp-servers-2026"
+    ],
+    "source_url": false,
+    "verified": false
+  },
+  {
+    "name": "puppeteer-mcp",
+    "category": "BROWSER-AUTOMATION",
+    "purpose": "Chrome automation via CDP: screenshots, PDFs, scraping",
+    "description": "Anthropic reference Puppeteer server (archived 2025 but widely used; community versions active). Chrome DevTools Protocol-based browser control for screenshots, PDF generation, web scraping and JS evaluation. Lighter alternative to Playwright for simpler browser tasks; Playwright is the more reliable pick for new setups.",
+    "price_model": "FREE",
+    "install_command": "npx -y @modelcontextprotocol/server-puppeteer",
+    "connect_steps": [
+      "1. Run npx -y @modelcontextprotocol/server-puppeteer.",
+      "2. Add block to mcp.json.",
+      "3. Restart client; test with a screenshot request."
+    ],
+    "url": "https://github.com/modelcontextprotocol/servers-archived",
+    "stars": 2400,
+    "source": [
+      "blog:10 Best MCP Servers in 2026 — Ranked by Stars and Real Usage",
+      "https://awesome-mcp.tools/blog/best-mcp-servers-2026"
+    ],
+    "source_url": false,
+    "verified": false
+  },
+  {
+    "name": "firecrawl-mcp",
+    "category": "SEARCH-RESEARCH",
+    "purpose": "Web search + scrape + crawl + structured extraction in one server",
+    "description": "Firecrawl's official MCP: the full find→extract→clean→use loop (search returning full pages, scrape to Markdown/JSON, parse PDFs, async crawl, site map, interact with pages via natural language, and an autonomous research agent). One of the most widely deployed MCP servers in production; Claude Code, Codex and Cursor route web tasks to it by default. Keyless mode to try, OAuth/API key for full surface.",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "npx -y @firecrawl/mcp",
+    "connect_steps": [
+      "1. Run npx -y @firecrawl/mcp (or use hosted https://mcp.firecrawl.dev/v2/mcp keyless).",
+      "2. Set FIRECRAWL_API_KEY env for full tool surface (Crawl/Map/Interact/Agent).",
+      "3. Add block to mcp.json; restart client.",
+      "4. Test: 'search X and scrape top 3 results into JSON'."
+    ],
+    "url": "https://github.com/firecrawl/firecrawl-mcp-server",
+    "stars": 3100,
+    "source": [
+      "blog:10 Best MCP Servers for Developers in 2026",
+      "https://www.firecrawl.dev/blog/best-mcp-servers-for-developers"
+    ],
+    "source_url": false,
+    "verified": false
+  },
+  {
+    "name": "brave-search-mcp",
+    "category": "SEARCH-RESEARCH",
+    "purpose": "Privacy-first live web search via Brave's independent index",
+    "description": "Brave Search MCP (Anthropic reference, now Brave vendor-maintained) gives agents real-time web and news search with ranked snippets from Brave's independent index — no Google tracking, no knowledge cutoff. Generous free API tier. Results can be shallow on niche queries; pair with Firecrawl/Fetch to actually read pages.",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "npx -y @modelcontextprotocol/server-brave-search",
+    "connect_steps": [
+      "1. Get a free Brave Search API key (brave.com/search/api).",
+      "2. Run npx command with BRAVE_API_KEY env set.",
+      "3. Add block to mcp.json; restart client.",
+      "4. Test with a current-events query."
+    ],
+    "url": "https://github.com/brave/brave-search-mcp-server",
+    "stars": null,
+    "source": [
+      "blog:10 Best MCP Servers for Developers in 2026",
+      "https://www.firecrawl.dev/blog/best-mcp-servers-for-developers"
+    ],
+    "source_url": false,
+    "verified": false
+  },
+  {
+    "name": "exa-mcp",
+    "category": "SEARCH-RESEARCH",
+    "purpose": "Semantic/AI web search optimized for 'find content like this'",
+    "description": "Exa's official MCP server: semantic web search plus GitHub code context retrieval, company research and deep research. Optimized for finding articles similar in argument to a seed rather than keyword matching — wins when researching wants quality over recall. Now also available as hosted remote endpoint (mcp.exa.ai/mcp).",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "npx -y exa-mcp-server",
+    "connect_steps": [
+      "1. Get an Exa API key; run npx -y exa-mcp-server with EXA_API_KEY set.",
+      "2. (Alt) add remote URL https://mcp.exa.ai/mcp as a connector.",
+      "3. Restart client; test 'find 5 articles similar to this one'."
+    ],
+    "url": "https://github.com/exa-labs/exa-mcp-server",
+    "stars": null,
+    "source": [
+      "blog:Best MCP Servers for Claude Code in 2026 (Honest Picks)",
+      "https://dev.to/rikuq/best-mcp-servers-for-claude-code-in-2026-honest-picks-4kk0"
+    ],
+    "source_url": false,
+    "verified": false
+  },
+  {
+    "name": "tavily-mcp",
+    "category": "SEARCH-RESEARCH",
+    "purpose": "Real-time search, content extraction, crawling and site mapping",
+    "description": "Official Tavily MCP server: real-time search, content extraction, web crawling and site mapping via the Tavily API. Includes 1,000 free monthly credits. Optimized for fast factual lookups, competitive research and automated content discovery.",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "npx -y tavily-mcp",
+    "connect_steps": [
+      "1. Get a Tavily API key (free tier: 1,000 credits/mo).",
+      "2. Run npx -y tavily-mcp with TAVILY_API_KEY env.",
+      "3. Add block to mcp.json; restart client.",
+      "4. Test a research query with extraction."
+    ],
+    "url": "https://github.com/tavily-ai/tavily-mcp",
+    "stars": null,
+    "source": [
+      "blog:The 22 best MCP servers (2025 and 2026)",
+      "https://desktopcommander.app/blog/best-mcp-servers/"
+    ],
+    "source_url": false,
+    "verified": false
+  },
+  {
+    "name": "memory-mcp",
+    "category": "MISC",
+    "purpose": "Persistent knowledge-graph memory across sessions",
+    "description": "Anthropic reference server: persistent knowledge graph (entities, relationships, observations) that survives across conversations. The foundation for agents that actually remember project context and preferences. Powerful when used deliberately; audit what's stored weekly to avoid polluting every session.",
+    "price_model": "FREE",
+    "install_command": "npx -y @modelcontextprotocol/server-memory",
+    "connect_steps": [
+      "1. Run npx -y @modelcontextprotocol/server-memory.",
+      "2. Add block to mcp.json.",
+      "3. Restart client; tell the agent to remember a project fact and check next session."
+    ],
+    "url": "https://github.com/modelcontextprotocol/servers",
+    "stars": 2800,
+    "source": [
+      "blog:50 Best MCP Servers in 2026: The Definitive Directory",
+      "https://popularaitools.ai/blog/50-best-mcp-servers-2026"
+    ],
+    "source_url": false,
+    "verified": false
+  },
+  {
+    "name": "sequential-thinking-mcp",
+    "category": "MISC",
+    "purpose": "Structured step-by-step reasoning with revision and branching",
+    "description": "Anthropic reference server that structures the model's chain of thought into numbered steps with revision, branching and hypothesis tracking. A thinking scaffold, not a data source — shines on architecture decisions, debugging and multi-step reasoning. One of the 7 still-active reference servers.",
+    "price_model": "FREE",
+    "install_command": "npx -y @modelcontextprotocol/server-sequential-thinking",
+    "connect_steps": [
+      "1. Run npx -y @modelcontextprotocol/server-sequential-thinking.",
+      "2. Add block to mcp.json.",
+      "3. Restart client; use on a hard reasoning problem."
+    ],
+    "url": "https://github.com/modelcontextprotocol/servers",
+    "stars": 1800,
+    "source": [
+      "blog:50 Best MCP Servers in 2026: The Definitive Directory",
+      "https://popularaitools.ai/blog/50-best-mcp-servers-2026"
+    ],
+    "source_url": false,
+    "verified": false
+  },
+  {
+    "name": "figma-mcp",
+    "category": "MISC",
+    "purpose": "Design-to-code: read Figma layers, tokens, variants and layout rules",
+    "description": "Figma's official Dev Mode MCP exposes the live structure of the selected frame — hierarchy, auto-layout, variants, text styles, spacing tokens, component references — so the AI generates code against the real design instead of guessing from screenshots. Remote endpoint mcp.figma.com/mcp with OAuth. Requires a paid Figma Dev seat. Community Figma-Context-MCP (12.9k stars) is the popular self-hosted alternative.",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "see repo",
+    "connect_steps": [
+      "1. Add remote connector https://mcp.figma.com/mcp (or npx Figma-Context-MCP with FIGMA_API_KEY).",
+      "2. Authorize with your Figma account (OAuth).",
+      "3. Select a frame in Figma and ask the agent to implement it.",
+      "4. Verify tokens/auto-layout come through in generated code."
+    ],
+    "url": "https://github.com/GLips/Figma-Context-MCP",
+    "stars": 12958,
+    "source": [
+      "blog:15 Best MCP Servers in 2026",
+      "https://www.kaigritun.com/mcp/best-mcp-servers-2026"
+    ],
+    "source_url": false,
+    "verified": false
+  },
+  {
+    "name": "aws-mcp",
+    "category": "CLOUD-INFRA",
+    "purpose": "Manage 15,000+ AWS API operations: S3, EC2, Lambda, CloudWatch, IAM",
+    "description": "AWS official MCP servers (awslabs/mcp, 8k stars): managed architecture consolidating AWS API + Knowledge servers; AWS went GA with a managed endpoint May 6, 2026 (aws-mcp.us-east-1.api.aws/mcp) fronting 15,000+ API operations, docs search and sandboxed scripts. Executes multi-step workflows: deploy serverless apps, create VPCs, audit CloudWatch/CloudTrail. Scope via IAM roles/policies.",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "see repo",
+    "connect_steps": [
+      "1. Use the managed endpoint https://aws-mcp.us-east-1.api.aws/mcp as a remote connector (or run awslabs/mcp locally).",
+      "2. Authenticate with AWS IAM credentials / SSO.",
+      "3. Grant the agent an IAM role with minimum permissions; start read-only.",
+      "4. Test a describe/read operation before any write."
+    ],
+    "url": "https://github.com/awslabs/mcp",
+    "stars": 8035,
+    "source": [
+      "blog:15 Best MCP Servers in 2026",
+      "https://www.kaigritun.com/mcp/best-mcp-servers-2026"
+    ],
+    "source_url": false,
+    "verified": false
+  },
+  {
+    "name": "kubernetes-mcp",
+    "category": "CLOUD-INFRA",
+    "purpose": "Natural-language Kubernetes cluster operations (kubectl-style)",
+    "description": "Kubernetes MCP translates natural language into JSON-RPC calls against the cluster control plane — Pods, ConfigMaps, Deployments — including cluster health monitoring, updates and troubleshooting within RBAC. Configurable safety modes and multi-cluster support. Several community implementations; pick one with active maintenance and read-only mode by default. Never give an agent write access to prod on day one.",
+    "price_model": "FREE",
+    "install_command": "see repo",
+    "connect_steps": [
+      "1. Pick a maintained implementation (e.g. docker/k8s-mcp) and run it locally with a kubeconfig.",
+      "2. Add block to mcp.json.",
+      "3. Use a read-only service account / RBAC role; enable safety modes.",
+      "4. Test read-only ops (get pods, describe) before enabling changes."
+    ],
+    "url": "https://github.com/kubernetes/k8s-mcp",
+    "stars": null,
+    "source": [
+      "blog:The 8 best MCP servers in 2026",
+      "https://zapier.com/blog/best-mcp-servers/"
+    ],
+    "source_url": false,
+    "verified": false
+  },
+  {
+    "name": "vercel-mcp",
+    "category": "CLOUD-INFRA",
+    "purpose": "Deployments, build logs, env vars and domains for Vercel projects",
+    "description": "Official Vercel MCP server: list/inspect deployments, fetch build logs for failures, create and update environment variables, trigger deployments and manage domains. Acts as a dedicated SRE — 'why did this fail?' pulls the log, identifies the dependency error and offers a fix. Works with 12+ LLM clients (Gemini to Goose). OAuth-based auth; human confirmation recommended for deploys.",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "see repo",
+    "connect_steps": [
+      "1. Add remote connector https://mcp.vercel.com (or local server via vercel CLI token).",
+      "2. Authorize via OAuth with your Vercel account.",
+      "3. Restart client; test by asking why a deployment failed.",
+      "4. Keep human confirmation on for deployments."
+    ],
+    "url": "https://github.com/vercel/mcp",
+    "stars": 1600,
+    "source": [
+      "blog:The 8 best MCP servers in 2026",
+      "https://zapier.com/blog/best-mcp-servers/"
+    ],
+    "source_url": false,
+    "verified": false
+  },
+  {
+    "name": "cloudflare-mcp",
+    "category": "CLOUD-INFRA",
+    "purpose": "Workers, KV, R2, D1, DNS and security rules management",
+    "description": "Cloudflare's official MCP (npx @cloudflare/mcp; remote mcp.cloudflare.com/mcp): manage Workers, KV, R2 storage, D1 databases, DNS and security settings from conversation; also includes Workers MCP framework and MCP Server Portals. 'Add a CNAME record' without opening the dashboard. High-quality, actively invested-in by the Cloudflare team.",
+    "price_model": "FREE",
+    "install_command": "npx -y @cloudflare/mcp",
+    "connect_steps": [
+      "1. Run npx -y @cloudflare/mcp (or use remote mcp.cloudflare.com/mcp).",
+      "2. Authenticate with a Cloudflare API token (scoped per zone).",
+      "3. Add block to mcp.json; restart client.",
+      "4. Test read-only ops (list zones/workers) before any change."
+    ],
+    "url": "https://github.com/cloudflare/mcp-server-cloudflare",
+    "stars": 2100,
+    "source": [
+      "blog:Best MCP Servers for Claude Code in 2026 (Honest Picks)",
+      "https://dev.to/rikuq/best-mcp-servers-for-claude-code-in-2026-honest-picks-4kk0"
+    ],
+    "source_url": false,
+    "verified": false
+  },
+  {
+    "name": "docker-mcp",
+    "category": "DEVOPS",
+    "purpose": "Build, run, inspect and orchestrate containers & Compose stacks",
+    "description": "Docker MCP server: list/start/stop containers, build images, view logs and manage Docker Compose stacks through AI commands. Perfect for debugging services, generating Dockerfiles and reproducible dev environments. Docker's official integration is exceptionally well done — a must-install for local container workflows.",
+    "price_model": "FREE",
+    "install_command": "see repo",
+    "connect_steps": [
+      "1. Add the server block to your client's MCP config (Claude Code .mcp.json, Cursor .cursor/mcp.json, or Claude Desktop claude_desktop_config.json).",
+      "2. Set required env vars / API keys (create a scoped key with minimum permissions).",
+      "3. Restart the client so the server starts on launch.",
+      "4. Ask the agent what MCP tools it has to confirm the server connected."
+    ],
+    "url": "https://github.com/docker/mcp-servers",
+    "stars": 2800,
+    "source": [
+      "blog:50 Best MCP Servers in 2026: The Definitive Directory",
+      "https://popularaitools.ai/blog/50-best-mcp-servers-2026"
+    ],
+    "source_url": false,
+    "verified": false
+  },
+  {
+    "name": "sentry-mcp",
+    "category": "DEVOPS",
+    "purpose": "Error monitoring: stack traces, breadcrumbs, releases, performance",
+    "description": "Sentry's official MCP server (getsentry/sentry-mcp): pull full error context — stack traces, breadcrumbs, environment, related events — correlate with releases and search issues by tag/time. 'Any new errors since yesterday's deploy?' answered without opening the dashboard. Scope the token to a single project.",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "see repo",
+    "connect_steps": [
+      "1. Add the server block to your client's MCP config (Claude Code .mcp.json, Cursor .cursor/mcp.json, or Claude Desktop claude_desktop_config.json).",
+      "2. Set required env vars / API keys (create a scoped key with minimum permissions).",
+      "3. Restart the client so the server starts on launch.",
+      "4. Ask the agent what MCP tools it has to confirm the server connected."
+    ],
+    "url": "https://github.com/getsentry/sentry-mcp",
+    "stars": 2400,
+    "source": [
+      "blog:50 Best MCP Servers in 2026: The Definitive Directory",
+      "https://popularaitools.ai/blog/50-best-mcp-servers-2026"
+    ],
+    "source_url": false,
+    "verified": false
+  },
+  {
+    "name": "slack-mcp",
+    "category": "COMMUNICATION",
+    "purpose": "Read/search Slack channels, send messages, manage threads",
+    "description": "Slack's official MCP server (remote mcp.slack.com/mcp with OAuth; works from ~a dozen AI tools incl. Claude, ChatGPT, Perplexity): real-time search across live conversations, read/send/draft messages, manage canvases and users. Respects workspace permissions — the AI only sees what the authenticated user can. High-context/low-density: use for summaries, not firehose access.",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "see repo",
+    "connect_steps": [
+      "1. Add remote connector https://mcp.slack.com/mcp (Slack app OAuth).",
+      "2. Install the Slack MCP app in your workspace; authorize scopes.",
+      "3. Restart client; test 'summarize #incidents from the last 24h'.",
+      "4. Prefer targeted queries to limit context burn."
+    ],
+    "url": "https://github.com/slackhq/mcp-server",
+    "stars": 2600,
+    "source": [
+      "blog:The 8 best MCP servers in 2026",
+      "https://zapier.com/blog/best-mcp-servers/"
+    ],
+    "source_url": false,
+    "verified": false
+  },
+  {
+    "name": "gmail-mcp",
+    "category": "COMMUNICATION",
+    "purpose": "Search, read, send and triage Gmail messages",
+    "description": "Gmail MCP server: full inbox access — search, read, send, reply, manage labels — with Google-approved OAuth. Popular for Gmail-to-agent pipelines: the AI processes incoming email, extracts action items and drafts replies. One of the services where MCP genuinely replaces a daily manual workflow. Watch context bloat on bulk inbox reads.",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "see repo",
+    "connect_steps": [
+      "1. Add the server block to your client's MCP config (Claude Code .mcp.json, Cursor .cursor/mcp.json, or Claude Desktop claude_desktop_config.json).",
+      "2. Set required env vars / API keys (create a scoped key with minimum permissions).",
+      "3. Restart the client so the server starts on launch.",
+      "4. Ask the agent what MCP tools it has to confirm the server connected."
+    ],
+    "url": "https://github.com/GongRzhe/Gmail-MCP-Server",
+    "stars": 1300,
+    "source": [
+      "blog:Best MCP Servers in 2026 — The Definitive List (Updated May)",
+      "https://www.mcpbundles.com/blog/best-mcp-servers"
+    ],
+    "source_url": false,
+    "verified": false
+  },
+  {
+    "name": "notion-mcp",
+    "category": "PRODUCTIVITY",
+    "purpose": "Read/write Notion pages, databases and comments",
+    "description": "Official Notion MCP server (remote mcp.notion.com/mcp, OAuth): search/read/create/update pages, databases and blocks, respecting the user's own permissions. Killer use case: the agent references your internal API docs, PRDs and meeting notes in real time while coding. Notion API is rate-limited — bulk operations can choke.",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "see repo",
+    "connect_steps": [
+      "1. Add remote connector https://mcp.notion.com/mcp (OAuth).",
+      "2. Authorize with your Notion workspace; pick which pages to share.",
+      "3. Restart client; test by asking for a doc lookup.",
+      "4. Avoid bulk page operations (rate limits)."
+    ],
+    "url": "https://github.com/makenotion/notion-mcp-server",
+    "stars": 2500,
+    "source": [
+      "blog:50 Best MCP Servers in 2026: The Definitive Directory",
+      "https://popularaitools.ai/blog/50-best-mcp-servers-2026"
+    ],
+    "source_url": false,
+    "verified": false
+  },
+  {
+    "name": "linear-mcp",
+    "category": "PRODUCTIVITY",
+    "purpose": "Issues, sprints/cycles and projects in Linear",
+    "description": "Official Linear MCP server (remote mcp.linear.app/mcp, OAuth): read/create/update issues, manage labels/priorities/assignees, search projects and check cycle progress. Kills the browser-tab issue tracker: log a bug, check sprint status, update a ticket without leaving the editor. Best for engineering teams already living in Linear.",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "see repo",
+    "connect_steps": [
+      "1. Add remote connector https://mcp.linear.app/mcp (OAuth).",
+      "2. Authorize with your Linear workspace.",
+      "3. Restart client; test 'what's left in this sprint?'.",
+      "4. Confirm issue create/update permissions are as intended."
+    ],
+    "url": "https://github.com/linearapp/mcp-server",
+    "stars": 1100,
+    "source": [
+      "blog:10 Best MCP Servers for Developers in 2026",
+      "https://www.firecrawl.dev/blog/best-mcp-servers-for-developers"
+    ],
+    "source_url": false,
+    "verified": false
+  },
+  {
+    "name": "obsidian-mcp",
+    "category": "PRODUCTIVITY",
+    "purpose": "Read/write Obsidian notes: vision, graph analysis, section edits",
+    "description": "Obsidian MCP (via Obsidian Local REST API plugin + thin MCP wrapper, or hosted proxy): the AI reads/writes vault notes in-conversation — project memory, daily logs, decision memos. Goes beyond file CRUD: image vision in the vault, link-graph traversal to find orphaned notes, section-level edits by heading. The win is the reading: session continuity after compaction.",
+    "price_model": "FREE",
+    "install_command": "see repo",
+    "connect_steps": [
+      "1. Install the Obsidian Local REST API plugin in Obsidian and enable it.",
+      "2. Run the MCP wrapper (e.g. obsidian-mcp) pointed at your vault.",
+      "3. Add block to mcp.json; restart client.",
+      "4. Test reading a note and writing a daily log entry."
+    ],
+    "url": "https://github.com/MarkusPfundstein/mcp-obsidian",
+    "stars": 1400,
+    "source": [
+      "blog:Top 5 MCP Servers Worth Setting Up If You Work Solo",
+      "https://dev.to/robswierk/top-5-mcp-servers-worth-setting-up-if-you-work-solo-ch"
+    ],
+    "source_url": false,
+    "verified": false
+  },
+  {
+    "name": "zapier-mcp",
+    "category": "PRODUCTIVITY",
+    "purpose": "One MCP connection to 9,000+ apps with governed OAuth",
+    "description": "Zapier MCP (Web): connects any MCP-speaking client (Claude, Cursor, ChatGPT) to 9,000+ apps through one connection with OAuth-managed auth, SOC 2 Type II/GDPR/CCPA compliance, AI Guardrails and audit logs — no credentials exposed to the model. Setup via the Zapier MCP dashboard in a few clicks, no coding. Each MCP tool call draws two tasks from your plan quota.",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "see repo",
+    "connect_steps": [
+      "1. Create a Zapier MCP connection in the Zapier MCP dashboard; choose apps/actions to expose.",
+      "2. Copy the Zapier MCP server URL into your client's remote MCP settings.",
+      "3. Authorize the connection (Zapier handles all app auth).",
+      "4. Test a cross-app prompt (e.g. 'summarize Slack while out'); monitor task quota."
+    ],
+    "url": "https://zapier.com/mcp",
+    "stars": null,
+    "source": [
+      "blog:The 8 best MCP servers in 2026",
+      "https://zapier.com/blog/best-mcp-servers/"
+    ],
+    "source_url": false,
+    "verified": false
+  },
+  {
+    "name": "huggingface-mcp",
+    "category": "AI-MODELS",
+    "purpose": "Search models, datasets, Spaces and papers on the HF Hub",
+    "description": "Hugging Face MCP server: search 800k+ models, datasets and papers on the Hub with semantic search, run inference on hosted models and manage Spaces. The gateway to the open-source AI ecosystem for ML tooling, RAG pipelines and evals — e.g. 'which small multilingual embedding models are permissively licensed?'",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "see repo",
+    "connect_steps": [
+      "1. Add the server block to your client's MCP config (Claude Code .mcp.json, Cursor .cursor/mcp.json, or Claude Desktop claude_desktop_config.json).",
+      "2. Set required env vars / API keys (create a scoped key with minimum permissions).",
+      "3. Restart the client so the server starts on launch.",
+      "4. Ask the agent what MCP tools it has to confirm the server connected."
+    ],
+    "url": "https://github.com/huggingface/mcp-hub",
+    "stars": 2200,
+    "source": [
+      "blog:50 Best MCP Servers in 2026: The Definitive Directory",
+      "https://popularaitools.ai/blog/50-best-mcp-servers-2026"
+    ],
+    "source_url": false,
+    "verified": false
+  },
+  {
+    "name": "stripe-mcp",
+    "category": "FINANCE",
+    "purpose": "Payments: customers, subscriptions, invoices, disputes",
+    "description": "Official Stripe MCP server (remote mcp.stripe.com, OAuth): search customers by email, list PaymentIntents, check subscription status, pull invoice PDFs, look up dispute timelines. The gold standard payments MCP — 'the first thing a SaaS company should connect'. Use a restricted read-only key; don't let an agent issue refunds it didn't mean to.",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "see repo",
+    "connect_steps": [
+      "1. Add remote connector https://mcp.stripe.com (OAuth) or run the Stripe MCP server locally.",
+      "2. Authorize / set a restricted API key with read-only scopes.",
+      "3. Restart client; test 'find customer by email, show recent invoices'.",
+      "4. Keep write ops (refunds, invoices) behind explicit approval."
+    ],
+    "url": "https://github.com/stripe/agent-toolkit",
+    "stars": null,
+    "source": [
+      "blog:Best MCP Servers in 2026 — The Definitive List (Updated May)",
+      "https://www.mcpbundles.com/blog/best-mcp-servers"
+    ],
+    "source_url": false,
+    "verified": false
+  },
+  {
+    "name": "equibles-mcp",
+    "category": "FINANCE",
+    "purpose": "Joined US equity research: SEC filings, transcripts, fundamentals, 13F, options",
+    "description": "Equibles MCP (best overall pick in the 6-server finance review): one connection joins hybrid keyword+semantic search across SEC filings and earnings-call transcripts, XBRL fundamentals, management guidance, company KPIs, 13F holdings, insider transactions, daily prices/intraday quotes and option chains with IV/OI/greeks. Read-only, US-listed focus; public self-hosted repo (AGPL-3.0) is smaller than the hosted catalog.",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "see repo",
+    "connect_steps": [
+      "1. Get an Equibles API key (equibles.com/docs/mcp).",
+      "2. Run/self-host the server or use the hosted endpoint; set the key.",
+      "3. Add block to mcp.json; restart client.",
+      "4. Test: search a 10-K passage, then pull guidance + 13F in one thread."
+    ],
+    "url": "https://equibles.com/docs/mcp",
+    "stars": null,
+    "source": [
+      "blog:6 Best Stock Market MCP Servers in 2026: Real-Time & SEC Data",
+      "https://dev.to/daniel_oliveira_4bd55d35d/6-best-stock-market-mcp-servers-in-2026-real-time-sec-data-je9"
+    ],
+    "source_url": false,
+    "verified": false
+  },
+  {
+    "name": "eodhd-mcp",
+    "category": "FINANCE",
+    "purpose": "Global market breadth: 72 MCP tools across 70+ exchanges",
+    "description": "EODHD MCP server documents 72 read-only tools across 70+ exchanges: end-of-day history, live quotes, intraday, US tick data, fundamentals, news, macro, technical indicators and options. Best pick when the agent must go beyond US-listed equities. Verify delay/subscription per dataset — not all data is necessarily real-time.",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "see repo",
+    "connect_steps": [
+      "1. Get an EODHD API key (free tier available; per-dataset subscriptions).",
+      "2. Run the server with the key; add block to mcp.json.",
+      "3. Restart client.",
+      "4. Test an international instrument quote + fundamentals lookup."
+    ],
+    "url": "https://eodhd.com/financial-apis/mcp-server-for-financial-data-by-eodhd",
+    "stars": null,
+    "source": [
+      "blog:6 Best Stock Market MCP Servers in 2026: Real-Time & SEC Data",
+      "https://dev.to/daniel_oliveira_4bd55d35d/6-best-stock-market-mcp-servers-in-2026-real-time-sec-data-je9"
+    ],
+    "source_url": false,
+    "verified": false
+  }
+]

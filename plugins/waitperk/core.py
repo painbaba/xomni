@@ -104,11 +104,15 @@ def rotate_sponsor(led: Ledger) -> dict:
     return current_sponsor(led)
 
 
-def record_work_event(led: Ledger, now: float | None = None) -> dict:
+def record_work_event(led: Ledger, now: float | None = None, write_line: bool = True) -> dict:
     """One impression unit = one agent work event (LLM call or tool call).
 
     Skips counting while paused (the line is blank, so no impression exists).
     Also accumulates wall-clock active time between events.
+
+    ``write_line=False`` defers the ``current.txt`` rewrite to the caller so
+    the hook can throttle it (at most once per FLUSH_INTERVAL + on session
+    end) instead of writing a file on every work event.
     """
     now = now if now is not None else time.time()
     if led.state.get("paused"):
@@ -120,7 +124,8 @@ def record_work_event(led: Ledger, now: float | None = None) -> dict:
         led.state["active_seconds"] = led.state.get("active_seconds", 0.0) + delta
     led.state["last_event_ts"] = now
     led.state["impressions"] = led.state.get("impressions", 0) + 1
-    _write_current_line(led)
+    if write_line:
+        _write_current_line(led)
     led.dirty = True
     return {"counted": True, "impressions": led.state["impressions"]}
 

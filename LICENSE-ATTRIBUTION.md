@@ -1,6 +1,6 @@
 # License & attribution
 
-The unified agent composes permissively-licensed open sources. All are
+XOMNI composes permissively-licensed open sources. All are
 combinable; keep this file and the notices below with any redistribution.
 
 | Component | Source | License |

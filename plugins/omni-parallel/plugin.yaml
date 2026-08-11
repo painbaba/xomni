@@ -1,0 +1,17 @@
+name: omni-parallel
+version: 0.1.0
+description: >-
+  Parallel swarm layer for XOMNI: JSON-persisted TaskQueue + per-task context
+  packs + deterministic Judge + PR-split merge planning. /swarm command family
+  and swarm_plan tool. No hooks — zero per-turn cost. Fan-out is host-driven
+  (the model calls its own delegate_task per queue entry).
+author: xomni
+type: plugin
+hooks: []
+commands:
+  - swarm
+  - swarm status
+  - swarm judge
+  - swarm split-pr
+tools:
+  - swarm_plan

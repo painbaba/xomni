@@ -1,4 +1,4 @@
-"""OmniMedia — OpenClaw-style media understanding pipeline.
+"""OmniMedia — XOMNI media-understanding plugin (OpenClaw-style).
 
 Commands: /ocr <image>, /caption <image>, /mediascan <dir> [ocr|caption].
 All calls go through the verified vision model (minimax-m3) on the

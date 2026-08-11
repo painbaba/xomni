@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Install XOMNI — Docs</title>
+<meta name="description" content="Install XOMNI on Windows with run.cmd or on macOS/Linux with run.sh.">
+<link rel="icon" type="image/svg+xml" href="../favicon.svg">
+<link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="logo" href="../index.html"><span class="logo-x">X</span>OMNI</a>
+    <nav class="site-nav" id="site-nav" aria-label="Primary">
+      <a href="../index.html" class="nav-link" data-nav="index">Home</a>
+      <a href="install.html" class="nav-link" data-nav="install">Install</a>
+      <a href="byo-provider.html" class="nav-link" data-nav="byo">BYO Provider</a>
+      <a href="sponsorship.html" class="nav-link" data-nav="sponsorship">Sponsorship</a>
+      <a href="faq.html" class="nav-link" data-nav="faq">FAQ</a>
+      <a href="security.html" class="nav-link" data-nav="security">Security</a>
+      <a href="../skills.html" class="nav-link" data-nav="skills">Skills</a>
+      <a class="nav-cta" href="https://github.com/painbaba/xomni" target="_blank" rel="noopener">GitHub ↗</a>
+    </nav>
+    <button class="nav-toggle" id="nav-toggle" aria-expanded="false" aria-controls="site-nav" aria-label="Toggle navigation">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+
+<main id="main">
+  <div class="container page">
+    <aside class="docs-side" aria-label="Docs navigation">
+      <p class="docs-h">Docs</p>
+      <a href="install.html" class="docs-link active">Install</a>
+      <a href="byo-provider.html" class="docs-link">BYO Provider</a>
+      <a href="sponsorship.html" class="docs-link">Sponsorship</a>
+      <a href="faq.html" class="docs-link">FAQ</a>
+      <a href="security.html" class="docs-link">Security</a>
+      <p class="docs-h">Site</p>
+      <a href="../skills.html" class="docs-link">Skills</a>
+      <a href="../index.html" class="docs-link">Home</a>
+    </aside>
+
+    <article class="docs-body">
+      <h1>Install XOMNI</h1>
+      <p class="lead">XOMNI is a single repository with two launchers: <span class="mono">run.cmd</span> for Windows and <span class="mono">run.sh</span> for POSIX systems. The only runtime requirement is a recent <span class="mono">node</span>.</p>
+
+      <h2 id="requirements">Requirements</h2>
+      <ul class="check-list">
+        <li><span class="mono">node</span> ≥ 20 (any recent LTS works).</li>
+        <li><span class="mono">git</span> for cloning the repository.</li>
+        <li>An internet connection on first run — XOMNI verifies its free-model pool on startup.</li>
+      </ul>
+
+      <h2 id="windows">Windows (run.cmd)</h2>
+      <p>From a terminal (cmd or PowerShell):</p>
+      <div class="code-block">
+        <div class="code-head"><span class="dot dot-green"></span><span class="code-title">cmd.exe</span><button class="copy-btn" data-copy="git clone https://github.com/painbaba/xomni.git&#10;cd xomni&#10;run.cmd">copy</button></div>
+        <pre><code><span class="prompt">C:\&gt;</span> git clone https://github.com/painbaba/xomni.git
+<span class="prompt">C:\&gt;</span> cd xomni
+<span class="prompt">C:\xomni&gt;</span> run.cmd</code></pre>
+      </div>
+      <p>You can also double-click <span class="mono">run.cmd</span> in Explorer — the launcher opens a terminal, installs dependencies on first run, and starts XOMNI.</p>
+
+      <h2 id="posix">macOS / Linux (run.sh)</h2>
+      <div class="code-block">
+        <div class="code-head"><span class="dot dot-green"></span><span class="code-title">bash</span><button class="copy-btn" data-copy="git clone https://github.com/painbaba/xomni.git&#10;cd xomni&#10;chmod +x run.sh&#10;./run.sh">copy</button></div>
+        <pre><code><span class="prompt">$</span> git clone https://github.com/painbaba/xomni.git
+<span class="prompt">$</span> cd xomni
+<span class="prompt">$</span> chmod +x run.sh
+<span class="prompt">$</span> ./run.sh</code></pre>
+      </div>
+
+      <h2 id="first-run">First run</h2>
+      <p>On first launch XOMNI:</p>
+      <ol>
+        <li>Installs any missing dependencies.</li>
+        <li>Verifies the 25 free models in the pool against <span class="mono">opencode.ai/zen/go/v1</span>.</li>
+        <li>Enables the default plugin set (<span class="mono">waitperk</span>, <span class="mono">perkline</span>, <span class="mono">provider-pool</span>, <span class="mono">title-statusline</span>, and friends).</li>
+        <li>Starts the agent with the statusline and sponsor line visible.</li>
+      </ol>
+
+      <h2 id="update">Updating</h2>
+      <div class="code-block">
+        <div class="code-head"><span class="dot"></span><span class="code-title">bash</span><button class="copy-btn" data-copy="git pull --ff-only&#10;run.cmd  # or ./run.sh">copy</button></div>
+        <pre><code><span class="prompt">$</span> git pull --ff-only
+<span class="prompt">$</span> run.cmd   <span class="cmt"># or ./run.sh on POSIX</span></code></pre>
+      </div>
+      <p>Your config, keys, and memory live outside the repo checkout, so updates never clobber them.</p>
+
+      <h2 id="next">Next steps</h2>
+      <ul class="check-list">
+        <li><a href="byo-provider.html">Bring your own provider</a> — add your own API keys to the pool.</li>
+        <li><a href="sponsorship.html">Understand sponsorship</a> — how the sponsor line earns you money.</li>
+        <li><a href="../skills.html">Browse the 170 skills</a> — everything the agent can already do.</li>
+      </ul>
+    </article>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <div>
+      <p class="footer-brand"><span class="logo-x">X</span>OMNI</p>
+      <p class="muted">one agent. every feature. every free model.</p>
+    </div>
+    <div class="footer-cols">
+      <div class="footer-col">
+        <p class="footer-h">Docs</p>
+        <a href="install.html">Install</a>
+        <a href="byo-provider.html">BYO Provider</a>
+        <a href="sponsorship.html">Sponsorship</a>
+      </div>
+      <div class="footer-col">
+        <p class="footer-h">More</p>
+        <a href="faq.html">FAQ</a>
+        <a href="security.html">Security</a>
+        <a href="../skills.html">Skills</a>
+      </div>
+      <div class="footer-col">
+        <p class="footer-h">Project</p>
+        <a href="https://github.com/painbaba/xomni" target="_blank" rel="noopener">GitHub</a>
+        <a href="../index.html">Home</a>
+      </div>
+    </div>
+  </div>
+  <p class="footer-bottom muted">© <span data-year>2026</span> XOMNI · compose, don't merge.</p>
+</footer>
+
+<script src="../js/site.js"></script>
+</body>
+</html>

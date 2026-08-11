@@ -1,9 +1,9 @@
 # Feature Matrix — every feature of every source repo, tracked
 
-The unified agent's contract: NOTHING from the six sources is dropped by
+XOMNI's contract: NOTHING from the six sources is dropped by
 decision — every feature is listed here with a status. Status legend:
 
-- `HOST` — already part of the Hermes host core (the unified agent IS Hermes)
+- `HOST` — already part of the Hermes host core (XOMNI IS Hermes)
 - `SHIPPED` — ported as a module/plugin/skill in this repo, tested, installed
 - `VENDORED` — source vendored for reference/attribution (read, not merged)
 - `WIRED` — usable through the host (config/plumbing, e.g. providers)
@@ -14,7 +14,7 @@ decision — every feature is listed here with a status. Status legend:
 
 ## 1. HERMES (host, Python — MIT, ~228k★) — `C:\Users\HP\AppData\Local\hermes\hermes-agent`
 
-All host features are the unified agent by construction:
+All host features are XOMNI by construction:
 
 | Feature | Status |
 |---|---|

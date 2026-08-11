@@ -1,0 +1,578 @@
+[
+  {
+    "name": "postgres-mcp",
+    "category": "DATABASES",
+    "purpose": "PostgreSQL query access and performance analysis for agents",
+    "description": "Postgres MCP Pro (crystaldba): configurable read/write SQL access, schema inspection and performance/tuning analysis for PostgreSQL. Successor to the archived @modelcontextprotocol/server-postgres reference server.",
+    "price_model": "FREE",
+    "install_command": "uvx postgres-mcp  (alternatives: pipx install postgres-mcp | docker pull crystaldba/postgres-mcp)",
+    "connect_steps": [
+      "Add to config.yaml: mcp_servers.postgres-mcp = {command: uvx, args: [postgres-mcp]} (or: hermes mcp add postgres-mcp -- uvx postgres-mcp)",
+      "Set env POSTGRES_CONNECTION_STRING=postgres://user:pass@host:5432/db (or POSTGRES_DSN) in the server's env block / .env",
+      "Restart Hermes; verify tools appear as mcp__postgres-mcp__* via hermes mcp list"
+    ],
+    "url": "https://github.com/crystaldba/postgres-mcp",
+    "stars": 3182,
+    "source": "github",
+    "source_url": "https://raw.githubusercontent.com/crystaldba/postgres-mcp/main/README.md",
+    "verified": true
+  },
+  {
+    "name": "mysql-mcp-server",
+    "category": "DATABASES",
+    "purpose": "Secure MySQL database access (read/write queries + schema)",
+    "description": "Most-starred MySQL MCP server: natural-language SQL against MySQL with schema inspection, query execution and safety controls. Env-driven config (no command-line secrets).",
+    "price_model": "FREE",
+    "install_command": "uvx mysql_mcp_server  (alternatives: pip install mysql-mcp-server)",
+    "connect_steps": [
+      "Add to config.yaml: mcp_servers.mysql-mcp-server = {command: uvx, args: [mysql_mcp_server]}",
+      "Set env MYSQL_HOST, MYSQL_PORT, MYSQL_USER, MYSQL_PASSWORD, MYSQL_DATABASE",
+      "Restart Hermes; verify mcp__mysql-mcp-server__* tools via hermes mcp list"
+    ],
+    "url": "https://github.com/designcomputer/mysql_mcp_server",
+    "stars": 1356,
+    "source": "github",
+    "source_url": "https://raw.githubusercontent.com/designcomputer/mysql_mcp_server/main/README.md",
+    "verified": true
+  },
+  {
+    "name": "sqlite-mcp",
+    "category": "DATABASES",
+    "purpose": "SQLite database access for local .db files",
+    "description": "Lightweight SQLite MCP server (npm/bun ecosystem, egoist) — create, query and manage local SQLite databases. Zero-config for file-based dev workflows.",
+    "price_model": "FREE",
+    "install_command": "npx -y sqlite-mcp  (also bunx sqlite-mcp@latest)",
+    "connect_steps": [
+      "Add to config.yaml: mcp_servers.sqlite-mcp = {command: npx, args: [-y, sqlite-mcp, /path/to/dev.db]}",
+      "Point the DB path argument at your SQLite file (created if missing)",
+      "Restart Hermes; verify mcp__sqlite-mcp__* tools via hermes mcp list"
+    ],
+    "url": "https://github.com/egoist/sqlite-mcp",
+    "stars": 20,
+    "source": "github",
+    "source_url": "https://raw.githubusercontent.com/egoist/sqlite-mcp/main/README.md",
+    "verified": true
+  },
+  {
+    "name": "mongodb-mcp-server",
+    "category": "DATABASES",
+    "purpose": "MongoDB and MongoDB Atlas data access",
+    "description": "Official MongoDB MCP server: query, analyze and manage MongoDB databases and Atlas clusters. Supports read-only mode, stdio and HTTP transports.",
+    "price_model": "FREE",
+    "install_command": "npx -y mongodb-mcp-server@latest  (also: docker run --rm -i -e MONGODB_URI=... mongodb/mongodb-mcp-server)",
+    "connect_steps": [
+      "Add to config.yaml: mcp_servers.mongodb-mcp-server = {command: npx, args: [-y, mongodb-mcp-server@latest]}",
+      "Set env MONGODB_URI=mongodb://user:pass@host:27017 (or Atlas connection string); add --readOnly to forbid writes",
+      "Restart Hermes; verify mcp__mongodb-mcp-server__* tools via hermes mcp list"
+    ],
+    "url": "https://github.com/mongodb-js/mongodb-mcp-server",
+    "stars": 1096,
+    "source": "github",
+    "source_url": "https://raw.githubusercontent.com/mongodb-js/mongodb-mcp-server/main/README.md",
+    "verified": true
+  },
+  {
+    "name": "redis-mcp-server",
+    "category": "DATABASES",
+    "purpose": "Redis data management and search for agents",
+    "description": "Official Redis MCP server: natural-language interface to manage and search Redis data (keys, hashes, streams, vector/RediSearch queries).",
+    "price_model": "FREE",
+    "install_command": "uvx redis-mcp-server --url redis://localhost:6379/0  (alternatives: pip install redis-mcp-server | uvx --from git+https://github.com/redis/mcp-redis.git redis-mcp-server)",
+    "connect_steps": [
+      "Add to config.yaml: mcp_servers.redis-mcp-server = {command: uvx, args: [redis-mcp-server, --url, redis://localhost:6379/0]}",
+      "Set REDIS_URL (or --url) to your instance; add --password / --username if auth is enabled",
+      "Restart Hermes; verify mcp__redis-mcp-server__* tools via hermes mcp list"
+    ],
+    "url": "https://github.com/redis/mcp-redis",
+    "stars": 562,
+    "source": "github",
+    "source_url": "https://raw.githubusercontent.com/redis/mcp-redis/main/README.md",
+    "verified": true
+  },
+  {
+    "name": "mcp-server-motherduck",
+    "category": "DATABASES",
+    "purpose": "DuckDB (local) and MotherDuck (cloud) analytics",
+    "description": "Official MotherDuck MCP server for DuckDB: local :memory:/file databases plus MotherDuck cloud analytics (md:). Full read/write SQL with database switching.",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "uvx mcp-server-motherduck --db-path :memory: --read-write --allow-switch-databases",
+    "connect_steps": [
+      "Add to config.yaml: mcp_servers.duckdb = {command: uvx, args: [mcp-server-motherduck, --db-path, :memory:, --read-write]}",
+      "Local: no env needed. MotherDuck cloud: set env motherduck_token=<token> and use --db-path md:",
+      "Restart Hermes; verify mcp__duckdb__* tools via hermes mcp list"
+    ],
+    "url": "https://github.com/motherduckdb/mcp-server-motherduck",
+    "stars": 504,
+    "source": "github",
+    "source_url": "https://raw.githubusercontent.com/motherduckdb/mcp-server-motherduck/main/README.md",
+    "verified": true
+  },
+  {
+    "name": "snowflake-labs-mcp",
+    "category": "DATABASES",
+    "purpose": "Snowflake SQL, object management and Cortex AI",
+    "description": "Official Snowflake MCP server: SQL orchestration, object management, semantic view consumption and Cortex AI features. Configured via a service-config YAML.",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "uvx snowflake-labs-mcp --service-config-file config.yaml",
+    "connect_steps": [
+      "Add to config.yaml: mcp_servers.snowflake = {command: uvx, args: [snowflake-labs-mcp, --service-config-file, config.yaml]}",
+      "Create config.yaml with account/user/password (or keypair) + role/warehouse/database settings",
+      "Restart Hermes; verify mcp__snowflake__* tools via hermes mcp list"
+    ],
+    "url": "https://github.com/snowflake-labs/mcp",
+    "stars": 295,
+    "source": "github",
+    "source_url": "https://raw.githubusercontent.com/snowflake-labs/mcp/main/README.md",
+    "verified": true
+  },
+  {
+    "name": "mcp-server-bigquery",
+    "category": "DATABASES",
+    "purpose": "Google BigQuery schema inspection and SQL execution",
+    "description": "Google-published BigQuery MCP server: lets LLMs inspect database schemas and execute queries on BigQuery datasets (PyPI mcp-server-bigquery).",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "uvx mcp-server-bigquery  (alternatives: pip install mcp-server-bigquery)",
+    "connect_steps": [
+      "Add to config.yaml: mcp_servers.bigquery = {command: uvx, args: [mcp-server-bigquery]}",
+      "Set env GOOGLE_APPLICATION_CREDENTIALS=/path/to/service-account.json (or run gcloud auth application-default login)",
+      "Restart Hermes; verify mcp__bigquery__* tools via hermes mcp list"
+    ],
+    "url": "https://pypi.org/project/mcp-server-bigquery/",
+    "stars": null,
+    "source": "pypi",
+    "source_url": "https://pypi.org/pypi/mcp-server-bigquery/json",
+    "verified": true
+  },
+  {
+    "name": "mcp-clickhouse",
+    "category": "DATABASES",
+    "purpose": "ClickHouse SQL analytics access",
+    "description": "Official ClickHouse MCP server: connect ClickHouse to AI assistants for natural-language SQL analytics over ClickHouse clusters (incl. chdb embedded mode).",
+    "price_model": "FREE",
+    "install_command": "python3 -m pip install mcp-clickhouse",
+    "connect_steps": [
+      "Add to config.yaml: mcp_servers.clickhouse = {command: python3, args: [-m, mcp_clickhouse]} (after pip install)",
+      "Set env CLICKHOUSE_HOST, CLICKHOUSE_PORT, CLICKHOUSE_USER, CLICKHOUSE_PASSWORD, CLICKHOUSE_DATABASE",
+      "Restart Hermes; verify mcp__clickhouse__* tools via hermes mcp list"
+    ],
+    "url": "https://github.com/ClickHouse/mcp-clickhouse",
+    "stars": 846,
+    "source": "github",
+    "source_url": "https://raw.githubusercontent.com/ClickHouse/mcp-clickhouse/main/README.md",
+    "verified": true
+  },
+  {
+    "name": "supabase-mcp",
+    "category": "DATABASES",
+    "purpose": "Supabase Postgres, Auth, Storage and Edge Functions",
+    "description": "Official Supabase MCP server: manage projects, run SQL against Postgres, and use Auth/Storage/Edge Function tools. Hosted at mcp.supabase.com (OAuth login) or self-hosted via Docker.",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "Remote HTTP server - config url https://mcp.supabase.com/mcp (self-host: docker run supabase/mcp-server)",
+    "connect_steps": [
+      "Add to config.yaml: mcp_servers.supabase = {type: http, url: https://mcp.supabase.com/mcp}",
+      "Log in with your Supabase account when prompted (OAuth); select target organization/project",
+      "Restart Hermes; verify mcp__supabase__* tools via hermes mcp list"
+    ],
+    "url": "https://github.com/supabase-community/supabase-mcp",
+    "stars": 2860,
+    "source": "github",
+    "source_url": "https://raw.githubusercontent.com/supabase-community/supabase-mcp/main/README.md",
+    "verified": true
+  },
+  {
+    "name": "neon-mcp-server",
+    "category": "DATABASES",
+    "purpose": "Neon Postgres management and SQL (serverless Postgres)",
+    "description": "Official Neon MCP server: manage Neon projects/branches and run SQL against serverless Postgres via the hosted endpoint mcp.neon.tech.",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "Remote HTTP server - https://mcp.neon.tech/mcp (npx add-mcp https://mcp.neon.tech/mcp)",
+    "connect_steps": [
+      "Add to config.yaml: mcp_servers.neon = {type: http, url: https://mcp.neon.tech/mcp}",
+      "Set Authorization header / env NEON_API_KEY from console.neon.tech",
+      "Restart Hermes; verify mcp__neon__* tools via hermes mcp list"
+    ],
+    "url": "https://github.com/neondatabase/mcp-server-neon",
+    "stars": 622,
+    "source": "github",
+    "source_url": "https://raw.githubusercontent.com/neondatabase/mcp-server-neon/main/README.md",
+    "verified": true
+  },
+  {
+    "name": "elasticsearch-mcp-server",
+    "category": "DATABASES",
+    "purpose": "Elasticsearch search and document operations",
+    "description": "Official Elastic MCP server: run queries, inspect indices and manage documents in Elasticsearch (self-managed or Elastic Cloud).",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "docker run -i --rm -e ES_URL -e ES_API_KEY docker.elastic.co/mcp/elasticsearch stdio",
+    "connect_steps": [
+      "Add to config.yaml: mcp_servers.elasticsearch = {command: docker, args: [run, -i, --rm, -e, ES_URL, -e, ES_API_KEY, docker.elastic.co/mcp/elasticsearch, stdio]}",
+      "Set env ES_URL=https://mycluster:9200 and ES_API_KEY (or ES_USERNAME/ES_PASSWORD)",
+      "Restart Hermes; verify mcp__elasticsearch__* tools via hermes mcp list"
+    ],
+    "url": "https://github.com/elastic/mcp-server-elasticsearch",
+    "stars": 703,
+    "source": "github",
+    "source_url": "https://raw.githubusercontent.com/elastic/mcp-server-elasticsearch/main/README.md",
+    "verified": true
+  },
+  {
+    "name": "chroma-mcp",
+    "category": "DATABASES",
+    "purpose": "Chroma vector database collections and retrieval",
+    "description": "Official Chroma MCP server: create collections, upsert embeddings and retrieve context from the open-source Chroma vector database (local or Chroma Cloud).",
+    "price_model": "FREE",
+    "install_command": "uvx chroma-mcp --path ./chroma  (PyPI chroma-mcp)",
+    "connect_steps": [
+      "Add to config.yaml: mcp_servers.chroma = {command: uvx, args: [chroma-mcp, --path, ./chroma]}",
+      "Local: point --path at the Chroma dir (default ./chroma). Cloud: set CHROMA_HOST/CHROMA_PORT/CHROMA_SSL/CHROMA_AUTH_TOKEN",
+      "Restart Hermes; verify mcp__chroma__* tools via hermes mcp list"
+    ],
+    "url": "https://github.com/chroma-core/chroma-mcp",
+    "stars": 585,
+    "source": "github",
+    "source_url": "https://raw.githubusercontent.com/chroma-core/chroma-mcp/main/README.md",
+    "verified": true
+  },
+  {
+    "name": "mcp-server-qdrant",
+    "category": "DATABASES",
+    "purpose": "Qdrant vector database search and collections",
+    "description": "Official Qdrant MCP server: hybrid/vector search, collection management and point upserts against Qdrant (local, Docker or Qdrant Cloud).",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "uvx mcp-server-qdrant  (also: docker run -p 8000:8000 qdrant/mcp-server-qdrant)",
+    "connect_steps": [
+      "Add to config.yaml: mcp_servers.qdrant = {command: uvx, args: [mcp-server-qdrant]}",
+      "Set env QDRANT_URL=http://localhost:6333 and QDRANT_API_KEY (if cloud/authenticated)",
+      "Restart Hermes; verify mcp__qdrant__* tools via hermes mcp list"
+    ],
+    "url": "https://github.com/qdrant/mcp-server-qdrant",
+    "stars": 1495,
+    "source": "github",
+    "source_url": "https://raw.githubusercontent.com/qdrant/mcp-server-qdrant/main/README.md",
+    "verified": true
+  },
+  {
+    "name": "weaviate-mcp-builtin",
+    "category": "DATABASES",
+    "purpose": "Weaviate vector DB hybrid search and collections",
+    "description": "Weaviate MCP server is now BUILT INTO the main weaviate/weaviate binary (v1.37.1+): no separate install — enable with MCP_SERVER_ENABLED=true, served at /v1/mcp on the REST port (standalone weaviate/mcp-server-weaviate repo is deprecated).",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "No install - built into weaviate/weaviate v1.37.1+: run weaviate with MCP_SERVER_ENABLED=true (endpoint http://host:8080/v1/mcp)",
+    "connect_steps": [
+      "Start Weaviate with env MCP_SERVER_ENABLED=true (v1.37.1+); endpoint is http://<host>:8080/v1/mcp",
+      "Add to config.yaml: mcp_servers.weaviate = {type: http, url: http://localhost:8080/v1/mcp}; set WEAVIATE_API_KEY if auth/RBAC enabled",
+      "Restart Hermes; verify mcp__weaviate__* tools (hybrid query, collections, upsert) via hermes mcp list"
+    ],
+    "url": "https://github.com/weaviate/mcp-server-weaviate",
+    "stars": 162,
+    "source": "github",
+    "source_url": "https://raw.githubusercontent.com/weaviate/mcp-server-weaviate/main/README.md",
+    "verified": true
+  },
+  {
+    "name": "mcp-server-milvus",
+    "category": "DATABASES",
+    "purpose": "Milvus vector database operations",
+    "description": "Official Zilliz Milvus MCP server: collections, embeddings and vector search against Milvus/Zilliz Cloud. Run via uv from the repo (Python 3.10+, uv).",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "git clone https://github.com/zilliztech/mcp-server-milvus.git && cd mcp-server-milvus && uv run src/mcp_server_milvus/server.py --milvus-uri http://localhost:19530",
+    "connect_steps": [
+      "Clone repo and run server via uv (command above); add to config.yaml: mcp_servers.milvus = {command: uv, args: [run, .../server.py, --milvus-uri, http://localhost:19530]}",
+      "Set --milvus-uri / --milvus-token (or .env MILVUS_URI) for Zilliz Cloud",
+      "Restart Hermes; verify mcp__milvus__* tools via hermes mcp list"
+    ],
+    "url": "https://github.com/zilliztech/mcp-server-milvus",
+    "stars": 240,
+    "source": "github",
+    "source_url": "https://raw.githubusercontent.com/zilliztech/mcp-server-milvus/main/README.md",
+    "verified": true
+  },
+  {
+    "name": "pinecone-mcp",
+    "category": "DATABASES",
+    "purpose": "Pinecone vector index upsert, search and config",
+    "description": "Official Pinecone Developer MCP server: search docs, configure indexes, and upsert/search vectors in Pinecone projects (npm @pinecone-database/mcp).",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "npx -y @pinecone-database/mcp",
+    "connect_steps": [
+      "Add to config.yaml: mcp_servers.pinecone = {command: npx, args: [-y, @pinecone-database/mcp]}",
+      "Set env PINECONE_API_KEY (generate in console.pinecone.io); optionally PINECONE_INDEX_NAME",
+      "Restart Hermes; verify mcp__pinecone__* tools via hermes mcp list"
+    ],
+    "url": "https://github.com/pinecone-io/pinecone-mcp",
+    "stars": 70,
+    "source": "github",
+    "source_url": "https://raw.githubusercontent.com/pinecone-io/pinecone-mcp/main/README.md",
+    "verified": true
+  },
+  {
+    "name": "mcp-neo4j",
+    "category": "DATABASES",
+    "purpose": "Neo4j graph database queries and knowledge-graph memory",
+    "description": "Official Neo4j MCP server: natural-language Cypher queries, graph data modeling and knowledge-graph memory against Neo4j or Aura (pip neo4j-mcp-server).",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "pip install neo4j-mcp-server  (server package; config via MCP settings)",
+    "connect_steps": [
+      "pip install neo4j-mcp-server; add to config.yaml: mcp_servers.neo4j = {command: <venv>/python, args: [-m, neo4j_mcp_server]}",
+      "Set env NEO4J_URI=bolt://localhost:7687, NEO4J_USERNAME, NEO4J_PASSWORD (Aura: neo4j+s://... + Aura creds)",
+      "Restart Hermes; verify mcp__neo4j__* tools via hermes mcp list"
+    ],
+    "url": "https://github.com/neo4j/mcp",
+    "stars": 282,
+    "source": "github",
+    "source_url": "https://raw.githubusercontent.com/neo4j/mcp/main/README.md",
+    "verified": true
+  },
+  {
+    "name": "prisma-mcp",
+    "category": "DATABASES",
+    "purpose": "Prisma ORM schema and database operations",
+    "description": "Official Prisma MCP server: inspect Prisma schema, run migrations and query databases managed by Prisma ORM (local: npx prisma mcp; hosted: mcp.prisma.io).",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "npx -y prisma mcp  (remote: npx -y mcp-remote https://mcp.prisma.io/mcp)",
+    "connect_steps": [
+      "Add to config.yaml: mcp_servers.prisma = {command: npx, args: [-y, prisma, mcp]} (run from your Prisma project dir)",
+      "Set env DATABASE_URL for the target database (as in your .env/prisma schema)",
+      "Restart Hermes; verify mcp__prisma__* tools via hermes mcp list"
+    ],
+    "url": "https://github.com/prisma/mcp",
+    "stars": 47,
+    "source": "github",
+    "source_url": "https://raw.githubusercontent.com/prisma/mcp/main/README.md",
+    "verified": true
+  },
+  {
+    "name": "aws-dynamodb-mcp-server",
+    "category": "DATABASES",
+    "purpose": "AWS DynamoDB table operations and queries",
+    "description": "Official AWS Labs MCP server (awslabs/mcp monorepo): full DynamoDB tooling — list/describe tables, get/put/query/scan items — via boto3 (PyPI awslabs.dynamodb-mcp-server).",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "uvx awslabs.dynamodb-mcp-server@latest",
+    "connect_steps": [
+      "Add to config.yaml: mcp_servers.aws-dynamodb = {command: uvx, args: [awslabs.dynamodb-mcp-server@latest]}",
+      "Set env AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION (or rely on ~/.aws credentials)",
+      "Restart Hermes; verify mcp__aws-dynamodb__* tools via hermes mcp list"
+    ],
+    "url": "https://github.com/awslabs/mcp",
+    "stars": 9585,
+    "source": "github",
+    "source_url": "https://pypi.org/pypi/awslabs.dynamodb-mcp-server/json",
+    "verified": true
+  },
+  {
+    "name": "aws-redshift-mcp-server",
+    "category": "DATABASES",
+    "purpose": "AWS Redshift SQL queries and cluster metadata",
+    "description": "Official AWS Labs MCP server (awslabs/mcp monorepo): run SQL against Redshift warehouses and inspect cluster/database metadata via boto3 (PyPI awslabs.redshift-mcp-server).",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "uvx awslabs.redshift-mcp-server@latest",
+    "connect_steps": [
+      "Add to config.yaml: mcp_servers.aws-redshift = {command: uvx, args: [awslabs.redshift-mcp-server@latest]}",
+      "Set env AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION and Redshift connection details (cluster id/db/user)",
+      "Restart Hermes; verify mcp__aws-redshift__* tools via hermes mcp list"
+    ],
+    "url": "https://github.com/awslabs/mcp",
+    "stars": 9585,
+    "source": "github",
+    "source_url": "https://pypi.org/pypi/awslabs.redshift-mcp-server/json",
+    "verified": true
+  },
+  {
+    "name": "aws-api-mcp-server",
+    "category": "CLOUD-INFRA",
+    "purpose": "Broad AWS API access (EC2, S3, Lambda, IAM, ...) via boto3",
+    "description": "Official AWS Labs main MCP server (awslabs/mcp monorepo): general-purpose boto3-powered tool access across AWS services — EC2, S3, Lambda, IAM, CloudWatch and more (PyPI awslabs.aws-api-mcp-server).",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "uvx awslabs.aws-api-mcp-server@latest",
+    "connect_steps": [
+      "Add to config.yaml: mcp_servers.aws-api = {command: uvx, args: [awslabs.aws-api-mcp-server@latest]}",
+      "Set env AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION (or default credential chain)",
+      "Restart Hermes; verify mcp__aws-api__* tools via hermes mcp list"
+    ],
+    "url": "https://github.com/awslabs/mcp",
+    "stars": 9585,
+    "source": "github",
+    "source_url": "https://raw.githubusercontent.com/awslabs/mcp/main/README.md",
+    "verified": true
+  },
+  {
+    "name": "aws-iac-mcp-server",
+    "category": "CLOUD-INFRA",
+    "purpose": "AWS infrastructure-as-code (CloudFormation validation)",
+    "description": "Official AWS Labs IaC MCP server (awslabs/mcp monorepo): validates and generates CloudFormation templates, translates CDK/CloudFormation and documents IaC resources.",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "uvx awslabs.aws-iac-mcp-server@latest",
+    "connect_steps": [
+      "Add to config.yaml: mcp_servers.aws-iac = {command: uvx, args: [awslabs.aws-iac-mcp-server@latest]}",
+      "Set env AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION for template validation",
+      "Restart Hermes; verify mcp__aws-iac__* tools via hermes mcp list"
+    ],
+    "url": "https://github.com/awslabs/mcp",
+    "stars": 9585,
+    "source": "github",
+    "source_url": "https://raw.githubusercontent.com/awslabs/mcp/main/README.md",
+    "verified": true
+  },
+  {
+    "name": "azure-mcp-server",
+    "category": "CLOUD-INFRA",
+    "purpose": "Azure resource management and operations",
+    "description": "Official Microsoft Azure MCP server (microsoft/mcp monorepo, successor to archived Azure/azure-mcp): manage Azure resources, run Azure CLI operations and query subscriptions. .NET-based, npm/dotnet install.",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "npx -y @azure/mcp@latest server start  (alternatives: npm install -g @azure/mcp | dotnet tool install Azure.Mcp)",
+    "connect_steps": [
+      "Add to config.yaml: mcp_servers.azure = {command: npx, args: [-y, @azure/mcp@latest, server, start]}",
+      "Authenticate: az login, or set env AZURE_TENANT_ID, AZURE_CLIENT_ID, AZURE_CLIENT_SECRET, AZURE_SUBSCRIPTION_ID",
+      "Restart Hermes; verify mcp__azure__* tools via hermes mcp list"
+    ],
+    "url": "https://github.com/microsoft/mcp",
+    "stars": 3555,
+    "source": "github",
+    "source_url": "https://raw.githubusercontent.com/microsoft/mcp/main/servers/Azure.Mcp.Server/README.md",
+    "verified": true
+  },
+  {
+    "name": "mcp-server-kubernetes",
+    "category": "CLOUD-INFRA",
+    "purpose": "Kubernetes cluster management via kubectl",
+    "description": "Most-starred Kubernetes MCP server (Flux159): inspect and manage pods, deployments, services, namespaces and cluster state through kubectl (npm mcp-server-kubernetes).",
+    "price_model": "FREE",
+    "install_command": "npx mcp-server-kubernetes",
+    "connect_steps": [
+      "Add to config.yaml: mcp_servers.kubernetes = {command: npx, args: [mcp-server-kubernetes]}",
+      "Set env KUBECONFIG=/path/to/kubeconfig (or rely on in-cluster config); kubectl must be on PATH",
+      "Restart Hermes; verify mcp__kubernetes__* tools via hermes mcp list"
+    ],
+    "url": "https://github.com/Flux159/mcp-server-kubernetes",
+    "stars": 1524,
+    "source": "github",
+    "source_url": "https://raw.githubusercontent.com/Flux159/mcp-server-kubernetes/main/README.md",
+    "verified": true
+  },
+  {
+    "name": "terraform-mcp-server",
+    "category": "CLOUD-INFRA",
+    "purpose": "Terraform plan/apply/validate automation",
+    "description": "Official HashiCorp Terraform MCP server: validate, plan and apply Terraform configurations, inspect state and resources from the agent. Docker or Go binary install.",
+    "price_model": "FREE",
+    "install_command": "docker run -i --rm hashicorp/terraform-mcp-server  (alternatives: go install github.com/hashicorp/terraform-mcp-server/cmd/terraform-mcp-server@latest | brew install terraform-mcp-server)",
+    "connect_steps": [
+      "Add to config.yaml: mcp_servers.terraform = {command: docker, args: [run, -i, --rm, hashicorp/terraform-mcp-server]}",
+      "Mount your Terraform workspace: add -v $(pwd):/workspace and set TF_WORKSPACE_DIR=/workspace",
+      "Restart Hermes; verify mcp__terraform__* tools via hermes mcp list"
+    ],
+    "url": "https://github.com/hashicorp/terraform-mcp-server",
+    "stars": 1501,
+    "source": "github",
+    "source_url": "https://raw.githubusercontent.com/hashicorp/terraform-mcp-server/main/README.md",
+    "verified": true
+  },
+  {
+    "name": "docker-mcp-gateway",
+    "category": "CLOUD-INFRA",
+    "purpose": "Docker container and MCP server lifecycle management",
+    "description": "Official Docker MCP plugin + Gateway (docker/docker-mcp, formerly mcp-gateway): run/manage Docker containers and securely host MCP servers from the Docker MCP Catalog (npx/uvx/docker entries) behind one gateway.",
+    "price_model": "FREE",
+    "install_command": "Docker Desktop 4.59+ MCP Toolkit (docker mcp CLI bundled); or git clone https://github.com/docker/mcp-gateway && make docker-mcp",
+    "connect_steps": [
+      "Enable MCP Toolkit in Docker Desktop 4.59+ (or build the CLI plugin: git clone + make docker-mcp)",
+      "Run 'docker mcp catalog pull mcp/docker-mcp-catalog' then 'docker mcp profile create --name dev-tools --server catalog://mcp/docker-mcp-catalog/github --connect hermes'",
+      "Restart Hermes; verify mcp__docker__* tools via hermes mcp list"
+    ],
+    "url": "https://github.com/docker/docker-mcp",
+    "stars": 1526,
+    "source": "github",
+    "source_url": "https://raw.githubusercontent.com/docker/docker-mcp/main/README.md",
+    "verified": true
+  },
+  {
+    "name": "mcp-server-cloudflare",
+    "category": "CLOUD-INFRA",
+    "purpose": "Cloudflare account, Workers, DNS, KV/R2 management",
+    "description": "Official Cloudflare MCP server (npm @cloudflare/mcp-server-cloudflare): manage Workers, DNS, KV, R2, Pages and account settings through typed domain-specific tools.",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "npx -y @cloudflare/mcp-server-cloudflare  (npm @cloudflare/mcp-server-cloudflare@0.2.0)",
+    "connect_steps": [
+      "Add to config.yaml: mcp_servers.cloudflare = {command: npx, args: [-y, @cloudflare/mcp-server-cloudflare]}",
+      "Set env CLOUDFLARE_API_TOKEN with the right permissions (or CLOUDFLARE_API_KEY + CLOUDFLARE_EMAIL); optional CLOUDFLARE_ACCOUNT_ID",
+      "Restart Hermes; verify mcp__cloudflare__* tools via hermes mcp list"
+    ],
+    "url": "https://github.com/cloudflare/mcp-server-cloudflare",
+    "stars": 4062,
+    "source": "github",
+    "source_url": "https://www.npmjs.com/package/@cloudflare/mcp-server-cloudflare",
+    "verified": true
+  },
+  {
+    "name": "workers-mcp",
+    "category": "CLOUD-INFRA",
+    "purpose": "Expose your own Cloudflare Worker as an MCP server",
+    "description": "Official Cloudflare tool: turns any Cloudflare Worker into an MCP server so agents can call your deployed Worker functions (npm workers-mcp).",
+    "price_model": "FREE",
+    "install_command": "npx workers-mcp setup",
+    "connect_steps": [
+      "Run 'npx workers-mcp setup' in a Workers project (or create one: npx create-cloudflare@latest)",
+      "Follow the interactive login + worker selection; it wires the client config automatically",
+      "Verify tools from your Worker appear as mcp__* in Hermes via hermes mcp list"
+    ],
+    "url": "https://github.com/cloudflare/workers-mcp",
+    "stars": 644,
+    "source": "github",
+    "source_url": "https://raw.githubusercontent.com/cloudflare/workers-mcp/main/README.md",
+    "verified": true
+  },
+  {
+    "name": "cloudflare-mcp-code-mode",
+    "category": "CLOUD-INFRA",
+    "purpose": "Cloudflare API via hosted code-mode server",
+    "description": "Official Cloudflare Code Mode MCP server (cloudflare/mcp): broad Cloudflare API coverage through code execution, hosted at mcp.cloudflare.com — complements the domain-specific servers.",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "Remote HTTP server - url https://mcp.cloudflare.com/mcp (code mode)",
+    "connect_steps": [
+      "Add to config.yaml: mcp_servers.cloudflare-code = {type: http, url: https://mcp.cloudflare.com/mcp}",
+      "Authenticate with CLOUDFLARE_API_TOKEN (account scoped) via header/bearer",
+      "Restart Hermes; verify mcp__cloudflare-code__* tools via hermes mcp list"
+    ],
+    "url": "https://github.com/cloudflare/mcp",
+    "stars": 723,
+    "source": "github",
+    "source_url": "https://raw.githubusercontent.com/cloudflare/mcp/main/README.md",
+    "verified": true
+  },
+  {
+    "name": "netlify-mcp",
+    "category": "CLOUD-INFRA",
+    "purpose": "Netlify deploys, sites, env vars and forms",
+    "description": "Official Netlify MCP server (npm @netlify/mcp): create/manage projects, trigger deploys, manage env vars, forms and team info. Node.js 22+ required.",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "npx -y @netlify/mcp  (npm @netlify/mcp@1.15.1)",
+    "connect_steps": [
+      "Add to config.yaml: mcp_servers.netlify = {command: npx, args: [-y, @netlify/mcp]} (Node 22+ required)",
+      "Set env NETLIFY_PERSONAL_ACCESS_TOKEN (PAT from app.netlify.com user settings > OAuth) or log in via netlify-cli",
+      "Restart Hermes; verify mcp__netlify__* tools via hermes mcp list"
+    ],
+    "url": "https://github.com/netlify/netlify-mcp",
+    "stars": 56,
+    "source": "github",
+    "source_url": "https://raw.githubusercontent.com/netlify/netlify-mcp/main/README.md",
+    "verified": true
+  },
+  {
+    "name": "aap-mcp-server",
+    "category": "CLOUD-INFRA",
+    "purpose": "Red Hat Ansible Automation Platform job automation",
+    "description": "Official Red Hat Ansible MCP server (ansible/aap-mcp-server): run and monitor Ansible Automation Platform jobs, inventories and templates from the agent.",
+    "price_model": "FREE",
+    "install_command": "git clone https://github.com/ansible/aap-mcp-server.git && cd aap-mcp-server && npm install (then build/run per server subdir)",
+    "connect_steps": [
+      "Clone repo and npm install (README instructions); add to config.yaml: mcp_servers.ansible = {command: node, args: [.../dist/server.js]}",
+      "Set env for AAP connection: AAP_HOST, AAP_TOKEN (or username/password) for your Automation Platform controller",
+      "Restart Hermes; verify mcp__ansible__* tools via hermes mcp list"
+    ],
+    "url": "https://github.com/ansible/aap-mcp-server",
+    "stars": 32,
+    "source": "github",
+    "source_url": "https://raw.githubusercontent.com/ansible/aap-mcp-server/main/README.md",
+    "verified": true
+  }
+]

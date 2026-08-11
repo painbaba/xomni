@@ -1,0 +1,24 @@
+TASK: {brief}
+REPO: {repo}
+OUT: {out}
+MODE: research
+
+GOAL
+- {brief}
+
+CONSTRAINTS
+- work only inside <out>; never modify files outside it
+- cite every claim: inline URLs or [n] references at the end of your summary
+
+DELIVERABLE CONTRACT
+- {contract}
+
+ISOLATION NOTE
+- you are one parallel researcher among several; sibling outputs are NOT available
+- do not block waiting for another worker — flag missing inputs in your summary
+
+SOURCES SECTION
+- under "SOURCES:" list each source URL used, one per line
+
+FINAL VERDICT
+- last line of your summary: VERDICT: done | partial | blocked

@@ -7,12 +7,12 @@ a built-in **sponsorship engine** that pays you for your installs.
 
 - **Free forever.** MIT sources, no license key, no "pro" wall. The agent is
   the free bait; the sponsorship network is the product.
-- **One command to install.** Windows + POSIX launchers, all 12 plugins loaded
+- **One command to install.** Windows + POSIX launchers, all 16 plugins loaded
   automatically.
 - **25 verified free models** — every one tested to actually work (deepseek-v4-*,
   qwen3.8-max, glm-5.2, kimi-k3, minimax-m3 vision, and more) via the provider
   pool with live health checks.
-- **329 passing tests** across the plugin suite.
+- **386 passing tests** across the plugin suite.
 - **Earn while you work**: 50/50 impression-share sponsorship payouts, receipts,
   escrow caps, second-price auctions.
 
@@ -36,7 +36,7 @@ a built-in **sponsorship engine** that pays you for your installs.
 | Goose | Rust | MCP-native extensibility | MCP-server catalog conventions | SHIPPED (`plugins/mcp-catalog`) |
 | OpenClaw | TypeScript | Personal assistant: persistent semantic memory, media understanding (OCR/vision), platform-native automation | Local memory + media pipeline | SHIPPED (`plugins/omni-memory`, `plugins/omni-media`) |
 
-## The 14 plugins
+## The 16 plugins
 
 | Plugin | What it does | Origin strength |
 |---|---|---|
@@ -54,6 +54,8 @@ a built-in **sponsorship engine** that pays you for your installs.
 | `title-statusline` | Sponsor line in the terminal title bar | OpenCode |
 | `omni-memory` | OpenClaw-style personal memory: local SQLite facts, /remember /recall, LLM consolidation | OpenClaw |
 | `omni-media` | OpenClaw-style media understanding: /ocr /caption /mediascan via the verified vision model | OpenClaw |
+| `omni-design` | Omni Design: generate premium self-contained HTML artifacts from a brief (/design), 10-tell slop audit (/design-audit) — zero hooks | Claude Design / Stitch |
+| `omni-parallel` | Parallel-task layer: /swarm task queue + context packs + multi-agent judging + PR-split merge plans | Kimi / Cursor / Claude |
 
 ## Install (one command)
 
@@ -65,7 +67,7 @@ run.cmd
 ./run.sh
 ```
 
-The launcher starts the Hermes host with all 14 plugins loaded — interactive
+The launcher starts the Hermes host with all 16 plugins loaded — interactive
 chat, `-q` one-shots, `--continue` resume. Plugins are also drop-in installable:
 
 ```bash
@@ -78,10 +80,10 @@ hermes plugins enable waitperk perkline repomap
 ```bash
 cd plugins/waitperk && python -m unittest tests.test_core -v
 cd plugins/repomap  && python -m unittest tests.test_core -v
-# ... 329 tests total across the suite
+# ... 386 tests total across the suite
 ```
 
-Verified live (2026-08-11): **357/357 tests pass, 0 failures.**
+Verified live (2026-08-12): **386/386 tests pass, 0 failures.**
 
 | Plugin | Tests | Plugin | Tests |
 |---|---|---|---|
@@ -92,6 +94,7 @@ Verified live (2026-08-11): **357/357 tests pass, 0 failures.**
 | provider-pool | 16 | repomap | 15 |
 | waitperk | 14 | perkline | 11 |
 | omni-media | 9 | omni-memory | 8 |
+| omni-design | 8 | omni-parallel | 20 |
 
 ## Verified free-model routing (live-tested)
 

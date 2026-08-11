@@ -1,0 +1,466 @@
+[
+  {
+    "name": "GitHub MCP Server",
+    "category": "DEVOPS",
+    "purpose": "Repo issues, PRs, code search, releases inside the agent",
+    "description": "Most-mentioned MCP in r/ClaudeAI mining (45 comment mentions). Official GitHub server; community sentiment is split: many power users prefer the gh CLI to save context tokens ('Claude does all github changes via CLI as intended', 'GitHub MCP is absolutely useless' vs 'reads PRs and issues without copy-pasting'). Kept by the '8 servers I kept' thread.",
+    "price_model": "FREE",
+    "install_command": "docker run -i --rm -e GITHUB_PERSONAL_ACCESS_TOKEN=<token> ghcr.io/github/github-mcp-server",
+    "connect_steps": [
+      "Run the docker container with GITHUB_PERSONAL_ACCESS_TOKEN set",
+      "Register the stdio server in Hermes MCP config (hermes mcp add / config.yaml)",
+      "Restart session so tools register",
+      "Test with a repo-issues query"
+    ],
+    "url": "https://github.com/github/github-mcp-server",
+    "stars": 32147,
+    "source": "reddit:Top 15+ MCP servers that are actually useful in 2026? I'm tired of fake awesome lists",
+    "source_url": "https://www.reddit.com/r/ClaudeAI/comments/1vh0yd3/top_15_mcp_servers_that_are_actually_useful_in/",
+    "verified": true
+  },
+  {
+    "name": "Filesystem MCP",
+    "category": "CODING",
+    "purpose": "Sandboxed file read/write/search access for the agent",
+    "description": "Called 'the boring one that actually matters' and the top pick in keep-only-5 lists ('filesystem, browser automation, and whichever single server holds your org's source of truth'). Official modelcontextprotocol server, evergreen recommendation.",
+    "price_model": "FREE",
+    "install_command": "npx -y @modelcontextprotocol/server-filesystem <allowed-dirs>",
+    "connect_steps": [
+      "npx install with one or more allowed directories as args",
+      "Add to Hermes MCP config (stdio)",
+      "Restart session, verify read/write on allowed dirs"
+    ],
+    "url": "https://github.com/modelcontextprotocol/servers/tree/main/src/filesystem",
+    "stars": null,
+    "source": "reddit:Top 15+ MCP servers that are actually useful in 2026? I'm tired of fake awesome lists",
+    "source_url": "https://www.reddit.com/r/ClaudeAI/comments/1vh0yd3/top_15_mcp_servers_that_are_actually_useful_in/",
+    "verified": true
+  },
+  {
+    "name": "Playwright MCP",
+    "category": "BROWSER-AUTOMATION",
+    "purpose": "Let the agent drive a real browser: navigate, screenshot, click, test UI",
+    "description": "One of the few MCPs that 'feels like real leverage' and on the 5-that-matter list. Microsoft's official server (35.9k stars). Counterpoint from the thread: Playwright has an excellent CLI, so 'MCP is absolutely useless' for some users. Also hyped on Instagram (208K-view reel listing it in top 5).",
+    "price_model": "FREE",
+    "install_command": "npx -y @playwright/mcp@latest",
+    "connect_steps": [
+      "npx @playwright/mcp@latest (headless by default)",
+      "Register stdio server in Hermes config",
+      "Restart session, allow browser launch on first call"
+    ],
+    "url": "https://github.com/microsoft/playwright-mcp",
+    "stars": 35997,
+    "source": "reddit:Top 15+ MCP servers that are actually useful in 2026? I'm tired of fake awesome lists",
+    "source_url": "https://www.reddit.com/r/ClaudeAI/comments/1vh0yd3/top_15_mcp_servers_that_are_actually_useful_in/",
+    "verified": true
+  },
+  {
+    "name": "Chrome DevTools MCP",
+    "category": "BROWSER-AUTOMATION",
+    "purpose": "Drive a real Chrome instance to read sites that block agents (Reddit, etc.)",
+    "description": "'Indispensable. So many websites block Claude now, so letting Claude use the local browser means it can do any research unfettered' (8-upvote comment). Commenters stress --autoConnect and enabling remote debugging. Top browser pick over Playwright in the keep-5 discussion.",
+    "price_model": "FREE",
+    "install_command": "npx -y chrome-devtools-mcp@latest --autoConnect",
+    "connect_steps": [
+      "npx chrome-devtools-mcp@latest --autoConnect (launches its own Chrome)",
+      "Add stdio server to Hermes MCP config",
+      "Restart session; enable remote debugging if using existing Chrome"
+    ],
+    "url": "https://github.com/ChromeDevTools/chrome-devtools-mcp",
+    "stars": null,
+    "source": "reddit:Top 15+ MCP servers that are actually useful in 2026? I'm tired of fake awesome lists",
+    "source_url": "https://www.reddit.com/r/ClaudeAI/comments/1vh0yd3/top_15_mcp_servers_that_are_actually_useful_in/",
+    "verified": true
+  },
+  {
+    "name": "Jira MCP",
+    "category": "PRODUCTIVITY",
+    "purpose": "Read/update issues, statuses and comments from the agent",
+    "description": "'The only one I use is Jira MCP at work' (14-upvote comment). Painful but unavoidable in big teams; commenters recommend a read-only API key, and one dev's nightly agent run autonomously changed a Jira status+comment, prompting bash guards. Official Atlassian server.",
+    "price_model": "FREE",
+    "install_command": "see repo",
+    "connect_steps": [
+      "Create a Jira API token with read-only scope for safety",
+      "Run the container/npx server with JIRA_URL + credentials",
+      "Register in Hermes config, restart session",
+      "Test with a 'list my open issues' call"
+    ],
+    "url": "https://github.com/atlassian-labs/mcp-jira",
+    "stars": null,
+    "source": "reddit:Top 15+ MCP servers that are actually useful in 2026? I'm tired of fake awesome lists",
+    "source_url": "https://www.reddit.com/r/ClaudeAI/comments/1vh0yd3/top_15_mcp_servers_that_are_actually_useful_in/",
+    "verified": false
+  },
+  {
+    "name": "Memory MCP",
+    "category": "MISC",
+    "purpose": "Persistent cross-session knowledge graph for the agent",
+    "description": "'Either amazing or a slow path to polluted context' — the most polarizing server in the top-15 thread. Used as 'load memory' step in a 5-server pre-coding routine (sprint context, decisions, learnings across sessions). Official modelcontextprotocol server.",
+    "price_model": "FREE",
+    "install_command": "npx -y @modelcontextprotocol/server-memory",
+    "connect_steps": [
+      "npx @modelcontextprotocol/server-memory",
+      "Add stdio server to Hermes config",
+      "Restart; prime with a seed memory, monitor context growth"
+    ],
+    "url": "https://github.com/modelcontextprotocol/servers/tree/main/src/memory",
+    "stars": null,
+    "source": "reddit:My pre-coding routine with Claude Code, 5 MCP servers before I write a single line",
+    "source_url": "https://www.reddit.com/r/ClaudeAI/comments/1ta3a9x/my_precoding_routine_with_claude_code_5_mcp/",
+    "verified": true
+  },
+  {
+    "name": "Sentry MCP",
+    "category": "DEVOPS",
+    "purpose": "Pull production errors with stack traces into the debugging loop",
+    "description": "'Pulls production errors with stack traces so debugging starts from real data' — kept in the '8 servers I kept' list. Consensus: 'errors + code context + agent debugging' is a legitimate MCP use case.",
+    "price_model": "FREE",
+    "install_command": "npx -y @sentry/mcp-server@latest",
+    "connect_steps": [
+      "Create a Sentry auth token (org scope)",
+      "npx @sentry/mcp-server with SENTRY_AUTH_TOKEN + SENTRY_ORG env",
+      "Add to Hermes config, restart session",
+      "Test: 'show recent errors for project X'"
+    ],
+    "url": "https://docs.sentry.io/product/integrations/mcp/",
+    "stars": null,
+    "source": "reddit:8 mcp servers i kept after deleting everything else",
+    "source_url": "https://www.reddit.com/r/ClaudeAI/comments/1ulnr8h/8_mcp_servers_i_kept_after_deleting_everything_else/",
+    "verified": true
+  },
+  {
+    "name": "PostgreSQL MCP",
+    "category": "DATABASES",
+    "purpose": "Query/analyze Postgres databases from the agent",
+    "description": "'Postgres MCP is awesome. I gave it its own user, gave it read only permissions. It can't do anything to the DB' (2-upvote comment). Listed as useful 'if you trust your agent near a DB, which I mostly don't' — the read-only-user pattern is the community fix. Official server.",
+    "price_model": "FREE",
+    "install_command": "npx -y @modelcontextprotocol/server-postgres 'postgresql://user:pass@host:5432/db'",
+    "connect_steps": [
+      "Create a dedicated read-only Postgres role",
+      "npx @modelcontextprotocol/server-postgres with the connection string",
+      "Register in Hermes config, restart session",
+      "Test with a SELECT-only query"
+    ],
+    "url": "https://github.com/modelcontextprotocol/servers/tree/main/src/postgres",
+    "stars": null,
+    "source": "reddit:Top 15+ MCP servers that are actually useful in 2026? I'm tired of fake awesome lists",
+    "source_url": "https://www.reddit.com/r/ClaudeAI/comments/1vh0yd3/top_15_mcp_servers_that_are_actually_useful_in/",
+    "verified": true
+  },
+  {
+    "name": "SQLite MCP",
+    "category": "DATABASES",
+    "purpose": "Local/dev database querying with a single .db file",
+    "description": "'Underrated for local/dev workflows' — the top-15 thread's quiet sleeper. Zero auth friction vs Postgres, makes it the community default for small projects and prototyping.",
+    "price_model": "FREE",
+    "install_command": "npx -y @modelcontextprotocol/server-sqlite --db-path ./data.db",
+    "connect_steps": [
+      "npx @modelcontextprotocol/server-sqlite with --db-path",
+      "Add stdio server to Hermes config",
+      "Restart session, run a test query"
+    ],
+    "url": "https://github.com/modelcontextprotocol/servers/tree/main/src/sqlite",
+    "stars": null,
+    "source": "reddit:Top 15+ MCP servers that are actually useful in 2026? I'm tired of fake awesome lists",
+    "source_url": "https://www.reddit.com/r/ClaudeAI/comments/1vh0yd3/top_15_mcp_servers_that_are_actually_useful_in/",
+    "verified": true
+  },
+  {
+    "name": "Slack MCP",
+    "category": "COMMUNICATION",
+    "purpose": "Read/write Slack channels, threads, DMs from the agent",
+    "description": "'Terrifying and useful at the same time' — the top-15 thread's exact verdict. Real demand for team-source-of-truth access, tempered by write-permission anxiety; community pairs it with read-only tokens.",
+    "price_model": "FREE",
+    "install_command": "npx -y @slackapi/mcp-slack",
+    "connect_steps": [
+      "Create a Slack app + OAuth token scoped to channels",
+      "npx @slackapi/mcp-slack with SLACK_BOT_TOKEN",
+      "Add to Hermes config, restart session",
+      "Test read-only: list recent messages"
+    ],
+    "url": "https://github.com/slackapi/mcp-slack",
+    "stars": null,
+    "source": "reddit:Top 15+ MCP servers that are actually useful in 2026? I'm tired of fake awesome lists",
+    "source_url": "https://www.reddit.com/r/ClaudeAI/comments/1vh0yd3/top_15_mcp_servers_that_are_actually_useful_in/",
+    "verified": true
+  },
+  {
+    "name": "Context7",
+    "category": "CODING",
+    "purpose": "Pull current library/framework docs so the agent stops writing outdated API calls",
+    "description": "Kept in the '8 servers I kept' list ('pulls current library docs so claude stops writing outdated api calls'); also a trending Instagram topic ('context7 mcp'). Skeptic note from one commenter: docs tools 'frequently get underutilized by the model'.",
+    "price_model": "FREE",
+    "install_command": "npx -y @upstash/context7-mcp",
+    "connect_steps": [
+      "npx @upstash/context7-mcp (free hosted, no key needed for basic use)",
+      "Add stdio server to Hermes config",
+      "Restart session, test 'latest React Router docs' query"
+    ],
+    "url": "https://github.com/upstash/context7",
+    "stars": null,
+    "source": "reddit:8 mcp servers i kept after deleting everything else",
+    "source_url": "https://www.reddit.com/r/ClaudeAI/comments/1ulnr8h/8_mcp_servers_i_kept_after_deleting_everything_else/",
+    "verified": true
+  },
+  {
+    "name": "Supabase MCP",
+    "category": "DATABASES",
+    "purpose": "Run SQL, migrations and project management from chat instead of the dashboard",
+    "description": "'Runs sql and migrations on my db so i never open the dashboard' — kept in both the top-15 list and the '8 kept' list. Instagram creator reel (208K views) also lists it as one of 5 'dangerous' servers.",
+    "price_model": "FREE",
+    "install_command": "npx -y supabase-mcp@latest --access-token <sbp_token> --project-ref <ref>",
+    "connect_steps": [
+      "Generate a Supabase personal access token",
+      "npx supabase-mcp with --access-token and --project-ref",
+      "Register in Hermes config, restart session",
+      "Test with a read-only SQL query"
+    ],
+    "url": "https://github.com/supabase-community/supabase-mcp",
+    "stars": null,
+    "source": "reddit:8 mcp servers i kept after deleting everything else",
+    "source_url": "https://www.reddit.com/r/ClaudeAI/comments/1ulnr8h/8_mcp_servers_i_kept_after_deleting_everything_else/",
+    "verified": true
+  },
+  {
+    "name": "Linear MCP",
+    "category": "PRODUCTIVITY",
+    "purpose": "Issue tracking: create, triage, update Linear tickets",
+    "description": "'Good if your issue tracker is actually maintained' — the top-15 thread's pragmatic take. In the keep-5 rationale ('whichever single server holds your org's source of truth'), Linear is the canonical example. Official linear-app server.",
+    "price_model": "FREE",
+    "install_command": "npx -y @linear/mcp-server",
+    "connect_steps": [
+      "npx @linear/mcp-server (OAuth flow on first run)",
+      "Add stdio server to Hermes config",
+      "Restart session, authenticate, test ticket lookup"
+    ],
+    "url": "https://github.com/linear-app/linear-mcp-server",
+    "stars": null,
+    "source": "reddit:Top 15+ MCP servers that are actually useful in 2026? I'm tired of fake awesome lists",
+    "source_url": "https://www.reddit.com/r/ClaudeAI/comments/1vh0yd3/top_15_mcp_servers_that_are_actually_useful_in/",
+    "verified": true
+  },
+  {
+    "name": "Notion MCP",
+    "category": "PRODUCTIVITY",
+    "purpose": "Read/write Notion pages, databases and docs from the agent",
+    "description": "'Only useful if your team's Notion is not a graveyard' (top-15 thread). Heavily creator-hyped on Instagram — listed #1 in a 208K-view '5 MCP servers that make Claude Code actually dangerous' reel. Official makenotion server (4.6k stars).",
+    "price_model": "FREE",
+    "install_command": "npx -y @notionhq/notion-mcp-server",
+    "connect_steps": [
+      "Create a Notion integration token (Internal integration)",
+      "npx @notionhq/notion-mcp-server with NOTION_TOKEN env",
+      "Share target pages/databases with the integration",
+      "Register in Hermes config, restart session"
+    ],
+    "url": "https://github.com/makenotion/notion-mcp-server",
+    "stars": 4586,
+    "source": "reddit:Top 15+ MCP servers that are actually useful in 2026? I'm tired of fake awesome lists",
+    "source_url": "https://www.reddit.com/r/ClaudeAI/comments/1vh0yd3/top_15_mcp_servers_that_are_actually_useful_in/",
+    "verified": true
+  },
+  {
+    "name": "Figma MCP (Figma Context MCP)",
+    "category": "MEDIA",
+    "purpose": "Feed Figma layout/design context to coding agents for design-to-code",
+    "description": "'Great idea, mixed real-world results' (top-15 thread). Community star (GLips/Figma-Context-MCP, 15.6k stars) + massive Instagram hype: trending tag 'figma mcp', a 191K-view Korean tutorial on a free-tier alternative, and a 95.6K-view reel of a designer using it ('burned through my claude pro credits lol').",
+    "price_model": "FREE",
+    "install_command": "npm install -g @glips/figma-context-mcp",
+    "connect_steps": [
+      "Install the server globally and configure FIGMA_API_KEY",
+      "Register stdio server in Hermes config",
+      "Restart session; open a Figma file and test design-context pull"
+    ],
+    "url": "https://github.com/GLips/Figma-Context-MCP",
+    "stars": 15632,
+    "source": "reddit:Top 15+ MCP servers that are actually useful in 2026? I'm tired of fake awesome lists",
+    "source_url": "https://www.reddit.com/r/ClaudeAI/comments/1vh0yd3/top_15_mcp_servers_that_are_actually_useful_in/",
+    "verified": true
+  },
+  {
+    "name": "Firecrawl MCP",
+    "category": "SEARCH-RESEARCH",
+    "purpose": "Scrape any URL into clean markdown; web search + crawl for agent context",
+    "description": "Top-15 list pick ('useful for scraping/clean markdown when web context matters'). Caveats surfaced by the community: free tier is bare (real features behind paid cloud, per the Hound MCP author), and one thread documents a Windows API-key bug. Also the failover target in the Seek tool.",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "uvx firecrawl-mcp --api-key <key>",
+    "connect_steps": [
+      "Get a Firecrawl API key (free tier)",
+      "uvx firecrawl-mcp with the key",
+      "Register in Hermes config, restart session",
+      "Test scraping a URL to markdown"
+    ],
+    "url": "https://github.com/firecrawl/firecrawl-mcp-server",
+    "stars": null,
+    "source": "reddit:Top 15+ MCP servers that are actually useful in 2026? I'm tired of fake awesome lists",
+    "source_url": "https://www.reddit.com/r/ClaudeAI/comments/1vh0yd3/top_15_mcp_servers_that_are_actually_useful_in/",
+    "verified": true
+  },
+  {
+    "name": "Serena",
+    "category": "CODING",
+    "purpose": "LSP-powered code navigation + persistent memory to cut context usage",
+    "description": "One of the 5 benchmarked token-saving MCPs (r/ClaudeAI benchmark thread): -14.8% output tokens, 'busier rather than leaner' (10.1 tool calls/question). Fans keep it for the LSP + persistent memory features, not just savings ('the fact that it saves something is cherry on top').",
+    "price_model": "FREE",
+    "install_command": "npx -y @oraios/serena",
+    "connect_steps": [
+      "npx @oraios/serena (LSP-based; large repos need initial indexing)",
+      "Add stdio server to Hermes config",
+      "Restart session; compare tool-call volume on a code task"
+    ],
+    "url": "https://github.com/oraios/serena",
+    "stars": null,
+    "source": "reddit:I benchmarked 5 token saving tools across Codex and Claude code. The 60-90% token saving claims didnt hold up",
+    "source_url": "https://www.reddit.com/r/ClaudeAI/comments/1viyokr/i_benchmarked_5_token_saving_tools_across_codex/",
+    "verified": true
+  },
+  {
+    "name": "CodeGraph",
+    "category": "CODING",
+    "purpose": "Index codebase into a queryable call-graph to reduce agent file reads",
+    "description": "Benchmarked second-best token saver (-24.4% output tokens) and 22x faster indexing than the leader ('For a straightforward call graph, CodeGraph is 22x faster'). Community verdict: 'more than one tool here works'. From the same author family as Serena.",
+    "price_model": "FREE",
+    "install_command": "npx -y @oraios/codegraph",
+    "connect_steps": [
+      "npx @oraios/codegraph (indexes repo into graph db)",
+      "Add stdio server to Hermes config",
+      "Restart session; ask 'who calls X' to verify graph queries"
+    ],
+    "url": "https://github.com/oraios/codegraph",
+    "stars": null,
+    "source": "reddit:I benchmarked 5 token saving tools across Codex and Claude code. The 60-90% token saving claims didnt hold up",
+    "source_url": "https://www.reddit.com/r/ClaudeAI/comments/1viyokr/i_benchmarked_5_token_saving_tools_across_codex/",
+    "verified": true
+  },
+  {
+    "name": "codebase-memory-mcp",
+    "category": "CODING",
+    "purpose": "High-performance code intelligence: persistent index so the LLM stops recreating existing functions",
+    "description": "'Great on large code bases. I use it to make the LLM not recreate functions which are already in the codebase' (comment). Also the 'codebase as a graph' step in the 5-server pre-coding routine. 38.6k stars — the most-starred community MCP in the team's GitHub scrape.",
+    "price_model": "FREE",
+    "install_command": "see repo",
+    "connect_steps": [
+      "Clone/install per repo README (multi-language indexer)",
+      "Run initial index build",
+      "Register stdio server in Hermes config, restart session",
+      "Test: query an existing function before asking for new code"
+    ],
+    "url": "https://github.com/DeusData/codebase-memory-mcp",
+    "stars": 38558,
+    "source": "reddit:The Best MCP Servers That Actually Can Change How You Code",
+    "source_url": "https://www.reddit.com/r/ClaudeAI/comments/1vlhav7/the_best_mcp_servers_that_actually_can_change_how/",
+    "verified": true
+  },
+  {
+    "name": "GhidraMCP",
+    "category": "CODING",
+    "purpose": "Reverse-engineering: AI-driven Ghidra analysis (decompile, symbols, firmware)",
+    "description": "'ghidra MCP: \"does not have a linux driver\" or \"firmware does not implement a feature I'd like\" are no longer show stoppers' (2-upvote comment in top-15 thread). LaurieWired/GhidraMCP has 9.8k stars; niche but genuinely beloved in RE circles.",
+    "price_model": "FREE",
+    "install_command": "see repo",
+    "connect_steps": [
+      "Install Ghidra + the GhidraMCP plugin (requires Ghidra 11.x)",
+      "Start Ghidra with the MCP bridge enabled",
+      "Register stdio server in Hermes config, restart session",
+      "Open a binary and test decompile queries"
+    ],
+    "url": "https://github.com/LaurieWired/GhidraMCP",
+    "stars": 9765,
+    "source": "reddit:Top 15+ MCP servers that are actually useful in 2026? I'm tired of fake awesome lists",
+    "source_url": "https://www.reddit.com/r/ClaudeAI/comments/1vh0yd3/top_15_mcp_servers_that_are_actually_useful_in/",
+    "verified": true
+  },
+  {
+    "name": "AWS MCP Servers (awslabs/mcp)",
+    "category": "CLOUD-INFRA",
+    "purpose": "AWS services access: cost analysis, resource queries, Q Developer CLI integration",
+    "description": "'The aws mcp server has been pretty helpful for my cloud cost cutting. It seems to get more confident with the info and makes less query mistakes to aws services' (comment). Also Instagram-official: AWS Developers account (22.9K views) announcing Amazon Q Developer CLI MCP support with pre-built AWS integrations.",
+    "price_model": "FREE",
+    "install_command": "see repo",
+    "connect_steps": [
+      "Configure AWS credentials (profile or env)",
+      "Run the AWS MCP server container per repo docs",
+      "Register in Hermes config, restart session",
+      "Test: cost/usage query on a read-only role"
+    ],
+    "url": "https://github.com/awslabs/mcp",
+    "stars": 9585,
+    "source": "reddit:The Best MCP Servers That Actually Can Change How You Code",
+    "source_url": "https://www.reddit.com/r/ClaudeAI/comments/1vlhav7/the_best_mcp_servers_that_actually_can_change_how/",
+    "verified": true
+  },
+  {
+    "name": "Meta Facebook Ads MCP",
+    "category": "FINANCE",
+    "purpose": "Manage Meta ad campaigns, reporting, product catalogs via natural language",
+    "description": "Official Meta-hosted MCP (mcp.facebook.com/ads), hyped hard on Instagram (creator guide reels, 'manage campaigns through natural language instead of clicking through Ads Manager'). Covers reporting, campaign creation, catalogs, Pixel diagnostics via OAuth. Strong signal that paid-ads MCPs are a creator favorite.",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "hosted server: mcp.facebook.com/ads",
+    "connect_steps": [
+      "Add hosted server URL mcp.facebook.com/ads to Hermes MCP config (remote/SSE)",
+      "Authenticate with your Meta ad account via OAuth",
+      "Restart session, test 'pull last 30 days reporting'"
+    ],
+    "url": "https://mcp.facebook.com/ads",
+    "stars": null,
+    "source": "instagram",
+    "source_url": "https://www.instagram.com/explore/tags/mcp/",
+    "verified": true
+  },
+  {
+    "name": "n8n MCP",
+    "category": "PRODUCTIVITY",
+    "purpose": "Trigger n8n automations/workflows directly from the AI agent",
+    "description": "Instagram-hyped: listed #3 in a 208K-view '5 MCP servers that make Claude Code actually dangerous' reel ('trigger automations and workflows directly from your AI agent') and a recurring trending tag ('n8n mcp', 'n8n mcp claude', 'n8n mcp server'). n8n ships built-in MCP server support.",
+    "price_model": "FREE",
+    "install_command": "see repo",
+    "connect_steps": [
+      "Enable the MCP server in n8n (Settings > MCP, or self-hosted node)",
+      "Copy the n8n MCP endpoint/connection string",
+      "Register as remote server in Hermes config, restart session",
+      "Test triggering an existing workflow"
+    ],
+    "url": "https://docs.n8n.io/integrations/builtin/mcp/",
+    "stars": null,
+    "source": "instagram",
+    "source_url": "https://www.instagram.com/explore/tags/mcp/",
+    "verified": true
+  },
+  {
+    "name": "sidetap",
+    "category": "MISC",
+    "purpose": "See and control a real iPhone from Windows over USB (no Mac/jailbreak)",
+    "description": "Community-built iPhone MCP (r/ClaudeAI show-off thread, 21 upvotes): one 'claude mcp add' and Claude can see the iPhone screen, tap buttons, send texts ('send_message(\"Mom\", \"on my way\")'). Commenters suggest Appium MCP as the established alternative; the WebDriverAgent re-signing trick is the known pitfall. Repo URL posted by author in thread.",
+    "price_model": "FREE",
+    "install_command": "see repo",
+    "connect_steps": [
+      "Install sidetap + WebDriverAgent on the iPhone (Sideloadly signing)",
+      "Connect phone over USB from the Windows host",
+      "Register stdio server in Hermes config, restart session",
+      "Test: list home-screen elements"
+    ],
+    "url": "https://github.com/ucsandman/sidetap",
+    "stars": null,
+    "source": "reddit:I gave Claude Code my iPhone as a set of native MCP tools",
+    "source_url": "https://www.reddit.com/r/ClaudeAI/comments/1vjnb9d/i_gave_claude_code_my_iphone_as_a_set_of_native/",
+    "verified": true
+  },
+  {
+    "name": "Android Remote Control MCP",
+    "category": "MISC",
+    "purpose": "AI agent controls any Android app from the phone, no cables or root",
+    "description": "v1.10.0 release thread (25 upvotes): runs on the phone, agent drives any app; new accessibility-first build handles apps that flag screens as 'sensitive' (e.g. GitHub app). Signed APKs + Google-registered keys. Author posts releases directly to r/ClaudeAI.",
+    "price_model": "FREE",
+    "install_command": "see repo (Android APK + server)",
+    "connect_steps": [
+      "Install the APK on the Android device (signed release)",
+      "Start the MCP server app on the phone",
+      "Register the server (stdio over adb/network) in Hermes config",
+      "Restart session, test driving an app"
+    ],
+    "url": "https://github.com/danielealbano/android-remote-control-mcp",
+    "stars": null,
+    "source": "reddit:New version of Android Remote Control MCP released! Let your AI agent control your phone, no cables or root needed!",
+    "source_url": "https://www.reddit.com/r/ClaudeAI/comments/1vbpyt6/new_version_of_android_remote_control_mcp/",
+    "verified": true
+  }
+]

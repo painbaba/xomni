@@ -1,8 +1,8 @@
-"""Provider pool — the free-model layer of the unified agent.
+"""Provider pool — the free-model layer of XOMNI.
 
 One OpenAI-compatible gateway (opencode Zen, the channel OpenCode itself ships)
 serves 25 models VERIFIED LIVE on this machine (HTTP 200, 2026-08-10, browser-UA
-required). The same base_url + key works in EVERY agent in the unified stack
+required). The same base_url + key works in EVERY agent in the XOMNI stack
 (Hermes, OpenCode, Codex, Aider, Goose) because they all speak OpenAI-compatible
 chat/completions — so the free models are available across all of them.
 

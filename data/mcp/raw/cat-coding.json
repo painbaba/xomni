@@ -1,0 +1,466 @@
+[
+  {
+    "name": "github-mcp",
+    "category": "CODING",
+    "purpose": "GitHub repository management: issues, PRs, code search, Actions, releases via GitHub's official MCP server",
+    "description": "Official GitHub MCP server (github/github-mcp-server). Runs as a Docker container or as a hosted remote MCP (https://api.githubcopilot.com/mcp/). Exposes tools for issues, pull requests, code search, repositories, Actions, and more. Auth via GitHub Personal Access Token (classic, repo+workflow scopes) or OAuth for the remote variant.",
+    "price_model": "FREE",
+    "install_command": "docker run -i --rm -e GITHUB_PERSONAL_ACCESS_TOKEN ghcr.io/github/github-mcp-server",
+    "connect_steps": [
+      "Export GITHUB_PERSONAL_ACCESS_TOKEN (classic PAT with repo & workflow scopes)",
+      "hermes mcp add github -- docker run -i --rm -e GITHUB_PERSONAL_ACCESS_TOKEN ghcr.io/github/github-mcp-server",
+      "Verify: hermes mcp list shows github; ask the agent to call github list_repositories"
+    ],
+    "url": "https://github.com/github/github-mcp-server",
+    "stars": 32148,
+    "source": "github_repo",
+    "source_url": "https://github.com/github/github-mcp-server",
+    "verified": true
+  },
+  {
+    "name": "gitlab-mcp",
+    "category": "CODING",
+    "purpose": "GitLab projects, issues, MRs, pipelines, and repository access from AI agents",
+    "description": "Most-starred third-party GitLab MCP (zereight/gitlab-mcp). Ships via npm global install, Homebrew, or Docker. Exposes GitLab REST API tools for projects, issues, merge requests, CI pipelines, groups, and notes. Auth with a GitLab Personal Access Token.",
+    "price_model": "FREE",
+    "install_command": "npm install -g @zereight/mcp-gitlab",
+    "connect_steps": [
+      "Export GITLAB_PERSONAL_ACCESS_TOKEN (api scope) and optionally GITLAB_URL for self-hosted",
+      "hermes mcp add gitlab -- npx -y @zereight/mcp-gitlab",
+      "Verify: hermes mcp list shows gitlab; ask agent to list your GitLab projects"
+    ],
+    "url": "https://github.com/zereight/gitlab-mcp",
+    "stars": 1886,
+    "source": "github_repo",
+    "source_url": "https://github.com/zereight/gitlab-mcp",
+    "verified": true
+  },
+  {
+    "name": "atlassian-mcp",
+    "category": "CODING",
+    "purpose": "Bitbucket, Jira, Confluence, and Jira Service Management access via Atlassian's official remote MCP",
+    "description": "Official Atlassian remote MCP server covering Bitbucket Cloud (repos, PRs, pipelines), Jira (issues, sprints), Confluence (pages), and JSM. Runs as a hosted remote server (mcp.atlassian.com) with OAuth 2.0 browser-based login — no long-lived tokens to manage.",
+    "price_model": "FREE",
+    "install_command": "Remote MCP (no local install): connect to https://mcp.atlassian.com/mcp",
+    "connect_steps": [
+      "In Hermes config.yaml add mcp_servers: atlassian: {type: http, url: https://mcp.atlassian.com/mcp}",
+      "First connect triggers OAuth browser flow; approve Atlassian account scopes",
+      "Verify: agent can call Bitbucket/Jira tools, e.g. list pull requests of a repo"
+    ],
+    "url": "https://github.com/atlassian/atlassian-mcp-server",
+    "stars": 952,
+    "source": "github_repo",
+    "source_url": "https://github.com/atlassian/atlassian-mcp-server",
+    "verified": true
+  },
+  {
+    "name": "gitmcp",
+    "category": "CODING",
+    "purpose": "Codebase access to any public GitHub project without cloning — read files, search code, inspect repos",
+    "description": "GitMCP (idosal/git-mcp): free, open-source remote MCP server that turns ANY public GitHub repository into an MCP server. Point it at https://gitmcp.io/{owner}/{repo} and the agent can read the codebase, search it, and answer questions with real repo context. Self-hostable via Docker for private repos.",
+    "price_model": "FREE",
+    "install_command": "npx mcp-remote https://gitmcp.io/{owner}/{repo}",
+    "connect_steps": [
+      "Pick a target repo, e.g. https://gitmcp.io/microsoft/playwright-mcp",
+      "hermes mcp add gitmcp -- npx mcp-remote https://gitmcp.io/{owner}/{repo}",
+      "Verify: ask agent to read the repo's README or search its source"
+    ],
+    "url": "https://github.com/idosal/git-mcp",
+    "stars": 8300,
+    "source": "github_repo",
+    "source_url": "https://github.com/idosal/git-mcp",
+    "verified": true
+  },
+  {
+    "name": "circleci-mcp",
+    "category": "CODING",
+    "purpose": "CircleCI pipelines, workflows, jobs, and build logs for AI-driven CI debugging",
+    "description": "Official CircleCI MCP server (CircleCI-Public/mcp-server-circleci). Lets agents inspect pipeline runs, job status, workflow graphs, and logs, and trigger/rerun builds. Auth via CircleCI Personal API Token (env CIRCLECI_TOKEN).",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "npx -y @circleci/mcp-server-circleci@latest",
+    "connect_steps": [
+      "Export CIRCLECI_TOKEN (CircleCI personal API token) and CIRCLECI_ORG_SLUG if needed",
+      "hermes mcp add circleci -- npx -y @circleci/mcp-server-circleci@latest",
+      "Verify: ask agent to list recent pipelines for your project"
+    ],
+    "url": "https://github.com/CircleCI-Public/mcp-server-circleci",
+    "stars": 89,
+    "source": "github_repo",
+    "source_url": "https://github.com/CircleCI-Public/mcp-server-circleci",
+    "verified": true
+  },
+  {
+    "name": "jenkins-mcp",
+    "category": "CODING",
+    "purpose": "Jenkins jobs, builds, console logs, and nodes exposed to AI agents via the official MCP Server plugin",
+    "description": "Official Jenkins MCP Server plugin (jenkinsci/mcp-server-plugin, plugin id mcp-server, requires Jenkins 2.541.3+). Installed inside Jenkins; auto-creates stateless/SSE/streamable-HTTP MCP endpoints under <JENKINS_URL>/mcp. Agents can query builds, trigger jobs, and read logs.",
+    "price_model": "FREE",
+    "install_command": "Install plugin in Jenkins: Manage Jenkins > Plugins > Available > search 'MCP Server' > Install",
+    "connect_steps": [
+      "Install the MCP Server plugin in Jenkins (id: mcp-server) and restart",
+      "In Hermes config.yaml add mcp_servers: jenkins: {type: http, url: http://<jenkins-host>:8080/mcp} (streamable-http endpoint)",
+      "Verify: ask agent to list Jenkins jobs or read the last build's console output"
+    ],
+    "url": "https://plugins.jenkins.io/mcp-server/",
+    "stars": 101,
+    "source": "jenkins_plugin",
+    "source_url": "https://github.com/jenkinsci/mcp-server-plugin",
+    "verified": true
+  },
+  {
+    "name": "sonarqube-mcp",
+    "category": "CODING",
+    "purpose": "SonarQube code quality: issues, hotspots, metrics, and quality gates for AI-assisted code review",
+    "description": "Official SonarQube MCP Server (SonarSource/sonarqube-mcp-server). Runs via Docker or as a hosted remote server. Gives agents access to code-quality issues, security hotspots, measures, and quality-gate status from SonarQube Cloud or self-hosted SonarQube (Community Edition and up).",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "docker run --init --pull=always -i --rm -e SONARQUBE_TOKEN -e SONARQUBE_URL sonarsource/sonarqube-mcp",
+    "connect_steps": [
+      "Export SONARQUBE_TOKEN and SONARQUBE_URL (or SONARQUBE_ORG for SonarQube Cloud)",
+      "hermes mcp add sonarqube -- docker run --init --pull=always -i --rm -e SONARQUBE_TOKEN -e SONARQUBE_URL sonarsource/sonarqube-mcp",
+      "Verify: ask agent to fetch quality-gate status or issues for a project key"
+    ],
+    "url": "https://github.com/SonarSource/sonarqube-mcp-server",
+    "stars": 619,
+    "source": "github_repo",
+    "source_url": "https://github.com/SonarSource/sonarqube-mcp-server",
+    "verified": true
+  },
+  {
+    "name": "snyk-mcp",
+    "category": "CODING",
+    "purpose": "Snyk vulnerability scanning of code, dependencies, and containers embedded in AI workflows",
+    "description": "Snyk MCP Server ships inside the official Snyk CLI (snyk/studio-mcp). After installing the CLI, start the MCP server with 'snyk mcp'. Agents get Snyk's SAST/SCA scanning context: vulnerabilities, fixes, and security recommendations for the code they produce.",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "npm install -g snyk && snyk mcp -t stdio",
+    "connect_steps": [
+      "Install Snyk CLI (npm install -g snyk) and authenticate (snyk auth or export SNYK_TOKEN)",
+      "hermes mcp add snyk -- snyk mcp -t stdio",
+      "Verify: ask agent to scan a dependency file or explain a Snyk issue"
+    ],
+    "url": "https://github.com/snyk/studio-mcp",
+    "stars": 54,
+    "source": "github_repo",
+    "source_url": "https://snyk.io/articles/snyk-mcp-cheat-sheet/",
+    "verified": true
+  },
+  {
+    "name": "codeql-mcp",
+    "category": "CODING",
+    "purpose": "CodeQL static-analysis queries and vulnerability triage from AI agents",
+    "description": "Third-party CodeQL MCP (JordyZomer/codeql-mcp): wraps the CodeQL query engine so agents can run CodeQL queries against a database and inspect results. Useful for security research and vulnerability verification. Requires the CodeQL CLI and a CodeQL database.",
+    "price_model": "FREE",
+    "install_command": "git clone https://github.com/JordyZomer/codeql-mcp && cd codeql-mcp && pip install fastmcp httpx",
+    "connect_steps": [
+      "Clone repo and pip install fastmcp httpx (README-verified); ensure codeql CLI + a database exist",
+      "hermes mcp add codeql -- python main.py (from repo dir, with DATABASE_PATH env)",
+      "Verify: ask agent to run a CodeQL query and report results"
+    ],
+    "url": "https://github.com/JordyZomer/codeql-mcp",
+    "stars": 150,
+    "source": "github_repo",
+    "source_url": "https://github.com/JordyZomer/codeql-mcp",
+    "verified": true
+  },
+  {
+    "name": "eslint-mcp",
+    "category": "CODING",
+    "purpose": "ESLint linting and rule configuration for JS/TS codebases, driven by AI",
+    "description": "Official ESLint MCP server (@eslint/mcp, part of the eslint/rewrite monorepo, v0.3.x). Lets agents lint files, explain rule violations, and get fix suggestions using the real ESLint engine and project config. Installable via npx.",
+    "price_model": "FREE",
+    "install_command": "npx @eslint/mcp@latest",
+    "connect_steps": [
+      "Run from a project with an eslint.config.js present",
+      "hermes mcp add eslint -- npx @eslint/mcp@latest",
+      "Verify: ask agent to lint a file and summarize violations"
+    ],
+    "url": "https://github.com/eslint/rewrite",
+    "stars": 343,
+    "source": "npm_package",
+    "source_url": "https://www.npmjs.com/package/@eslint/mcp",
+    "verified": true
+  },
+  {
+    "name": "semgrep-mcp",
+    "category": "CODING",
+    "purpose": "Semgrep security scanning of source code from AI agents",
+    "description": "Official Semgrep MCP server (semgrep/mcp, now archived upstream but still installable and functional). Lets agents run Semgrep rules over a codebase to find security vulnerabilities and logic bugs. Supports local (Community Edition) and Semgrep AppSec platform auth via SEMGREP_APP_TOKEN.",
+    "price_model": "FREE",
+    "install_command": "uvx semgrep-mcp",
+    "connect_steps": [
+      "Export SEMGREP_APP_TOKEN if using Semgrep AppSec platform (local CE works without)",
+      "hermes mcp add semgrep -- uvx semgrep-mcp",
+      "Verify: ask agent to scan a directory with a rule like p/security-audit"
+    ],
+    "url": "https://github.com/semgrep/mcp",
+    "stars": 683,
+    "source": "github_repo",
+    "source_url": "https://github.com/semgrep/mcp",
+    "verified": true
+  },
+  {
+    "name": "clangd-mcp",
+    "category": "CODING",
+    "purpose": "C/C++ code intelligence via the clangd language server, exposed to AI agents",
+    "description": "clangd MCP server (felipeerias/clangd-mcp-server): bridges AI agents with the clangd LSP for C/C++ — semantic completion, diagnostics, references, and symbol navigation backed by a real compile-commands index. Build from source per README.",
+    "price_model": "FREE",
+    "install_command": "git clone https://github.com/felipeerias/clangd-mcp-server && cd clangd-mcp-server && npm install && npm run build && npm link",
+    "connect_steps": [
+      "Install clangd itself (e.g. apt install clangd / brew install clangd); ensure compile_commands.json exists for the target project",
+      "hermes mcp add clangd -- clangd-mcp-server",
+      "Verify: ask agent for diagnostics or symbol info of a C++ file"
+    ],
+    "url": "https://github.com/felipeerias/clangd-mcp-server",
+    "stars": 43,
+    "source": "github_repo",
+    "source_url": "https://github.com/felipeerias/clangd-mcp-server",
+    "verified": true
+  },
+  {
+    "name": "rust-tools-mcp",
+    "category": "CODING",
+    "purpose": "Rust toolchain access: rust-analyzer diagnostics, crate docs, and cargo commands",
+    "description": "cursor-rust-tools (terhechte/cursor-rust-tools): MCP server giving agents rust-analyzer information (diagnostics, symbols), crates.io docs, and cargo command execution. Installed via cargo install --git.",
+    "price_model": "FREE",
+    "install_command": "cargo install --git https://github.com/terhechte/cursor-rust-tools",
+    "connect_steps": [
+      "Ensure rust-analyzer is installed and the target Cargo project is open",
+      "hermes mcp add rust-tools -- cursor-rust-tools (or the installed binary name from README)",
+      "Verify: ask agent to fetch rust-analyzer diagnostics for a .rs file or run cargo check"
+    ],
+    "url": "https://github.com/terhechte/cursor-rust-tools",
+    "stars": 83,
+    "source": "github_repo",
+    "source_url": "https://github.com/terhechte/cursor-rust-tools",
+    "verified": true
+  },
+  {
+    "name": "python-mcp",
+    "category": "CODING",
+    "purpose": "Python interpreter server: execute Python code with session state for agents",
+    "description": "python-mcp-server (PyPI, v1.0.1): a Python interpreter MCP server with session management, health monitoring, and FastMCP middleware. Agents can run Python snippets, iterate on scripts, and keep state across calls — handy for data analysis and scripting tasks.",
+    "price_model": "FREE",
+    "install_command": "pip install python-mcp-server",
+    "connect_steps": [
+      "hermes mcp add python -- uvx python-mcp-server (or the installed python-mcp-server binary)",
+      "Optionally configure sandboxing/limits per PyPI docs",
+      "Verify: ask agent to run a small Python computation"
+    ],
+    "url": "https://pypi.org/project/python-mcp-server/",
+    "stars": 0,
+    "source": "pypi",
+    "source_url": "https://pypi.org/project/python-mcp-server/",
+    "verified": true
+  },
+  {
+    "name": "playwright-mcp",
+    "category": "CODING",
+    "purpose": "Browser automation and end-to-end testing with Playwright, driven by AI",
+    "description": "Official Microsoft Playwright MCP (microsoft/playwright-mcp, ~36k stars). Agents can drive real Chromium/Firefox/WebKit: navigate, click, fill forms, take screenshots, run and debug Playwright tests, and inspect the DOM. One of the most-used MCPs in the ecosystem.",
+    "price_model": "FREE",
+    "install_command": "npx @playwright/mcp@latest",
+    "connect_steps": [
+      "hermes mcp add playwright -- npx @playwright/mcp@latest",
+      "Optional: headless mode via --headless flag",
+      "Verify: ask agent to open a URL and describe the page content"
+    ],
+    "url": "https://github.com/microsoft/playwright-mcp",
+    "stars": 35998,
+    "source": "github_repo",
+    "source_url": "https://github.com/microsoft/playwright-mcp",
+    "verified": true
+  },
+  {
+    "name": "puppeteer-mcp",
+    "category": "CODING",
+    "purpose": "Browser automation with Puppeteer for agents (the classic reference MCP)",
+    "description": "Puppeteer MCP server (@modelcontextprotocol/server-puppeteer, v2025.5.12 on npm): the classic reference server for browser automation — navigate pages, click, type, screenshot, and evaluate JS with Puppeteer. Originally from the modelcontextprotocol/servers monorepo (now archived but still published and widely used).",
+    "price_model": "FREE",
+    "install_command": "npx -y @modelcontextprotocol/server-puppeteer",
+    "connect_steps": [
+      "hermes mcp add puppeteer -- npx -y @modelcontextprotocol/server-puppeteer",
+      "Verify: ask agent to screenshot a page or evaluate a DOM query"
+    ],
+    "url": "https://www.npmjs.com/package/@modelcontextprotocol/server-puppeteer",
+    "stars": 0,
+    "source": "npm_package",
+    "source_url": "https://www.npmjs.com/package/@modelcontextprotocol/server-puppeteer",
+    "verified": true
+  },
+  {
+    "name": "cypress-cloud-mcp",
+    "category": "CODING",
+    "purpose": "Cypress test results, flaky-test triage, and failure debugging from Cypress Cloud",
+    "description": "Official Cypress Cloud MCP (GA May 2026, included on every Cypress Cloud plan at no extra cost). Remote MCP at https://mcp.cypress.io/mcp — agents query run statuses, identify flaky tests, and pull failure details (including Test Replay links). Auth via OAuth (recommended) or personal access token.",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "Remote MCP (no local install): connect to https://mcp.cypress.io/mcp",
+    "connect_steps": [
+      "Org admin enables the Cloud MCP integration in Cypress Cloud > Integrations",
+      "In Hermes config.yaml add mcp_servers: cypress: {type: http, url: https://mcp.cypress.io/mcp}; authenticate via OAuth or CYPRESS_CLOUD_API_KEY PAT",
+      "Verify: ask agent to fetch the latest test run status and any flaky tests"
+    ],
+    "url": "https://docs.cypress.io/cloud/integrations/cloud-mcp",
+    "stars": 0,
+    "source": "official_docs",
+    "source_url": "https://docs.cypress.io/cloud/integrations/cloud-mcp",
+    "verified": true
+  },
+  {
+    "name": "chrome-devtools-mcp",
+    "category": "CODING",
+    "purpose": "Chrome DevTools Protocol access: inspect pages, debug network, run performance traces",
+    "description": "Official Chrome DevTools MCP (ChromeDevTools/chrome-devtools-mcp, ~49k stars). Launches a Chrome instance and exposes CDP tools: DOM inspection, console, network activity, performance traces, screenshots, and accessibility snapshots — ideal for web debugging and QA.",
+    "price_model": "FREE",
+    "install_command": "npx chrome-devtools-mcp@latest",
+    "connect_steps": [
+      "hermes mcp add chrome-devtools -- npx chrome-devtools-mcp@latest",
+      "Optional: --headless and --isolated flags for CI use",
+      "Verify: ask agent to open a page and report network requests or console errors"
+    ],
+    "url": "https://github.com/ChromeDevTools/chrome-devtools-mcp",
+    "stars": 49000,
+    "source": "github_repo",
+    "source_url": "https://github.com/ChromeDevTools/chrome-devtools-mcp",
+    "verified": true
+  },
+  {
+    "name": "appium-mcp",
+    "category": "CODING",
+    "purpose": "Mobile app testing (iOS/Android) via Appium, driven by AI",
+    "description": "Official Appium MCP (appium/appium-mcp): runs Appium sessions for native/mobile-web testing — agents can start sessions, interact with the app UI, and read element trees. Installable via npx (npx -y appium-mcp@latest); needs Appium server + platform drivers.",
+    "price_model": "FREE",
+    "install_command": "npx -y appium-mcp@latest",
+    "connect_steps": [
+      "Ensure Appium server and platform drivers (uiautomator2/xcuitest) are available",
+      "hermes mcp add appium -- npx -y appium-mcp@latest",
+      "Verify: ask agent to list capabilities or start a session on a connected device/emulator"
+    ],
+    "url": "https://github.com/appium/appium-mcp",
+    "stars": 449,
+    "source": "github_repo",
+    "source_url": "https://github.com/appium/appium-mcp",
+    "verified": true
+  },
+  {
+    "name": "cargo-mcp",
+    "category": "CODING",
+    "purpose": "Cargo package-manager commands and crate information from AI agents",
+    "description": "cargo-mcp (jbr/cargo-mcp): MCP server for cargo commands — agents can run cargo operations and query crate metadata directly. Installed with cargo install.",
+    "price_model": "FREE",
+    "install_command": "cargo install cargo-mcp",
+    "connect_steps": [
+      "hermes mcp add cargo -- cargo-mcp",
+      "Run from within a Cargo project for workspace-aware commands",
+      "Verify: ask agent to run cargo metadata or search crates"
+    ],
+    "url": "https://github.com/jbr/cargo-mcp",
+    "stars": 16,
+    "source": "github_repo",
+    "source_url": "https://github.com/jbr/cargo-mcp",
+    "verified": true
+  },
+  {
+    "name": "npmjs-mcp",
+    "category": "CODING",
+    "purpose": "npm registry intelligence: package lookup, versions, security audits, dependency analysis",
+    "description": "npmjs-mcp (@yawlabs/npmjs-mcp, v0.15.0): npm registry MCP server giving agents package information, version checks, security audit data, and dependency analysis for JavaScript projects. Installable via npx.",
+    "price_model": "FREE",
+    "install_command": "npx -y @yawlabs/npmjs-mcp@latest",
+    "connect_steps": [
+      "hermes mcp add npmjs -- npx -y @yawlabs/npmjs-mcp@latest",
+      "Verify: ask agent to look up a package's latest version or audit a package.json"
+    ],
+    "url": "https://github.com/YawLabs/npmjs-mcp",
+    "stars": 0,
+    "source": "npm_package",
+    "source_url": "https://www.npmjs.com/package/@yawlabs/npmjs-mcp",
+    "verified": true
+  },
+  {
+    "name": "maven-mcp",
+    "category": "CODING",
+    "purpose": "Maven Central library version lookup for Java projects",
+    "description": "maven-mcp (IvanMikhailenka/maven-mcp, v1.0.3): MCP server for Maven Central library version lookup — agents can find artifacts, versions, and dependency coordinates for Java builds. Installable via npx.",
+    "price_model": "FREE",
+    "install_command": "npx -y maven-mcp",
+    "connect_steps": [
+      "hermes mcp add maven -- npx -y maven-mcp",
+      "Verify: ask agent to find the latest version of a common artifact like org.slf4j:slf4j-api"
+    ],
+    "url": "https://github.com/IvanMikhailenka/maven-mcp",
+    "stars": 0,
+    "source": "npm_package",
+    "source_url": "https://www.npmjs.com/package/maven-mcp",
+    "verified": true
+  },
+  {
+    "name": "context7-mcp",
+    "category": "CODING",
+    "purpose": "Up-to-date library documentation (latest versions) for any framework, fed to AI agents",
+    "description": "Official Context7 MCP (upstash/context7, ~60k stars): resolves the latest docs for libraries in over 20 ecosystems and serves them to agents, eliminating hallucinated/outdated API knowledge. Hosted remote server at https://mcp.context7.com/mcp (no API key needed) or local via 'npx ctx7 setup'.",
+    "price_model": "FREE",
+    "install_command": "Remote MCP (no install): connect to https://mcp.context7.com/mcp  |  local alt: npx ctx7 setup",
+    "connect_steps": [
+      "In Hermes config.yaml add mcp_servers: context7: {type: http, url: https://mcp.context7.com/mcp}",
+      "Verify: ask agent to fetch docs for a library, e.g. axios or pandas"
+    ],
+    "url": "https://github.com/upstash/context7",
+    "stars": 60600,
+    "source": "github_repo",
+    "source_url": "https://github.com/upstash/context7",
+    "verified": true
+  },
+  {
+    "name": "sourcegraph-mcp",
+    "category": "CODING",
+    "purpose": "Code search and navigation across Sourcegraph instances (including sourcegraph.com)",
+    "description": "Official Sourcegraph MCP server: gives agents access to your Sourcegraph instance's code search, navigation, and analysis. Connects as a remote MCP at <instance>/.api/mcp with browser OAuth — sourcegraph.com works out of the box for public code.",
+    "price_model": "FREE",
+    "install_command": "Remote MCP (no install): connect to https://sourcegraph.com/.api/mcp",
+    "connect_steps": [
+      "In Hermes config.yaml add mcp_servers: sourcegraph: {type: http, url: https://sourcegraph.com/.api/mcp} (self-hosted: <your-instance>/.api/mcp)",
+      "First connect runs OAuth browser flow against your Sourcegraph account",
+      "Verify: ask agent to search for a symbol or code pattern across a repository"
+    ],
+    "url": "https://sourcegraph.com/docs/api/mcp",
+    "stars": 0,
+    "source": "official_docs",
+    "source_url": "https://sourcegraph.com/docs/api/mcp",
+    "verified": true
+  },
+  {
+    "name": "greptile-mcp",
+    "category": "CODING",
+    "purpose": "Code-review intelligence: PR review comments, codebase context, and coding standards for agents",
+    "description": "Official Greptile MCP (v2, remote): connects agents to Greptile's code-review platform — access PR review comments, codebase Q&A context, and custom coding standards. Remote server at https://api.greptile.com/mcp authenticated with a Bearer API key from app.greptile.com.",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "Remote MCP (no install): connect to https://api.greptile.com/mcp with Authorization: Bearer <GREPTILE_API_KEY>",
+    "connect_steps": [
+      "Create an API key at app.greptile.com/settings/organization/api",
+      "In Hermes config.yaml add mcp_servers: greptile: {type: http, url: https://api.greptile.com/mcp, headers: {Authorization: Bearer <KEY>}}",
+      "Verify: ask agent to pull review comments for a PR or query codebase context"
+    ],
+    "url": "https://www.greptile.com/docs/mcp-v2/overview",
+    "stars": 0,
+    "source": "official_docs",
+    "source_url": "https://www.greptile.com/docs/mcp-v2/overview",
+    "verified": true
+  },
+  {
+    "name": "appmap-mcp",
+    "category": "CODING",
+    "purpose": "Runtime code understanding: query recorded AppMap execution traces (slow endpoints, SQL, exceptions)",
+    "description": "Official AppMap MCP server, shipped with the AppMap CLI (npm @appland/appmap, v3.201+). Started with 'appmap query mcp' — reads a pre-built query index of recorded AppMap data and answers how the app actually ran: slow endpoints, SQL issued, exceptions, end-to-end request flow.",
+    "price_model": "FREE",
+    "install_command": "npm install -g @appland/appmap && appmap query mcp",
+    "connect_steps": [
+      "Record AppMap data for your app (AppMap agent/CLI), then build the query index",
+      "hermes mcp add appmap -- appmap query mcp",
+      "Verify: ask agent which endpoints are slowest or what SQL a request issued"
+    ],
+    "url": "https://appmap.io/docs/reference/appmap-mcp",
+    "stars": 0,
+    "source": "official_docs",
+    "source_url": "https://appmap.io/docs/reference/appmap-mcp",
+    "verified": true
+  }
+]

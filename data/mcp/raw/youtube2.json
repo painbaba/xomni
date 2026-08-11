@@ -1,0 +1,402 @@
+[
+  {
+    "name": "ExecuteAutomation MCP Database Server",
+    "category": "DATABASES",
+    "purpose": "Query and manage Postgres, SQL Server, and SQLite databases from an AI agent via one MCP server",
+    "description": "NodeJS MCP database server covering Postgres, SQL Server and SQLite with connection-reference docs, connection-string or named-database setup, and table/query tools. Demonstrated end-to-end in the Execute Automation channel video.",
+    "price_model": "FREE",
+    "install_command": "npx -y executeautomation/database-server",
+    "connect_steps": [
+      "hermes mcp add database-server -- npx -y executeautomation/database-server",
+      "Set DB connection env (e.g. MYSQL_HOST, MYSQL_USER, MYSQL_PASSWORD or SQL Server/Postgres connection strings) in config.yaml mcp_servers env block",
+      "Restart Hermes and verify: ask the agent to list tables in a connected database"
+    ],
+    "url": "https://github.com/executeautomation/mcp-database-server",
+    "stars": 379,
+    "source": "youtube:Database MCP Server: Connect Postgres DB, SQL Server and Sqlite",
+    "source_url": "https://www.youtube.com/watch?v=aEDimJAsRBQ",
+    "verified": true
+  },
+  {
+    "name": "MySQL MCP Server",
+    "category": "DATABASES",
+    "purpose": "Run SQL queries and manage MySQL databases directly from natural language",
+    "description": "Python-based MCP server (pip/uvx installable) that lets an LLM execute SQL against local or remote MySQL. Covered in Rahul Shetty Academy's agent-building video where it powers a registration/login workflow.",
+    "price_model": "FREE",
+    "install_command": "uvx mysql-mcp-server",
+    "connect_steps": [
+      "hermes mcp add mysql -- uvx mysql-mcp-server",
+      "Provide MYSQL_HOST, MYSQL_USER, MYSQL_PASSWORD, MYSQL_DB env keys in config.yaml mcp_servers",
+      "Restart and verify: ask the agent to run SHOW TABLES on the target database"
+    ],
+    "url": "https://github.com/designcomputer/mysql_mcp_server",
+    "stars": 1400,
+    "source": "youtube:Build AI Agent with MCP Servers to Automate - Browser, API, SQL & File Systems",
+    "source_url": "https://www.youtube.com/watch?v=31nwCHtDAv8",
+    "verified": true
+  },
+  {
+    "name": "Playwright MCP (Microsoft)",
+    "category": "BROWSER-AUTOMATION",
+    "purpose": "Browser automation and web testing via Playwright's accessibility tree",
+    "description": "Official Microsoft MCP server exposing browser_navigate, browser_click, browser_snapshot and testing tools. Shown in Rahul Shetty's agent video (npx @playwright/mcp@latest) and GitHub's Copilot CLI tutorial for validating web apps.",
+    "price_model": "FREE",
+    "install_command": "npx @playwright/mcp@latest",
+    "connect_steps": [
+      "hermes mcp add playwright -- npx @playwright/mcp@latest",
+      "Optional flags: --headless, --isolated, --viewport-size for controlled runs (config.yaml mcp_servers args)",
+      "Restart and verify: ask the agent to open a URL, click an element, and report the page state"
+    ],
+    "url": "https://github.com/microsoft/playwright-mcp",
+    "stars": 36000,
+    "source": "youtube:Build AI Agent with MCP Servers to Automate - Browser, API, SQL & File Systems",
+    "source_url": "https://www.youtube.com/watch?v=31nwCHtDAv8",
+    "verified": true
+  },
+  {
+    "name": "Selenium MCP",
+    "category": "BROWSER-AUTOMATION",
+    "purpose": "Control browsers through Selenium WebDriver for automation and QA",
+    "description": "Python MCP server wrapping Selenium WebDriver so AI agents can drive real browsers (Chrome/Firefox) with WebDriver primitives. Mentioned as the Selenium alternative to Playwright MCP in Rahul Shetty's browser-automation agent tutorial.",
+    "price_model": "FREE",
+    "install_command": "pip install selenium-mcp",
+    "connect_steps": [
+      "pip install selenium-mcp (requires ChromeDriver/geckodriver on PATH)",
+      "hermes mcp add selenium -- uvx selenium-mcp",
+      "Restart and verify: ask the agent to open a page and extract page title"
+    ],
+    "url": "https://github.com/nayakprashant/selenium-mcp-server",
+    "stars": 3,
+    "source": "youtube:Build AI Agent with MCP Servers to Automate - Browser, API, SQL & File Systems",
+    "source_url": "https://www.youtube.com/watch?v=31nwCHtDAv8",
+    "verified": false
+  },
+  {
+    "name": "Browser MCP (BrowserBase)",
+    "category": "BROWSER-AUTOMATION",
+    "purpose": "Let the AI drive your own real Chrome browser via extension + local server",
+    "description": "browsermcp.io MCP server: a Chrome extension connects your everyday browser to a local MCP server, so agents can navigate logged-in sessions, click, type and screenshot. Shown for automated testing and task automation by Elie Steinbock and All About AI (with Cursor).",
+    "price_model": "FREE",
+    "install_command": "npx browsermcp@latest",
+    "connect_steps": [
+      "Install the Browser MCP Chrome extension (browsermcp.io) and pin it",
+      "hermes mcp add browsermcp -- npx browsermcp@latest",
+      "Open the extension, point it at http://localhost:7788 and connect",
+      "Verify: ask the agent to browse a site you are already logged into"
+    ],
+    "url": "https://github.com/browsermcp/mcp",
+    "stars": 6900,
+    "source": "youtube:Automate your browser with Browser MCP",
+    "source_url": "https://www.youtube.com/watch?v=VkAwC6q3Hbk",
+    "verified": true
+  },
+  {
+    "name": "Stagehand MCP (Browserbase)",
+    "category": "BROWSER-AUTOMATION",
+    "purpose": "Natural-language browser automation framework (act/extract/observe) exposed over MCP",
+    "description": "Browserbase's Stagehand MCP (@browserbasehq/mcp) brings act(), extract(), and observe() browser actions to MCP clients, with cloud browser or local Chromium support. Linked from Elie Steinbock's browser-automation video resources (stagehand.dev / browserbase.com).",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "npx @browserbasehq/mcp",
+    "connect_steps": [
+      "hermes mcp add stagehand -- npx @browserbasehq/mcp",
+      "Set BROWSERBASE_API_KEY (and BROWSERBASE_PROJECT_ID) env keys for cloud browsers; omit for local Chromium",
+      "Restart and verify: ask the agent to extract data from a page using extract()"
+    ],
+    "url": "https://github.com/browserbase/stagehand",
+    "stars": 24000,
+    "source": "youtube:Automate your browser with Browser MCP",
+    "source_url": "https://www.youtube.com/watch?v=VkAwC6q3Hbk",
+    "verified": false
+  },
+  {
+    "name": "GitHub MCP Server (official)",
+    "category": "DEVOPS",
+    "purpose": "Full GitHub API access: repos, issues, PRs, actions, code search, teams",
+    "description": "GitHub's official open-source MCP server (github/github-mcp-server) connecting AI tools to the GitHub platform with OAuth or PAT auth. Covered by GitHub's own channel, Cloud Champ's VS Code tutorial, and Copilot CLI docs.",
+    "price_model": "FREE",
+    "install_command": "docker run -i --rm -e GITHUB_PERSONAL_ACCESS_TOKEN ghcr.io/github/github-mcp-server",
+    "connect_steps": [
+      "Create a GitHub PAT (repo, read:org scopes) or use OAuth",
+      "hermes mcp add github -- docker run -i --rm -e GITHUB_PERSONAL_ACCESS_TOKEN ghcr.io/github/github-mcp-server (or remote URL https://api.githubcopilot.com/mcp/)",
+      "Restart and verify: ask the agent to list your starred repos sorted by stars"
+    ],
+    "url": "https://github.com/github/github-mcp-server",
+    "stars": 32000,
+    "source": "youtube:Github MCP Server in VS Code : Everything Explained with Examples [Demo]",
+    "source_url": "https://www.youtube.com/watch?v=OXcS09qn1rc",
+    "verified": true
+  },
+  {
+    "name": "Docker MCP Gateway",
+    "category": "DEVOPS",
+    "purpose": "Run containerized MCP servers from Docker's catalog behind one gateway connection",
+    "description": "Docker's MCP gateway (docker/mcp-gateway) lets one connection serve many official MCP servers (DuckDuckGo, Fetch, GitHub, Notion, etc.) from a catalog, with custom catalogs supported. NetworkChuck's tutorial builds a custom catalog and connects Cursor/Claude to it.",
+    "price_model": "FREE",
+    "install_command": "npx -y docker-mcp",
+    "connect_steps": [
+      "Install Docker Desktop and start the engine",
+      "hermes mcp add docker-mcp -- npx -y docker-mcp",
+      "Add servers from the Docker MCP catalog (e.g. duckduckgo, fetch) or point to a custom catalog YAML",
+      "Restart and verify: ask the agent to use one of the catalog tools"
+    ],
+    "url": "https://github.com/docker/mcp-gateway",
+    "stars": 1500,
+    "source": "youtube:you need to learn MCP RIGHT NOW!! (Model Context Protocol)",
+    "source_url": "https://www.youtube.com/watch?v=GuTcle5edjk",
+    "verified": true
+  },
+  {
+    "name": "Power Automate Flow Agent MCP",
+    "category": "DEVOPS",
+    "purpose": "Build, edit, run and debug Power Automate cloud flows from Copilot CLI / VS Code",
+    "description": "Microsoft's Flow Agent MCP server lets you describe a flow in natural language and have AI create, test and debug Power Automate cloud flows. Reza Dorrani's tutorial shows the full workflow via GitHub Copilot CLI, backed by the power-platform-skills repo.",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "copilot mcp add flow-agent (via microsoft/power-platform-skills plugin)",
+    "connect_steps": [
+      "Install the Power Automate skill/plugin from microsoft/power-platform-skills (plugins/power-automate)",
+      "Add the remote Flow Agent MCP server in GitHub Copilot CLI (copilot mcp add) or VS Code",
+      "Authenticate with your Power Platform environment",
+      "Verify: describe a flow (e.g. 'trigger on new response') and let the agent build it"
+    ],
+    "url": "https://github.com/microsoft/power-platform-skills",
+    "stars": 671,
+    "source": "youtube:NEW Power Automate Flow Agent MCP Server | Full Tutorial",
+    "source_url": "https://www.youtube.com/watch?v=25V_BBF4ymE",
+    "verified": false
+  },
+  {
+    "name": "Atlassian Jira MCP (mcp-atlassian)",
+    "category": "PRODUCTIVITY",
+    "purpose": "Jira and Confluence access: projects, issues, sprints, documents, comments",
+    "description": "mcp-atlassian exposes Jira Cloud and Confluence tools (list projects, get issues, search tickets, read docs) so agents can work from ticket context instead of guessing. Shown in Amiay Narayan's Jira/Slack/Notion connection tutorial via 'claude mcp add'.",
+    "price_model": "FREE",
+    "install_command": "claude mcp add jira -- npx -y mcp-atlassian",
+    "connect_steps": [
+      "Create an Atlassian API token and note your site URL + email",
+      "hermes mcp add jira -- npx -y mcp-atlassian (env: JIRA_URL, JIRA_EMAIL, JIRA_API_TOKEN)",
+      "Restart and verify: ask the agent to list projects from your Jira instance"
+    ],
+    "url": "https://github.com/sooperset/mcp-atlassian",
+    "stars": 5700,
+    "source": "youtube:MCP Server and how to connect to them (JIRA, Slack, Notion)",
+    "source_url": "https://www.youtube.com/watch?v=L1d3HdoLEhM",
+    "verified": true
+  },
+  {
+    "name": "Slack MCP",
+    "category": "COMMUNICATION",
+    "purpose": "Post and read Slack messages, list channels and users from an AI agent",
+    "description": "Official Slack MCP server (@modelcontextprotocol/server-slack) giving agents Slack workspace tools. Used in Amiay Narayan's multi-server tutorial and Brandon Passley's Slack AI-agent-in-Make build.",
+    "price_model": "FREE",
+    "install_command": "npx -y @modelcontextprotocol/server-slack",
+    "connect_steps": [
+      "Create a Slack app/bot and install it to your workspace",
+      "hermes mcp add slack -- npx -y @modelcontextprotocol/server-slack (env: SLACK_BOT_TOKEN, SLACK_TEAM_ID)",
+      "Restart and verify: ask the agent to list channels and post a test message"
+    ],
+    "url": "https://github.com/modelcontextprotocol/servers/tree/main/src/slack",
+    "stars": 89000,
+    "source": "youtube:MCP Server and how to connect to them (JIRA, Slack, Notion)",
+    "source_url": "https://www.youtube.com/watch?v=L1d3HdoLEhM",
+    "verified": true
+  },
+  {
+    "name": "Notion MCP (official, NotionHQ)",
+    "category": "PRODUCTIVITY",
+    "purpose": "Full Notion workspace control: pages, databases, search, comments, users",
+    "description": "Notion's official MCP server (makenotion/notion-mcp-server, npm @notionhq/notion-mcp-server) exposes the whole Notion API to agents. Linked from Zen van Riel's 'AI Second Brain' video and Prompt Circle AI's context-engineering tutorial.",
+    "price_model": "FREE",
+    "install_command": "npx @notionhq/notion-mcp-server",
+    "connect_steps": [
+      "Create a Notion integration at notion.so/my-integrations and copy the token",
+      "hermes mcp add notion -- npx @notionhq/notion-mcp-server (env: NOTION_API_KEY)",
+      "Share the pages/databases you want accessible with the integration",
+      "Restart and verify: ask the agent to search your workspace"
+    ],
+    "url": "https://github.com/makenotion/notion-mcp-server",
+    "stars": 4600,
+    "source": "youtube:Build your AI Second Brain with Notion and Claude (MCP)",
+    "source_url": "https://www.youtube.com/watch?v=NMmDnYKD0fE",
+    "verified": true
+  },
+  {
+    "name": "mcp-notion-server (suekou)",
+    "category": "PRODUCTIVITY",
+    "purpose": "Lightweight NodeJS Notion MCP server for second-brain / knowledge-base workflows",
+    "description": "Community NodeJS Notion MCP server run entirely via npx (no code download) with an integration token. The server Zen van Riel used to auto-populate a Notion workspace with Claude.",
+    "price_model": "FREE",
+    "install_command": "npx mcp-notion-server",
+    "connect_steps": [
+      "Create a Notion integration and copy its token",
+      "hermes mcp add notion-community -- npx mcp-notion-server (env: NOTION_TOKEN)",
+      "Grant the integration access to target pages",
+      "Restart and verify: ask the agent to create a page in your workspace"
+    ],
+    "url": "https://github.com/suekou/mcp-notion-server",
+    "stars": 919,
+    "source": "youtube:Build your AI Second Brain with Notion and Claude (MCP)",
+    "source_url": "https://www.youtube.com/watch?v=NMmDnYKD0fE",
+    "verified": true
+  },
+  {
+    "name": "MCP Inspector",
+    "category": "MISC",
+    "purpose": "Debug, test and inspect MCP servers in a web UI",
+    "description": "Official MCP Inspector lets you point it at any MCP server (local stdio or remote) to browse tools, resources and prompts and fire test calls. Prompt Circle AI uses it to validate a custom Notion MCP server during development.",
+    "price_model": "FREE",
+    "install_command": "npx @modelcontextprotocol/inspector",
+    "connect_steps": [
+      "Run 'npx @modelcontextprotocol/inspector' to start the web UI",
+      "Enter the server command (e.g. npx mcp-notion-server) or remote URL in the inspector",
+      "Connect and exercise tools before wiring into Hermes config.yaml"
+    ],
+    "url": "https://github.com/modelcontextprotocol/inspector",
+    "stars": 11000,
+    "source": "youtube:Build a Notion MCP Server: Context Engineering Tutorial",
+    "source_url": "https://www.youtube.com/watch?v=bSBdBCXm0gQ",
+    "verified": true
+  },
+  {
+    "name": "FastMCP (Python framework)",
+    "category": "MISC",
+    "purpose": "Build custom MCP servers in Python in minutes with decorators",
+    "description": "FastMCP is the de-facto Python framework for writing MCP servers (tools, resources, prompts via simple decorators, stdio or HTTP). Great Adib's tutorial builds a full SQLite budget app server with it from scratch.",
+    "price_model": "FREE",
+    "install_command": "pip install fastmcp",
+    "connect_steps": [
+      "pip install fastmcp (or uvx fastmcp)",
+      "Define tools with @mcp.tool() in a server.py, then run it (python server.py)",
+      "hermes mcp add my-server -- uvx fastmcp run server.py",
+      "Verify with MCP Inspector or a test prompt"
+    ],
+    "url": "https://github.com/jlowin/fastmcp",
+    "stars": 27000,
+    "source": "youtube:Build Custom MCP Servers From Scratch With Fast-MCP | Full Project With SQLite DB for beginners",
+    "source_url": "https://www.youtube.com/watch?v=yTixOg2wyfs",
+    "verified": true
+  },
+  {
+    "name": "Filesystem MCP",
+    "category": "MISC",
+    "purpose": "Read/write local files and directories safely from an agent",
+    "description": "Official filesystem server (@modelcontextprotocol/server-filesystem) exposing file read/write/search tools scoped to allowed directories. Included in Rahul Shetty's agent video alongside browser and DB servers.",
+    "price_model": "FREE",
+    "install_command": "npx -y @modelcontextprotocol/server-filesystem /path/to/allowed/dir",
+    "connect_steps": [
+      "hermes mcp add filesystem -- npx -y @modelcontextprotocol/server-filesystem C:/Users/HP/xomni",
+      "Restrict to the directories the agent may touch",
+      "Restart and verify: ask the agent to list files in the allowed directory"
+    ],
+    "url": "https://github.com/modelcontextprotocol/servers/tree/main/src/filesystem",
+    "stars": 89000,
+    "source": "youtube:Build AI Agent with MCP Servers to Automate - Browser, API, SQL & File Systems",
+    "source_url": "https://www.youtube.com/watch?v=31nwCHtDAv8",
+    "verified": true
+  },
+  {
+    "name": "Zapier MCP",
+    "category": "PRODUCTIVITY",
+    "purpose": "Connect AI assistants to 8,000+ apps (Airtable, Gmail, Slack, CRMs) via OAuth",
+    "description": "Zapier's official MCP lets agents read data, create contacts, send messages and update records across connected apps through one OAuth hub. Zapier's 2026 tutorial shows setup with Claude Desktop using their MCP button and connector prompts.",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "hermes mcp add zapier --transport http --url https://mcp.zapier.com (OAuth)",
+    "connect_steps": [
+      "Go to zapier.com/mcp and select the AI assistant (e.g. Claude)",
+      "Copy the generated prompt/URL and complete the OAuth flow to authorize apps",
+      "Add the remote MCP endpoint to Hermes config.yaml mcp_servers (http transport)",
+      "Verify: ask the agent to create a contact or send a message through a connected app"
+    ],
+    "url": "https://zapier.com/mcp",
+    "stars": 0,
+    "source": "youtube:MCP Tutorial: Complete Guide for 2026",
+    "source_url": "https://www.youtube.com/watch?v=9UxGxWIQSso",
+    "verified": true
+  },
+  {
+    "name": "DuckDuckGo MCP",
+    "category": "SEARCH-RESEARCH",
+    "purpose": "Web search via DuckDuckGo from any MCP client",
+    "description": "DuckDuckGo MCP server (npx duckduckgo-mcp-server) adds web search to agents; offered out of the box in Docker's MCP catalog, which NetworkChuck enables in his Docker MCP tutorial.",
+    "price_model": "FREE",
+    "install_command": "npx -y duckduckgo-mcp-server",
+    "connect_steps": [
+      "hermes mcp add ddg-search -- npx -y duckduckgo-mcp-server",
+      "Restart and verify: ask the agent to search the web for a current topic"
+    ],
+    "url": "https://github.com/nickclyde/duckduckgo-mcp-server",
+    "stars": 1400,
+    "source": "youtube:you need to learn MCP RIGHT NOW!! (Model Context Protocol)",
+    "source_url": "https://www.youtube.com/watch?v=GuTcle5edjk",
+    "verified": true
+  },
+  {
+    "name": "Fetch MCP",
+    "category": "SEARCH-RESEARCH",
+    "purpose": "Fetch URLs and convert web pages to markdown for LLM consumption",
+    "description": "Fetch server grabs a URL and returns clean markdown so agents can read docs, articles and APIs. NetworkChuck adds it from Docker's MCP catalog ('Fetch. It'll grab URLs.') in his Docker MCP tutorial.",
+    "price_model": "FREE",
+    "install_command": "npx -y @modelcontextprotocol/server-fetch",
+    "connect_steps": [
+      "hermes mcp add fetch -- npx -y @modelcontextprotocol/server-fetch (or enable 'fetch' from the Docker MCP catalog)",
+      "Restart and verify: ask the agent to summarize a URL you provide"
+    ],
+    "url": "https://github.com/modelcontextprotocol/servers/tree/main/src/fetch",
+    "stars": 89000,
+    "source": "youtube:you need to learn MCP RIGHT NOW!! (Model Context Protocol)",
+    "source_url": "https://www.youtube.com/watch?v=GuTcle5edjk",
+    "verified": false
+  },
+  {
+    "name": "CoinGecko MCP",
+    "category": "FINANCE",
+    "purpose": "Live crypto prices and market data from CoinGecko's API",
+    "description": "CoinGecko MCP server pulls real-time crypto prices, trending coins and market stats for agents. NetworkChuck demonstrates it in Cursor/Claude ('what is the current price of XRP') via the Docker MCP catalog.",
+    "price_model": "FREE",
+    "install_command": "npx -y coingecko-mcp-server",
+    "connect_steps": [
+      "hermes mcp add coingecko -- npx -y coingecko-mcp-server",
+      "Optional: set COINGECKO_API_KEY env for higher rate limits",
+      "Restart and verify: ask the agent for the current price of a coin"
+    ],
+    "url": "https://github.com/friendlygeorge/coingecko-mcp-server",
+    "stars": 0,
+    "source": "youtube:you need to learn MCP RIGHT NOW!! (Model Context Protocol)",
+    "source_url": "https://www.youtube.com/watch?v=GuTcle5edjk",
+    "verified": false
+  },
+  {
+    "name": "Svelte MCP",
+    "category": "MISC",
+    "purpose": "Svelte/SvelteKit documentation and framework knowledge for AI coding assistants",
+    "description": "Remote Svelte MCP server (@sveltejs/mcp, repo sveltejs/ai-tools) added as an HTTP server in GitHub's Copilot CLI tutorial, letting Copilot consult Svelte docs and inspect SvelteKit apps while coding.",
+    "price_model": "FREE",
+    "install_command": "npx @sveltejs/mcp",
+    "connect_steps": [
+      "hermes mcp add svelte --transport http --url <svelte mcp endpoint> (or npx @sveltejs/mcp for the CLI version)",
+      "Restart and verify: ask the agent Svelte-specific framework questions"
+    ],
+    "url": "https://github.com/sveltejs/ai-tools",
+    "stars": 306,
+    "source": "youtube:How to use MCP servers with GitHub Copilot CLI | Tutorial for beginners",
+    "source_url": "https://www.youtube.com/watch?v=DtQjVIRRszM",
+    "verified": false
+  },
+  {
+    "name": "ExecuteAutomation Playwright MCP",
+    "category": "BROWSER-AUTOMATION",
+    "purpose": "Playwright MCP fork with AI-powered selector strategies (XPath, AI locators)",
+    "description": "ExecuteAutomation's Playwright MCP server (docs at executeautomation.github.io/mcp-playwright) adds AI-driven selector generation on top of Playwright MCP. Linked from the Execute Automation database-server video description.",
+    "price_model": "FREE",
+    "install_command": "npx -y executeautomation/mcp-playwright",
+    "connect_steps": [
+      "hermes mcp add ea-playwright -- npx -y executeautomation/mcp-playwright",
+      "Optional env: PLAYWRIGHT_AI_* keys for AI locator features",
+      "Restart and verify: ask the agent to automate a form and submit it"
+    ],
+    "url": "https://github.com/executeautomation/mcp-playwright",
+    "stars": 5600,
+    "source": "youtube:Database MCP Server: Connect Postgres DB, SQL Server and Sqlite",
+    "source_url": "https://www.youtube.com/watch?v=aEDimJAsRBQ",
+    "verified": false
+  }
+]

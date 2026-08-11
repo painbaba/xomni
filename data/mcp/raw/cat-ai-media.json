@@ -1,0 +1,629 @@
+[
+  {
+    "name": "openai-mcp-server",
+    "category": "AI-MODELS",
+    "purpose": "Query OpenAI models (GPT-5.x, o-series) from any MCP client",
+    "description": "Community OpenAI MCP server: chat completions with tool/function calling against the OpenAI API. The former official openai/mcp repo was retired; this npm package is the current installable server.",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "npx -y openai-mcp-server",
+    "connect_steps": [
+      "1. Set OPENAI_API_KEY in ~/.hermes/.env",
+      "2. echo Y | hermes --accept-hooks mcp add openai --command npx --args -y openai-mcp-server --env OPENAI_API_KEY=${env:OPENAI_API_KEY}",
+      "3. hermes mcp list to confirm, then /reload-mcp"
+    ],
+    "url": "https://github.com/cjinghong/openai-mcp-server",
+    "stars": null,
+    "source": "npm",
+    "source_url": "https://www.npmjs.com/package/openai-mcp-server",
+    "verified": true
+  },
+  {
+    "name": "groq-mcp",
+    "category": "AI-MODELS",
+    "purpose": "Run GroqCloud Llama/Whisper models with tool use from MCP clients",
+    "description": "Official Groq MCP server (groq/groq-mcp-server). Exposes GroqCloud's fast inference models with function calling; requires a free Groq API key.",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "uvx groq-mcp",
+    "connect_steps": [
+      "1. Get free key at console.groq.com; add GROQ_API_KEY to ~/.hermes/.env",
+      "2. echo Y | hermes --accept-hooks mcp add groq --command uvx --args groq-mcp --env GROQ_API_KEY=${env:GROQ_API_KEY}",
+      "3. hermes mcp list; restart or /reload-mcp"
+    ],
+    "url": "https://github.com/groq/groq-mcp-server",
+    "stars": 43,
+    "source": "github",
+    "source_url": "https://raw.githubusercontent.com/groq/groq-mcp-server/main/README.md",
+    "verified": true
+  },
+  {
+    "name": "ollama-mcp",
+    "category": "AI-MODELS",
+    "purpose": "Talk to local Ollama models (Llama, Qwen, Mistral) via MCP",
+    "description": "Community Ollama MCP server (rawveg/ollama-mcp, npm ollama-mcp v2.1.0). Bridges MCP clients to a locally running Ollama instance — fully local, no API key. Ollama has no official MCP repo.",
+    "price_model": "FREE",
+    "install_command": "npx -y ollama-mcp",
+    "connect_steps": [
+      "1. Install & run Ollama locally (ollama serve) and pull a model",
+      "2. echo Y | hermes --accept-hooks mcp add ollama --command npx --args -y ollama-mcp",
+      "3. hermes mcp list; restart or /reload-mcp"
+    ],
+    "url": "https://github.com/rawveg/ollama-mcp",
+    "stars": 170,
+    "source": "github",
+    "source_url": "https://raw.githubusercontent.com/rawveg/ollama-mcp/main/README.md",
+    "verified": true
+  },
+  {
+    "name": "lmstudio-mcp",
+    "category": "AI-MODELS",
+    "purpose": "Use local LM Studio models (any GGUF) as an MCP tool backend",
+    "description": "LMStudio-MCP (infinitimeless) bridges Claude/other MCP clients to locally running LM Studio models via its OpenAI-compatible endpoint. Local-first, free, no API key.",
+    "price_model": "FREE",
+    "install_command": "pip install requests \"mcp[cli]\" openai && python lmstudio_bridge.py",
+    "connect_steps": [
+      "1. Run LM Studio with a model loaded and server on localhost:1234",
+      "2. pip install requests 'mcp[cli]' openai in the server venv",
+      "3. Add server: command=python, args=['lmstudio_bridge.py'] in config.yaml mcp_servers; hermes mcp list"
+    ],
+    "url": "https://github.com/infinitimeless/LMStudio-MCP",
+    "stars": 168,
+    "source": "github",
+    "source_url": "https://raw.githubusercontent.com/infinitimeless/LMStudio-MCP/main/README.md",
+    "verified": true
+  },
+  {
+    "name": "perplexity-mcp",
+    "category": "AI-MODELS",
+    "purpose": "Official Perplexity API platform access: sonar models, web search, citations",
+    "description": "Official Perplexity MCP server (perplexityai/modelcontextprotocol, npm @perplexity-ai/mcp-server v1.2.0). Connects MCP clients to Perplexity's hosted API (remote https://api.perplexity.ai/mcp or local stdio).",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "npx -y @perplexity-ai/mcp-server",
+    "connect_steps": [
+      "1. Get PERPLEXITY_API_KEY at perplexity.ai/settings/api",
+      "2. echo Y | hermes --accept-hooks mcp add perplexity --command npx --args -y @perplexity-ai/mcp-server --env PERPLEXITY_API_KEY=${env:PERPLEXITY_API_KEY}",
+      "3. hermes mcp list; restart or /reload-mcp"
+    ],
+    "url": "https://github.com/perplexityai/modelcontextprotocol",
+    "stars": 2442,
+    "source": "github",
+    "source_url": "https://raw.githubusercontent.com/perplexityai/modelcontextprotocol/main/README.md",
+    "verified": true
+  },
+  {
+    "name": "hf-mcp",
+    "category": "AI-MODELS",
+    "purpose": "Hugging Face models, datasets, Spaces and Inference API via MCP",
+    "description": "Official Hugging Face MCP server (huggingface/hf-mcp-server). Hosted at https://huggingface.co/mcp with Bearer HF_TOKEN auth, or run locally via npx/docker. Covers HF Inference Providers, Spaces, datasets.",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "npx -y @llmindset/hf-mcp-server  (or remote: hermes mcp add hf --url https://huggingface.co/mcp)",
+    "connect_steps": [
+      "1. Get HF_TOKEN at huggingface.co/settings/tokens; add to ~/.hermes/.env",
+      "2. Remote: hermes mcp add hf-mcp-server --url https://huggingface.co/mcp --auth header --env HF_TOKEN=${env:HF_TOKEN}",
+      "3. hermes mcp list; restart or /reload-mcp"
+    ],
+    "url": "https://github.com/huggingface/hf-mcp-server",
+    "stars": 272,
+    "source": "github",
+    "source_url": "https://raw.githubusercontent.com/huggingface/hf-mcp-server/main/README.md",
+    "verified": true
+  },
+  {
+    "name": "ffmpeg-mcp",
+    "category": "MEDIA",
+    "purpose": "Video/audio processing: clip, transcode, concat, extract frames via ffmpeg",
+    "description": "ffmpeg-mcp (egoist/ffmpeg-mcp, npm v0.0.3). Wraps ffmpeg CLI into MCP tools for media manipulation. Requires ffmpeg installed locally.",
+    "price_model": "FREE",
+    "install_command": "npx -y ffmpeg-mcp",
+    "connect_steps": [
+      "1. Install ffmpeg (winget install ffmpeg) and ensure it is on PATH",
+      "2. echo Y | hermes --accept-hooks mcp add ffmpeg --command npx --args -y ffmpeg-mcp",
+      "3. hermes mcp list; restart or /reload-mcp"
+    ],
+    "url": "https://github.com/egoist/ffmpeg-mcp",
+    "stars": 120,
+    "source": "github",
+    "source_url": "https://raw.githubusercontent.com/egoist/ffmpeg-mcp/main/README.md",
+    "verified": true
+  },
+  {
+    "name": "youtube-transcript-mcp",
+    "category": "MEDIA",
+    "purpose": "Fetch YouTube video transcripts/summaries as text",
+    "description": "Official YouTube Transcript MCP server (@kimtaeyoon83/mcp-server-youtube-transcript, npm v0.1.1). Extracts subtitles from YouTube URLs and formats them for LLM consumption.",
+    "price_model": "FREE",
+    "install_command": "npx -y @kimtaeyoon83/mcp-server-youtube-transcript",
+    "connect_steps": [
+      "1. echo Y | hermes --accept-hooks mcp add youtube-transcript --command npx --args -y @kimtaeyoon83/mcp-server-youtube-transcript",
+      "2. hermes mcp list; restart or /reload-mcp",
+      "3. Tool: mcp__youtube-transcript__get_transcript(url)"
+    ],
+    "url": "https://github.com/kimtaeyoon83/mcp-server-youtube-transcript",
+    "stars": 582,
+    "source": "github",
+    "source_url": "https://raw.githubusercontent.com/kimtaeyoon83/mcp-server-youtube-transcript/main/README.md",
+    "verified": true
+  },
+  {
+    "name": "spotify-mcp",
+    "category": "MEDIA",
+    "purpose": "Control Spotify: playback, search, playlists, currently playing",
+    "description": "spotify-mcp (varunneal/spotify-mcp, npm v0.1.4). Official-featured community server controlling Spotify via OAuth. Requires Spotify Developer app credentials (client ID/secret) and a Premium account for device control.",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "uvx spotify-mcp",
+    "connect_steps": [
+      "1. Create app at developer.spotify.com; set SPOTIFY_CLIENT_ID/SECRET in ~/.hermes/.env",
+      "2. echo Y | hermes --accept-hooks mcp add spotify --command uvx --args spotify-mcp --env SPOTIFY_CLIENT_ID=${env:SPOTIFY_CLIENT_ID} --env SPOTIFY_CLIENT_SECRET=${env:SPOTIFY_CLIENT_SECRET}",
+      "3. Complete OAuth device flow on first tool call; hermes mcp list"
+    ],
+    "url": "https://github.com/varunneal/spotify-mcp",
+    "stars": 611,
+    "source": "github",
+    "source_url": "https://raw.githubusercontent.com/varunneal/spotify-mcp/main/README.md",
+    "verified": true
+  },
+  {
+    "name": "elevenlabs-mcp",
+    "category": "MEDIA",
+    "purpose": "Text-to-speech, voice cloning and audio generation (ElevenLabs)",
+    "description": "Official ElevenLabs MCP server (elevenlabs/elevenlabs-mcp, PyPI v0.12.2, also on npm). Generate speech, clone voices, list voices, with a free-tier API key.",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "uvx elevenlabs-mcp",
+    "connect_steps": [
+      "1. Get ELEVENLABS_API_KEY at elevenlabs.io (free tier available)",
+      "2. echo Y | hermes --accept-hooks mcp add elevenlabs --command uvx --args elevenlabs-mcp --env ELEVENLABS_API_KEY=${env:ELEVENLABS_API_KEY}",
+      "3. hermes mcp list; restart or /reload-mcp"
+    ],
+    "url": "https://github.com/elevenlabs/elevenlabs-mcp",
+    "stars": 1517,
+    "source": "github",
+    "source_url": "https://raw.githubusercontent.com/elevenlabs/elevenlabs-mcp/main/README.md",
+    "verified": true
+  },
+  {
+    "name": "replicate-mcp",
+    "category": "MEDIA",
+    "purpose": "Run 100k+ AI models on Replicate: image gen (Flux, SD), video, audio",
+    "description": "Official Replicate MCP server (npm replicate-mcp v0.9.0, 'Official MCP server for Replicate's HTTP API'). Image/video/audio generation via Replicate's model catalog. Requires REPLICATE_API_TOKEN.",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "npx -y replicate-mcp",
+    "connect_steps": [
+      "1. Get REPLICATE_API_TOKEN at replicate.com/account (free trial credit)",
+      "2. echo Y | hermes --accept-hooks mcp add replicate --command npx --args -y replicate-mcp --env REPLICATE_API_TOKEN=${env:REPLICATE_API_TOKEN}",
+      "3. hermes mcp list; restart or /reload-mcp"
+    ],
+    "url": "https://replicate.com/docs/reference/mcp",
+    "stars": null,
+    "source": "npm",
+    "source_url": "https://www.npmjs.com/package/replicate-mcp",
+    "verified": true
+  },
+  {
+    "name": "stability-ai-mcp",
+    "category": "MEDIA",
+    "purpose": "Stability AI image generation (SD3, SDXL, image-to-image)",
+    "description": "mcp-server-stability-ai (tadasant, npm v0.2.0). Integrates Stability AI's image APIs into MCP: text-to-image, image-to-image, upscaling. Requires STABILITY_API_KEY.",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "npx -y mcp-server-stability-ai",
+    "connect_steps": [
+      "1. Get STABILITY_API_KEY at platform.stability.ai (free credits)",
+      "2. echo Y | hermes --accept-hooks mcp add stability --command npx --args -y mcp-server-stability-ai --env STABILITY_API_KEY=${env:STABILITY_API_KEY}",
+      "3. hermes mcp list; restart or /reload-mcp"
+    ],
+    "url": "https://github.com/tadasant/mcp-server-stability-ai",
+    "stars": 85,
+    "source": "github",
+    "source_url": "https://raw.githubusercontent.com/tadasant/mcp-server-stability-ai/main/README.md",
+    "verified": true
+  },
+  {
+    "name": "comfy-mcp",
+    "category": "MEDIA",
+    "purpose": "Generate images/video via local ComfyUI workflows (SD, Flux, Wan, LTX)",
+    "description": "Official ComfyUI MCP server (Comfy-Org/comfy-mcp, PyPI v0.10.0). Runs ComfyUI workflows from MCP clients — local diffusion image/video generation with no cloud cost.",
+    "price_model": "FREE",
+    "install_command": "pip install comfy-mcp \"comfy-cli>=1.14.0\"",
+    "connect_steps": [
+      "1. Install ComfyUI + comfy-cli; pip install comfy-mcp",
+      "2. Add to config.yaml mcp_servers: command=comfy-mcp (stdio)",
+      "3. hermes mcp list; restart or /reload-mcp"
+    ],
+    "url": "https://github.com/Comfy-Org/comfy-mcp",
+    "stars": 7,
+    "source": "github",
+    "source_url": "https://raw.githubusercontent.com/Comfy-Org/comfy-mcp/main/README.md",
+    "verified": true
+  },
+  {
+    "name": "brave-search-mcp",
+    "category": "SEARCH-RESEARCH",
+    "purpose": "Web, image, video and news search via Brave Search API",
+    "description": "Official Brave Search MCP server (brave/brave-search-mcp-server, npm @brave/brave-search-mcp-server v2.1.0). Returns web/news/image/video results with AI summaries. Free API tier: 2k queries/mo.",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "npx -y @brave/brave-search-mcp-server",
+    "connect_steps": [
+      "1. Get BRAVE_API_KEY at brave.com/search/api (free tier)",
+      "2. echo Y | hermes --accept-hooks mcp add brave --command npx --args -y @brave/brave-search-mcp-server --env BRAVE_API_KEY=${env:BRAVE_API_KEY}",
+      "3. hermes mcp list; restart or /reload-mcp"
+    ],
+    "url": "https://github.com/brave/brave-search-mcp-server",
+    "stars": 1366,
+    "source": "github",
+    "source_url": "https://raw.githubusercontent.com/brave/brave-search-mcp-server/main/README.md",
+    "verified": true
+  },
+  {
+    "name": "exa-mcp-server",
+    "category": "SEARCH-RESEARCH",
+    "purpose": "Neural/semantic web search with content retrieval (Exa)",
+    "description": "Official Exa MCP server (exa-labs/exa-mcp-server, npm v3.4.0). Semantic + keyword search over the web with full-page contents; hosted endpoint https://mcp.exa.ai/mcp. Free tier 1000 credits.",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "hermes mcp add exa --url https://mcp.exa.ai/mcp  (or npx -y exa-mcp-server local)",
+    "connect_steps": [
+      "1. Get EXA_API_KEY at exa.ai (free tier)",
+      "2. Remote: hermes mcp add exa --url https://mcp.exa.ai/mcp --auth header --env EXA_API_KEY=${env:EXA_API_KEY}",
+      "3. hermes mcp list; restart or /reload-mcp"
+    ],
+    "url": "https://github.com/exa-labs/exa-mcp-server",
+    "stars": 4852,
+    "source": "github",
+    "source_url": "https://raw.githubusercontent.com/exa-labs/exa-mcp-server/main/README.md",
+    "verified": true
+  },
+  {
+    "name": "tavily-mcp",
+    "category": "SEARCH-RESEARCH",
+    "purpose": "LLM-optimized web search with citations and extracted content",
+    "description": "Official Tavily MCP server (tavily-ai/tavily-mcp, npm v0.2.22 + hosted https://mcp.tavily.com/mcp). Search API purpose-built for agents: relevant results + content extraction. Free tier 1000 credits/mo.",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "hermes mcp add tavily --url https://mcp.tavily.com/mcp/?tavilyApiKey=YOUR_KEY  (or npx -y tavily-mcp@latest)",
+    "connect_steps": [
+      "1. Get TAVILY_API_KEY at tavily.com (free tier)",
+      "2. Remote: hermes mcp add tavily --url https://mcp.tavily.com/mcp --auth header --env TAVILY_API_KEY=${env:TAVILY_API_KEY}",
+      "3. hermes mcp list; restart or /reload-mcp"
+    ],
+    "url": "https://github.com/tavily-ai/tavily-mcp",
+    "stars": 2311,
+    "source": "github",
+    "source_url": "https://raw.githubusercontent.com/tavily-ai/tavily-mcp/main/README.md",
+    "verified": true
+  },
+  {
+    "name": "serpapi-mcp",
+    "category": "SEARCH-RESEARCH",
+    "purpose": "Google SERP (and 100+ engines) results via SerpAPI",
+    "description": "Official SerpAPI MCP server (serpapi/serpapi-mcp). Hosted endpoint https://mcp.serpapi.com/YOUR_KEY/mcp returns Google/Bing/YouTube/etc. SERP results. Free 100 searches/mo.",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "hermes mcp add serpapi --url https://mcp.serpapi.com/YOUR_SERPAPI_API_KEY/mcp",
+    "connect_steps": [
+      "1. Get SERPAPI_API_KEY at serpapi.com (free 100/mo)",
+      "2. hermes mcp add serpapi --url https://mcp.serpapi.com/${env:SERPAPI_API_KEY}/mcp",
+      "3. hermes mcp list; restart or /reload-mcp"
+    ],
+    "url": "https://github.com/serpapi/serpapi-mcp",
+    "stars": 164,
+    "source": "github",
+    "source_url": "https://raw.githubusercontent.com/serpapi/serpapi-mcp/main/README.md",
+    "verified": true
+  },
+  {
+    "name": "serper-mcp",
+    "category": "SEARCH-RESEARCH",
+    "purpose": "Google search + webpage scraping via Serper.dev",
+    "description": "Serper MCP server (marcopesani/mcp-server-serper, npm mcp-server-serper v1.0.0 — successor to the archived @modelcontextprotocol/server-serper). Google search results and scrape endpoint. Free 2500 queries.",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "npx -y mcp-server-serper",
+    "connect_steps": [
+      "1. Get SERPER_API_KEY at serper.dev (free 2500 queries)",
+      "2. echo Y | hermes --accept-hooks mcp add serper --command npx --args -y mcp-server-serper --env SERPER_API_KEY=${env:SERPER_API_KEY}",
+      "3. hermes mcp list; restart or /reload-mcp"
+    ],
+    "url": "https://github.com/marcopesani/mcp-server-serper",
+    "stars": 160,
+    "source": "github",
+    "source_url": "https://raw.githubusercontent.com/marcopesani/mcp-server-serper/main/README.md",
+    "verified": true
+  },
+  {
+    "name": "arxiv-mcp-server",
+    "category": "SEARCH-RESEARCH",
+    "purpose": "Search and analyze arXiv papers (abstracts, PDFs, metadata)",
+    "description": "arXiv MCP server (blazickjp/arxiv-mcp-server, PyPI v0.6.2, uvx). Search papers by query/ID, fetch abstracts and full text for research workflows. No API key needed.",
+    "price_model": "FREE",
+    "install_command": "uvx arxiv-mcp-server",
+    "connect_steps": [
+      "1. echo Y | hermes --accept-hooks mcp add arxiv --command uvx --args arxiv-mcp-server",
+      "2. hermes mcp list; restart or /reload-mcp",
+      "3. Tools: mcp__arxiv__search_papers / get_paper"
+    ],
+    "url": "https://github.com/blazickjp/arxiv-mcp-server",
+    "stars": 3041,
+    "source": "github",
+    "source_url": "https://raw.githubusercontent.com/blazickjp/arxiv-mcp-server/main/README.md",
+    "verified": true
+  },
+  {
+    "name": "pubmed-mcp",
+    "category": "SEARCH-RESEARCH",
+    "purpose": "PubMed/Europe PMC literature search with full-text retrieval",
+    "description": "PubMed MCP server (cyanheads/pubmed-mcp-server, npm @cyanheads/pubmed-mcp-server v2.10.2). Search PubMed/Europe PMC, fetch articles + full text (PMC/EPMC/Unpaywall). No API key required.",
+    "price_model": "FREE",
+    "install_command": "npx -y @cyanheads/pubmed-mcp-server",
+    "connect_steps": [
+      "1. echo Y | hermes --accept-hooks mcp add pubmed --command npx --args -y @cyanheads/pubmed-mcp-server",
+      "2. hermes mcp list; restart or /reload-mcp"
+    ],
+    "url": "https://github.com/cyanheads/pubmed-mcp-server",
+    "stars": 134,
+    "source": "github",
+    "source_url": "https://raw.githubusercontent.com/cyanheads/pubmed-mcp-server/main/README.md",
+    "verified": true
+  },
+  {
+    "name": "wikipedia-mcp",
+    "category": "SEARCH-RESEARCH",
+    "purpose": "Search Wikipedia, read summaries and full articles",
+    "description": "Wikipedia MCP server (cyanheads/wikipedia-mcp-server, npm v0.1.16). Search articles, read summaries/full text, target sections, nearby pages. No API key.",
+    "price_model": "FREE",
+    "install_command": "npx -y @cyanheads/wikipedia-mcp-server",
+    "connect_steps": [
+      "1. echo Y | hermes --accept-hooks mcp add wikipedia --command npx --args -y @cyanheads/wikipedia-mcp-server",
+      "2. hermes mcp list; restart or /reload-mcp"
+    ],
+    "url": "https://github.com/cyanheads/wikipedia-mcp-server",
+    "stars": 2,
+    "source": "github",
+    "source_url": "https://raw.githubusercontent.com/cyanheads/wikipedia-mcp-server/main/README.md",
+    "verified": true
+  },
+  {
+    "name": "world-news-mcp",
+    "category": "SEARCH-RESEARCH",
+    "purpose": "World News API: headlines, search, article extraction",
+    "description": "World News API MCP server (ddsky/world-news-api-mcp, npm v1.0.0). Global news search, top headlines, geo/language filtering, article extraction. Free tier 100 requests/day.",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "npm install -g world-news-api-mcp",
+    "connect_steps": [
+      "1. Get free WORLD_NEWS_API_KEY at worldnewsapi.com/register",
+      "2. echo Y | hermes --accept-hooks mcp add news --command world-news-api-mcp --env WORLD_NEWS_API_KEY=${env:WORLD_NEWS_API_KEY}",
+      "3. hermes mcp list; restart or /reload-mcp"
+    ],
+    "url": "https://github.com/ddsky/world-news-api-mcp",
+    "stars": 9,
+    "source": "github",
+    "source_url": "https://raw.githubusercontent.com/ddsky/world-news-api-mcp/master/README.md",
+    "verified": true
+  },
+  {
+    "name": "duckduckgo-mcp",
+    "category": "SEARCH-RESEARCH",
+    "purpose": "Private web search via DuckDuckGo (no API key)",
+    "description": "DuckDuckGo Search MCP server (nickclyde/duckduckgo-mcp-server, PyPI v0.6.1). Instant-answer and web search through DuckDuckGo — free, keyless, useful as a fallback search.",
+    "price_model": "FREE",
+    "install_command": "uvx duckduckgo-mcp-server",
+    "connect_steps": [
+      "1. echo Y | hermes --accept-hooks mcp add duckduckgo --command uvx --args duckduckgo-mcp-server",
+      "2. hermes mcp list; restart or /reload-mcp"
+    ],
+    "url": "https://github.com/nickclyde/duckduckgo-mcp-server",
+    "stars": 1405,
+    "source": "github",
+    "source_url": "https://raw.githubusercontent.com/nickclyde/duckduckgo-mcp-server/main/README.md",
+    "verified": true
+  },
+  {
+    "name": "mcp-yfinance",
+    "category": "FINANCE",
+    "purpose": "Yahoo Finance data: quotes, history, fundamentals, options",
+    "description": "Yahoo Finance MCP server (PyPI mcp-yfinance v0.1.4, repo ozp/yfinance-mcp). Wraps yfinance for stock quotes, historical prices, financials, options — free, no API key.",
+    "price_model": "FREE",
+    "install_command": "uvx mcp-yfinance",
+    "connect_steps": [
+      "1. echo Y | hermes --accept-hooks mcp add yfinance --command uvx --args mcp-yfinance",
+      "2. hermes mcp list; restart or /reload-mcp",
+      "3. Tools: mcp__yfinance__get_stock_price / get_financials"
+    ],
+    "url": "https://github.com/ozp/yfinance-mcp",
+    "stars": 1,
+    "source": "pypi",
+    "source_url": "https://pypi.org/project/mcp-yfinance/",
+    "verified": true
+  },
+  {
+    "name": "alphavantage-mcp",
+    "category": "FINANCE",
+    "purpose": "Alpha Vantage market data: quotes, FX, crypto, fundamentals, technicals",
+    "description": "Alpha Vantage MCP server (calvernaz/alphavantage, npm v2.5.0; PyPI alphavantage-mcp v0.3.24). Broad market data API. Free tier 25 requests/day.",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "uvx alphavantage-mcp",
+    "connect_steps": [
+      "1. Get ALPHAVANTAGE_API_KEY at alphavantage.co (free)",
+      "2. echo Y | hermes --accept-hooks mcp add alphavantage --command uvx --args alphavantage-mcp --env ALPHAVANTAGE_API_KEY=${env:ALPHAVANTAGE_API_KEY}",
+      "3. hermes mcp list; restart or /reload-mcp"
+    ],
+    "url": "https://github.com/calvernaz/alphavantage",
+    "stars": 74,
+    "source": "github",
+    "source_url": "https://raw.githubusercontent.com/calvernaz/alphavantage/main/README.md",
+    "verified": true
+  },
+  {
+    "name": "coingecko-mcp",
+    "category": "FINANCE",
+    "purpose": "CoinGecko crypto data: prices, market caps, trending, OHLC",
+    "description": "Official CoinGecko MCP server (@coingecko/coingecko-mcp, npm v7.1.0). Crypto prices, market data, trending coins, exchanges. Free Demo tier (low rate limit) or paid API.",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "npx -y @coingecko/coingecko-mcp",
+    "connect_steps": [
+      "1. Get COINGECKO_API_KEY at coingecko.com (free demo tier)",
+      "2. echo Y | hermes --accept-hooks mcp add coingecko --command npx --args -y @coingecko/coingecko-mcp --env COINGECKO_API_KEY=${env:COINGECKO_API_KEY}",
+      "3. hermes mcp list; restart or /reload-mcp"
+    ],
+    "url": "https://github.com/coingecko/coingecko-typescript",
+    "stars": 56,
+    "source": "npm",
+    "source_url": "https://www.npmjs.com/package/@coingecko/coingecko-mcp",
+    "verified": true
+  },
+  {
+    "name": "coinmarketcap-mcp",
+    "category": "FINANCE",
+    "purpose": "CoinMarketCap crypto quotes, rankings and metadata",
+    "description": "CoinMarketCap MCP server (gcharang/coinmarketcap-mcp, npm v1.3.9). Crypto prices, market cap, rankings via CMC API. Free Basic key available.",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "npx -y coinmarketcap-mcp",
+    "connect_steps": [
+      "1. Get COINMARKETCAP_API_KEY at pro.coinmarketcap.com (free Basic)",
+      "2. echo Y | hermes --accept-hooks mcp add coinmarketcap --command npx --args -y coinmarketcap-mcp --env COINMARKETCAP_API_KEY=${env:COINMARKETCAP_API_KEY}",
+      "3. hermes mcp list; restart or /reload-mcp"
+    ],
+    "url": "https://github.com/gcharang/coinmarketcap-mcp",
+    "stars": 1,
+    "source": "github",
+    "source_url": "https://raw.githubusercontent.com/gcharang/coinmarketcap-mcp/main/README.md",
+    "verified": true
+  },
+  {
+    "name": "stripe-mcp",
+    "category": "FINANCE",
+    "purpose": "Stripe payments: customers, invoices, charges, refunds, payouts",
+    "description": "Official Stripe MCP (stripe/agent-toolkit). Hosted remote server at https://mcp.stripe.com with OAuth, plus local install via @stripe/mcp CLI (npm v0.3.3). Manage payments end-to-end.",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "hermes mcp add stripe --url https://mcp.stripe.com --auth oauth  (or npx -y @stripe/mcp)",
+    "connect_steps": [
+      "1. Create Stripe account; get API key in dashboard",
+      "2. Remote: hermes mcp add stripe --url https://mcp.stripe.com --auth oauth (browser OAuth on first connect)",
+      "3. hermes mcp list; restart or /reload-mcp"
+    ],
+    "url": "https://github.com/stripe/agent-toolkit",
+    "stars": 1734,
+    "source": "github",
+    "source_url": "https://raw.githubusercontent.com/stripe/agent-toolkit/main/README.md",
+    "verified": true
+  },
+  {
+    "name": "quickbooks-mcp",
+    "category": "FINANCE",
+    "purpose": "QuickBooks Online: customers, invoices, accounts, reports",
+    "description": "Official Intuit QuickBooks Online MCP server (intuit/quickbooks-online-mcp-server, 145 tools). Local stdio server authenticated via OAuth to a QBO company. Requires QuickBooks Developer app (client ID/secret) + QBO subscription.",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "git clone https://github.com/intuit/quickbooks-online-mcp-server && npm install && npm run build",
+    "connect_steps": [
+      "1. Create app at developer.intuit.com; get QUICKBOOKS_CLIENT_ID/SECRET + company ID",
+      "2. Clone repo, npm install, npm run build",
+      "3. Add to config.yaml mcp_servers: command=node, args=['dist/index.js'], env with QBO creds; hermes mcp list"
+    ],
+    "url": "https://github.com/intuit/quickbooks-online-mcp-server",
+    "stars": 349,
+    "source": "github",
+    "source_url": "https://raw.githubusercontent.com/intuit/quickbooks-online-mcp-server/main/README.md",
+    "verified": true
+  },
+  {
+    "name": "plaid-mcp",
+    "category": "FINANCE",
+    "purpose": "Plaid: link bank accounts, transactions, balances (read-only)",
+    "description": "Plaid MCP (plaid/ai-coding-toolkit). Hosted 'Plaid Dashboard MCP' (plaid.com/docs/resources/mcp) and toolkit for building Plaid integrations; connects financial accounts via Plaid Link with OAuth. Requires Plaid developer account + client ID/secret.",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "hermes mcp add plaid --url https://mcp.plaid.com/mcp --auth oauth  (hosted; see plaid.com/docs/resources/mcp)",
+    "connect_steps": [
+      "1. Sign up at plaid.com; get client_id + sandbox secret",
+      "2. Remote: hermes mcp add plaid --url <hosted MCP URL from Plaid docs> --auth oauth",
+      "3. hermes mcp list; restart or /reload-mcp"
+    ],
+    "url": "https://github.com/plaid/ai-coding-toolkit",
+    "stars": 28,
+    "source": "github",
+    "source_url": "https://raw.githubusercontent.com/plaid/ai-coding-toolkit/main/README.md",
+    "verified": true
+  },
+  {
+    "name": "playwright-mcp",
+    "category": "BROWSER-AUTOMATION",
+    "purpose": "Automate Chromium/Firefox/WebKit: navigate, click, fill, screenshot, scrape",
+    "description": "Official Playwright MCP (microsoft/playwright-mcp, npm @playwright/mcp v0.0.79). Accessibility-tree-driven browser automation for agents; supports headed/headless and persistent profiles.",
+    "price_model": "FREE",
+    "install_command": "npx @playwright/mcp@latest",
+    "connect_steps": [
+      "1. npx playwright install chromium (first run)",
+      "2. echo Y | hermes --accept-hooks mcp add playwright --command npx --args @playwright/mcp@latest",
+      "3. hermes mcp list; restart or /reload-mcp"
+    ],
+    "url": "https://github.com/microsoft/playwright-mcp",
+    "stars": 35998,
+    "source": "github",
+    "source_url": "https://raw.githubusercontent.com/microsoft/playwright-mcp/main/README.md",
+    "verified": true
+  },
+  {
+    "name": "puppeteer-mcp",
+    "category": "BROWSER-AUTOMATION",
+    "purpose": "Headless Chrome automation via Puppeteer",
+    "description": "Puppeteer MCP server (@modelcontextprotocol/server-puppeteer, npm v2025.5.12, from the reference modelcontextprotocol/servers repo). Navigate, click, type, screenshot with headless Chrome.",
+    "price_model": "FREE",
+    "install_command": "npx -y @modelcontextprotocol/server-puppeteer",
+    "connect_steps": [
+      "1. echo Y | hermes --accept-hooks mcp add puppeteer --command npx --args -y @modelcontextprotocol/server-puppeteer",
+      "2. hermes mcp list; restart or /reload-mcp",
+      "3. Requires Chrome/Chromium installed"
+    ],
+    "url": "https://github.com/modelcontextprotocol/servers/tree/main/src/puppeteer",
+    "stars": 89443,
+    "source": "npm",
+    "source_url": "https://www.npmjs.com/package/@modelcontextprotocol/server-puppeteer",
+    "verified": true
+  },
+  {
+    "name": "browser-use-mcp",
+    "category": "BROWSER-AUTOMATION",
+    "purpose": "LLM-driven browser agent: plan + execute multi-step web tasks",
+    "description": "browser-use MCP (browser-use/browser-use, PyPI v0.13.7, 108k★). The popular AI browser agent — natural-language web automation with vision + DOM extraction; ships an MCP server (com.browser-use/browser-use).",
+    "price_model": "FREE",
+    "install_command": "pip install browser-use && uvx browser-use",
+    "connect_steps": [
+      "1. pip install browser-use (Python venv)",
+      "2. Add to config.yaml mcp_servers: command=uvx, args=['browser-use']",
+      "3. hermes mcp list; restart or /reload-mcp"
+    ],
+    "url": "https://github.com/browser-use/browser-use",
+    "stars": 108796,
+    "source": "github",
+    "source_url": "https://raw.githubusercontent.com/browser-use/browser-use/main/README.md",
+    "verified": true
+  },
+  {
+    "name": "chrome-devtools-mcp",
+    "category": "BROWSER-AUTOMATION",
+    "purpose": "Chrome DevTools Protocol: inspect DOM, network, console, performance",
+    "description": "Official Chrome DevTools MCP (ChromeDevTools/chrome-devtools-mcp, npm v1.7.0). Gives agents CDP superpowers: element inspection, JS evaluation, network capture, performance traces, screenshots.",
+    "price_model": "FREE",
+    "install_command": "npx chrome-devtools-mcp@latest",
+    "connect_steps": [
+      "1. echo Y | hermes --accept-hooks mcp add chrome-devtools --command npx --args chrome-devtools-mcp@latest",
+      "2. hermes mcp list; restart or /reload-mcp",
+      "3. Launches its own Chrome instance"
+    ],
+    "url": "https://github.com/ChromeDevTools/chrome-devtools-mcp",
+    "stars": 48925,
+    "source": "github",
+    "source_url": "https://raw.githubusercontent.com/ChromeDevTools/chrome-devtools-mcp/main/README.md",
+    "verified": true
+  },
+  {
+    "name": "browserbase-mcp",
+    "category": "BROWSER-AUTOMATION",
+    "purpose": "Cloud browser automation: headless sessions, proxies, sessions API",
+    "description": "Official Browserbase MCP (browserbase/mcp-server-browserbase, npm @browserbasehq/mcp v3.0.0). Cloud-hosted browser control with persistent sessions, stealth proxies, and Stagehand. Free trial tier.",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "npx @browserbasehq/mcp@latest",
+    "connect_steps": [
+      "1. Get BROWSERBASE_API_KEY + project ID at browserbase.com (free trial)",
+      "2. echo Y | hermes --accept-hooks mcp add browserbase --command npx --args @browserbasehq/mcp@latest --env BROWSERBASE_API_KEY=${env:BROWSERBASE_API_KEY} --env BROWSERBASE_PROJECT_ID=${env:BROWSERBASE_PROJECT_ID}",
+      "3. hermes mcp list; restart or /reload-mcp"
+    ],
+    "url": "https://github.com/browserbase/mcp-server-browserbase",
+    "stars": 3412,
+    "source": "github",
+    "source_url": "https://raw.githubusercontent.com/browserbase/mcp-server-browserbase/main/README.md",
+    "verified": true
+  }
+]

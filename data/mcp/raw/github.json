@@ -1,0 +1,1027 @@
+[
+ {
+  "name": "mcp-servers-official",
+  "category": "MISC",
+  "purpose": "Official reference MCP servers",
+  "description": "The canonical repository of reference MCP servers from the Model Context Protocol organization. Includes filesystem, memory, git, fetch, time, and everything servers demonstrating the reference implementations. The single most-starred MCP project on GitHub.",
+  "price_model": "FREE",
+  "install_command": "npx -y @modelcontextprotocol/server-memory",
+  "connect_steps": [
+   "Add to Hermes config.yaml mcp_servers: \"mcp-servers-official\" -> command: npx -y @modelcontextprotocol/server-memory (or run: hermes mcp add mcp-servers-official -- npx -y @modelcontextprotocol/server-memory)",
+   "For Python servers: uvx mcp-server-git (git server) or pip install mcp-server-git",
+   "On Windows wrap npx with: cmd /c npx -y @modelcontextprotocol/server-memory",
+   "Restart Hermes (or reload), then verify: hermes mcp list"
+  ],
+  "url": "https://github.com/modelcontextprotocol/servers",
+  "stars": 89443,
+  "source": "github",
+  "source_url": "https://github.com/modelcontextprotocol/servers",
+  "verified": true
+ },
+ {
+  "name": "codebase-memory-mcp",
+  "category": "CODING",
+  "purpose": "Code intelligence & memory",
+  "description": "High-performance MCP server that indexes codebases into a persistent knowledge graph, giving AI agents deep code understanding across large repositories. Reduces hallucinations by grounding agents in real symbol-level code context. Supports incremental indexing and natural-language queries over the codebase.",
+  "price_model": "FREE",
+  "install_command": "curl -fsSL https://raw.githubusercontent.com/DeusData/codebase-memory-mcp/main/install.sh | bash",
+  "connect_steps": [
+   "Add to Hermes config.yaml mcp_servers: \"codebase-memory-mcp\" -> command: curl -fsSL https://raw.githubusercontent.com/DeusData/codebase-memory-mcp/main/install.sh | bash (or run: hermes mcp add codebase-memory-mcp -- curl -fsSL https://raw.githubusercontent.com/DeusData/codebase-memory-mcp/main/install.sh | bash)",
+   "Alternative: npm install -g codebase-memory-mcp@latest or pip install -U codebase-memory-mcp",
+   "Restart Hermes (or reload), then verify: hermes mcp list"
+  ],
+  "url": "https://github.com/DeusData/codebase-memory-mcp",
+  "stars": 38558,
+  "source": "github",
+  "source_url": "https://github.com/DeusData/codebase-memory-mcp",
+  "verified": true
+ },
+ {
+  "name": "playwright-mcp",
+  "category": "BROWSER-AUTOMATION",
+  "purpose": "Browser automation for AI",
+  "description": "Official Microsoft Playwright MCP server that lets AI agents control Chromium/Firefox/WebKit browsers with accessibility-tree based interaction. Enables navigation, clicking, form filling, screenshots, and network interception. The most widely used browser-automation MCP server.",
+  "price_model": "FREE",
+  "install_command": "npx @playwright/mcp@latest --config path/to/config.json",
+  "connect_steps": [
+   "Add to Hermes config.yaml mcp_servers: \"playwright-mcp\" -> command: npx @playwright/mcp@latest --config path/to/config.json (or run: hermes mcp add playwright-mcp -- npx @playwright/mcp@latest --config path/to/config.json)",
+   "Basic run: npx @playwright/mcp@latest",
+   "Optional: set --headless for CI environments",
+   "Restart Hermes (or reload), then verify: hermes mcp list"
+  ],
+  "url": "https://github.com/microsoft/playwright-mcp",
+  "stars": 35997,
+  "source": "github",
+  "source_url": "https://github.com/microsoft/playwright-mcp",
+  "verified": true
+ },
+ {
+  "name": "github-mcp-server",
+  "category": "DEVOPS",
+  "purpose": "GitHub repo & PR operations",
+  "description": "GitHub's official MCP server exposing repository, issue, PR, search, and Actions tools to AI agents. Runs as a Docker container talking to the GitHub REST API. Requires a GitHub Personal Access Token for authenticated operations.",
+  "price_model": "FREE",
+  "install_command": "docker run -i --rm -e GITHUB_PERSONAL_ACCESS_TOKEN ghcr.io/github/github-mcp-server",
+  "connect_steps": [
+   "Add to Hermes config.yaml mcp_servers: \"github-mcp-server\" -> command: docker run -i --rm -e GITHUB_PERSONAL_ACCESS_TOKEN ghcr.io/github/github-mcp-server (or run: hermes mcp add github-mcp-server -- docker run -i --rm -e GITHUB_PERSONAL_ACCESS_TOKEN ghcr.io/github/github-mcp-server)",
+   "Set GITHUB_PERSONAL_ACCESS_TOKEN env var (classic PAT or fine-grained token)",
+   "Example client line: claude mcp add github -e GITHUB_PERSONAL_ACCESS_TOKEN=$GITHUB_PAT -- docker run -i --rm -e GITHUB_PERSONAL_ACCESS_TOKEN ghcr.io/github/github-mcp-server",
+   "Restart Hermes (or reload), then verify: hermes mcp list"
+  ],
+  "url": "https://github.com/github/github-mcp-server",
+  "stars": 32147,
+  "source": "github",
+  "source_url": "https://github.com/github/github-mcp-server",
+  "verified": true
+ },
+ {
+  "name": "mcp-toolbox-databases",
+  "category": "DATABASES",
+  "purpose": "Multi-DB unified querying",
+  "description": "Google MCP Toolbox for Databases: an open-source MCP server giving AI agents unified SQL access to Cloud SQL, AlloyDB, BigQuery, and Cloud Spanner. Provides a single toolbox server for querying across Google database platforms. Supports safe read-only and guided DDL/DML workflows.",
+  "price_model": "FREE",
+  "install_command": "npx @toolbox-sdk/server --config tools.yaml",
+  "connect_steps": [
+   "Add to Hermes config.yaml mcp_servers: \"mcp-toolbox-databases\" -> command: npx @toolbox-sdk/server --config tools.yaml (or run: hermes mcp add mcp-toolbox-databases -- npx @toolbox-sdk/server --config tools.yaml)",
+   "Create a tools.yaml config declaring target databases",
+   "Authenticate via gcloud application-default credentials (ADC)",
+   "Restart Hermes (or reload), then verify: hermes mcp list"
+  ],
+  "url": "https://github.com/googleapis/mcp-toolbox",
+  "stars": 16151,
+  "source": "github",
+  "source_url": "https://github.com/googleapis/mcp-toolbox",
+  "verified": true
+ },
+ {
+  "name": "figma-context-mcp",
+  "category": "CODING",
+  "purpose": "Figma design context",
+  "description": "MCP server that provides Figma layout information (frames, nodes, coordinates, styles) to AI coding agents like Cursor and Claude. Lets agents turn Figma designs directly into code by querying live design data. Requires a Figma API key.",
+  "price_model": "FREE",
+  "install_command": "npx -y figma-developer-mcp --figma-api-key=YOUR-KEY --stdio",
+  "connect_steps": [
+   "Add to Hermes config.yaml mcp_servers: \"figma-context-mcp\" -> command: npx -y figma-developer-mcp --figma-api-key=YOUR-KEY --stdio (or run: hermes mcp add figma-context-mcp -- npx -y figma-developer-mcp --figma-api-key=YOUR-KEY --stdio)",
+   "Set FIGMA_API_KEY env var to a Figma personal access token",
+   "Config example uses command \"npx\" args [\"-y\",\"figma-developer-mcp\",\"--figma-api-key=YOUR-KEY\",\"--stdio\"]",
+   "Restart Hermes (or reload), then verify: hermes mcp list"
+  ],
+  "url": "https://github.com/GLips/Figma-Context-MCP",
+  "stars": 15632,
+  "source": "github",
+  "source_url": "https://github.com/GLips/Figma-Context-MCP",
+  "verified": true
+ },
+ {
+  "name": "mcp-chrome",
+  "category": "BROWSER-AUTOMATION",
+  "purpose": "Chrome extension control",
+  "description": "Chrome MCP Server: a Chrome-extension-based MCP server that exposes the user's real browser to AI agents. Works with the user's logged-in sessions and avoids bot detection by driving an actual Chrome profile. Install via the mcp-chrome-bridge npm package.",
+  "price_model": "FREE",
+  "install_command": "npm install -g mcp-chrome-bridge",
+  "connect_steps": [
+   "Add to Hermes config.yaml mcp_servers: \"mcp-chrome\" -> command: npm install -g mcp-chrome-bridge (or run: hermes mcp add mcp-chrome -- npm install -g mcp-chrome-bridge)",
+   "Install the companion Chrome extension in the browser",
+   "Run the bridge server, then connect MCP client to it",
+   "Restart Hermes (or reload), then verify: hermes mcp list"
+  ],
+  "url": "https://github.com/hangwin/mcp-chrome",
+  "stars": 12284,
+  "source": "github",
+  "source_url": "https://github.com/hangwin/mcp-chrome",
+  "verified": true
+ },
+ {
+  "name": "pal-mcp-server",
+  "category": "CODING",
+  "purpose": "Multi-CLI agent orchestration",
+  "description": "Beehive Innovations PAL MCP server that gives AI agents orchestrated access to Claude Code, Gemini CLI, and Codex CLI plus multiple LLM providers (Gemini, OpenAI, OpenRouter, Azure). Lets a single agent drive multiple coding CLIs and model backends. Run via uvx from the git repo.",
+  "price_model": "FREE",
+  "install_command": "uvx --from git+https://github.com/BeehiveInnovations/pal-mcp-server.git pal-mcp-server",
+  "connect_steps": [
+   "Add to Hermes config.yaml mcp_servers: \"pal-mcp-server\" -> command: uvx --from git+https://github.com/BeehiveInnovations/pal-mcp-server.git pal-mcp-server (or run: hermes mcp add pal-mcp-server -- uvx --from git+https://github.com/BeehiveInnovations/pal-mcp-server.git pal-mcp-server)",
+   "Requires uv/uvx installed (curl -LsSf https://astral.sh/uv/install.sh | sh)",
+   "Configure provider API keys (Gemini/OpenAI/OpenRouter/Azure) as env vars",
+   "Restart Hermes (or reload), then verify: hermes mcp list"
+  ],
+  "url": "https://github.com/BeehiveInnovations/pal-mcp-server",
+  "stars": 11721,
+  "source": "github",
+  "source_url": "https://github.com/BeehiveInnovations/pal-mcp-server",
+  "verified": true
+ },
+ {
+  "name": "hexstrike-ai",
+  "category": "MISC",
+  "purpose": "Security testing agent toolkit",
+  "description": "HexStrike AI MCP server that gives AI agents (Claude, GPT, Copilot) cybersecurity tooling: port scanning, subdomain enumeration, web recon, and penetration-testing workflows. Bundles a suite of offensive-security tools behind an MCP interface. Clone the repo and run the Python server.",
+  "price_model": "FREE",
+  "install_command": "git clone https://github.com/0x4m4/hexstrike-ai.git && cd hexstrike-ai && pip install -r requirements.txt && python3 hexstrike_server.py --port 8888",
+  "connect_steps": [
+   "Add to Hermes config.yaml mcp_servers: \"hexstrike-ai\" -> command: git clone https://github.com/0x4m4/hexstrike-ai.git && cd hexstrike-ai && pip install -r requirements.txt && python3 hexstrike_server.py --port 8888 (or run: hermes mcp add hexstrike-ai -- git clone https://github.com/0x4m4/hexstrike-ai.git && cd hexstrike-ai && pip install -r requirements.txt && python3 hexstrike_server.py --port 8888)",
+   "Install Python 3.10+ and pip dependencies from requirements.txt",
+   "Run server with python3 hexstrike_server.py --port 8888",
+   "Restart Hermes (or reload), then verify: hermes mcp list"
+  ],
+  "url": "https://github.com/0x4m4/hexstrike-ai",
+  "stars": 10943,
+  "source": "github",
+  "source_url": "https://github.com/0x4m4/hexstrike-ai",
+  "verified": true
+ },
+ {
+  "name": "ghidramcp",
+  "category": "CODING",
+  "purpose": "Ghidra reverse engineering",
+  "description": "LaurieWired GhidraMCP bridges the Ghidra SRE framework to AI agents via MCP, exposing decompilation, function analysis, and binary inspection tools. Installed as a Ghidra extension with a Python bridge server. Powerful for malware analysis and CTF reverse engineering.",
+  "price_model": "FREE",
+  "install_command": "python /ABSOLUTE_PATH_TO/bridge_mcp_ghidra.py",
+  "connect_steps": [
+   "Add to Hermes config.yaml mcp_servers: \"ghidramcp\" -> command: python /ABSOLUTE_PATH_TO/bridge_mcp_ghidra.py (or run: hermes mcp add ghidramcp -- python /ABSOLUTE_PATH_TO/bridge_mcp_ghidra.py)",
+   "Install Ghidra and add the GhidraMCP extension via File > Install Extensions",
+   "Run bridge_mcp_ghidra.py then add server with command \"python\" and arg path to bridge script",
+   "Restart Hermes (or reload), then verify: hermes mcp list"
+  ],
+  "url": "https://github.com/LaurieWired/GhidraMCP",
+  "stars": 9765,
+  "source": "github",
+  "source_url": "https://github.com/LaurieWired/GhidraMCP",
+  "verified": true
+ },
+ {
+  "name": "awslabs-mcp",
+  "category": "CLOUD-INFRA",
+  "purpose": "AWS service operations",
+  "description": "Open-source collection of AWS MCP servers covering API Gateway, IaC, documentation, and MySQL/RDS operations. Each server runs via uvx with the awslabs.* naming convention. Lets agents manage AWS resources and query AWS docs directly.",
+  "price_model": "FREE",
+  "install_command": "uvx awslabs.aws-api-mcp-server@latest",
+  "connect_steps": [
+   "Add to Hermes config.yaml mcp_servers: \"awslabs-mcp\" -> command: uvx awslabs.aws-api-mcp-server@latest (or run: hermes mcp add awslabs-mcp -- uvx awslabs.aws-api-mcp-server@latest)",
+   "Examples: claude mcp add aws-api uvx awslabs.aws-api-mcp-server@latest; aws-iac uvx awslabs.aws-iac-mcp-server@latest",
+   "Requires AWS credentials configured (env or ~/.aws/credentials)",
+   "Restart Hermes (or reload), then verify: hermes mcp list"
+  ],
+  "url": "https://github.com/awslabs/mcp",
+  "stars": 9585,
+  "source": "github",
+  "source_url": "https://github.com/awslabs/mcp",
+  "verified": true
+ },
+ {
+  "name": "desktop-commander-mcp",
+  "category": "DEVOPS",
+  "purpose": "Terminal & file control",
+  "description": "DesktopCommander MCP gives Claude and other agents terminal control, file system search, diff viewing, and text editing on the host machine. Includes safety approvals and command-timeout controls. Setup is one npx command.",
+  "price_model": "FREE",
+  "install_command": "npx @wonderwhy-er/desktop-commander@latest setup",
+  "connect_steps": [
+   "Add to Hermes config.yaml mcp_servers: \"desktop-commander-mcp\" -> command: npx @wonderwhy-er/desktop-commander@latest setup (or run: hermes mcp add desktop-commander-mcp -- npx @wonderwhy-er/desktop-commander@latest setup)",
+   "The setup command auto-configures the server in Claude Code",
+   "For manual config: npx @wonderwhy-er/desktop-commander@latest with stdio transport",
+   "Restart Hermes (or reload), then verify: hermes mcp list"
+  ],
+  "url": "https://github.com/wonderwhy-er/DesktopCommanderMCP",
+  "stars": 9298,
+  "source": "github",
+  "source_url": "https://github.com/wonderwhy-er/DesktopCommanderMCP",
+  "verified": true
+ },
+ {
+  "name": "git-mcp",
+  "category": "CODING",
+  "purpose": "Remote git context (GitMCP)",
+  "description": "GitMCP by idosal is a free remote MCP server that serves any public GitHub repository's code context to AI agents without local setup. Point an agent at a repo URL and it fetches codebase context on demand. Eliminates code hallucination by grounding in the real repo.",
+  "price_model": "FREE",
+  "install_command": "npx mcp-remote https://gitmcp.io/{owner}/{repo}",
+  "connect_steps": [
+   "Add to Hermes config.yaml mcp_servers: \"git-mcp\" -> command: npx mcp-remote https://gitmcp.io/{owner}/{repo} (or run: hermes mcp add git-mcp -- npx mcp-remote https://gitmcp.io/{owner}/{repo})",
+   "Point at any public repo: https://gitmcp.io/<owner>/<repo>",
+   "Remote server - no local install beyond mcp-remote client",
+   "Restart Hermes (or reload), then verify: hermes mcp list"
+  ],
+  "url": "https://github.com/idosal/git-mcp",
+  "stars": 8322,
+  "source": "github",
+  "source_url": "https://github.com/idosal/git-mcp",
+  "verified": true
+ },
+ {
+  "name": "firecrawl-mcp-server",
+  "category": "SEARCH-RESEARCH",
+  "purpose": "Web scraping & search",
+  "description": "Official Firecrawl MCP server adding powerful web scraping, crawling, and search to Cursor, Claude, and other clients. Converts websites to LLM-ready markdown and runs site-wide crawls. Requires a Firecrawl API key (free tier available).",
+  "price_model": "FREE-TIER+ADDON",
+  "install_command": "env FIRECRAWL_API_KEY=fc-YOUR_API_KEY npx -y firecrawl-mcp",
+  "connect_steps": [
+   "Add to Hermes config.yaml mcp_servers: \"firecrawl-mcp-server\" -> command: env FIRECRAWL_API_KEY=fc-YOUR_API_KEY npx -y firecrawl-mcp (or run: hermes mcp add firecrawl-mcp-server -- env FIRECRAWL_API_KEY=fc-YOUR_API_KEY npx -y firecrawl-mcp)",
+   "Set FIRECRAWL_API_KEY env var (get at firecrawl.dev)",
+   "Windows: cmd /c \"set FIRECRAWL_API_KEY=your-api-key && npx -y firecrawl-mcp\"",
+   "Restart Hermes (or reload), then verify: hermes mcp list"
+  ],
+  "url": "https://github.com/firecrawl/firecrawl-mcp-server",
+  "stars": 7212,
+  "source": "github",
+  "source_url": "https://github.com/firecrawl/firecrawl-mcp-server",
+  "verified": true
+ },
+ {
+  "name": "browsermcp",
+  "category": "BROWSER-AUTOMATION",
+  "purpose": "Real-browser stealth automation",
+  "description": "Browser MCP is an MCP server plus Chrome extension that automates the user's real browser, keeping logged-in sessions and avoiding bot detection. Fast local automation without network latency, with the user's real fingerprint. Adapted from Playwright MCP for personal-browser use.",
+  "price_model": "FREE",
+  "install_command": "npx @browsermcp/mcp",
+  "connect_steps": [
+   "Add to Hermes config.yaml mcp_servers: \"browsermcp\" -> command: npx @browsermcp/mcp (or run: hermes mcp add browsermcp -- npx @browsermcp/mcp)",
+   "Install the Browser MCP Chrome extension from browsermcp.io",
+   "Run npx @browsermcp/mcp then connect client; keep extension enabled",
+   "Restart Hermes (or reload), then verify: hermes mcp list"
+  ],
+  "url": "https://github.com/BrowserMCP/mcp",
+  "stars": 6947,
+  "source": "github",
+  "source_url": "https://github.com/BrowserMCP/mcp",
+  "verified": true
+ },
+ {
+  "name": "windows-mcp",
+  "category": "MISC",
+  "purpose": "Windows computer use",
+  "description": "CursorTouch Windows-MCP gives AI agents computer-use control over Windows desktops: GUI automation, file operations, and app interaction. Exposes native Windows automation capabilities over MCP. Run the server via uvx.",
+  "price_model": "FREE",
+  "install_command": "uvx windows-mcp serve",
+  "connect_steps": [
+   "Add to Hermes config.yaml mcp_servers: \"windows-mcp\" -> command: uvx windows-mcp serve (or run: hermes mcp add windows-mcp -- uvx windows-mcp serve)",
+   "Runs on Windows host; uv/uvx required",
+   "Grant screen/automation permissions when prompted",
+   "Restart Hermes (or reload), then verify: hermes mcp list"
+  ],
+  "url": "https://github.com/CursorTouch/Windows-MCP",
+  "stars": 6727,
+  "source": "github",
+  "source_url": "https://github.com/CursorTouch/Windows-MCP",
+  "verified": true
+ },
+ {
+  "name": "xcodebuild-mcp",
+  "category": "CODING",
+  "purpose": "Xcode build automation",
+  "description": "Sentry XcodeBuildMCP is an MCP server and CLI that helps AI agents build, test, and analyze Xcode projects. Provides tools for building schemes, running tests, and parsing build output. Requires a Mac with Xcode installed.",
+  "price_model": "FREE",
+  "install_command": "npx -y xcodebuildmcp@latest init",
+  "connect_steps": [
+   "Add to Hermes config.yaml mcp_servers: \"xcodebuild-mcp\" -> command: npx -y xcodebuildmcp@latest init (or run: hermes mcp add xcodebuild-mcp -- npx -y xcodebuildmcp@latest init)",
+   "Mac + Xcode required",
+   "The init command configures the server for the current Xcode project",
+   "Restart Hermes (or reload), then verify: hermes mcp list"
+  ],
+  "url": "https://github.com/getsentry/XcodeBuildMCP",
+  "stars": 6222,
+  "source": "github",
+  "source_url": "https://github.com/getsentry/XcodeBuildMCP",
+  "verified": true
+ },
+ {
+  "name": "whatsapp-mcp",
+  "category": "COMMUNICATION",
+  "purpose": "WhatsApp messaging",
+  "description": "WhatsApp MCP server lets AI agents send and receive WhatsApp messages through a local bridge. Runs a Go QR-authenticated bridge plus a uv-based Python MCP server. Supports text, images, and audio (FFmpeg for voice notes).",
+  "price_model": "FREE",
+  "install_command": "git clone https://github.com/lharries/whatsapp-mcp.git && cd whatsapp-mcp && uv sync && uv run whatsapp-mcp-server",
+  "connect_steps": [
+   "Add to Hermes config.yaml mcp_servers: \"whatsapp-mcp\" -> command: git clone https://github.com/lharries/whatsapp-mcp.git && cd whatsapp-mcp && uv sync && uv run whatsapp-mcp-server (or run: hermes mcp add whatsapp-mcp -- git clone https://github.com/lharries/whatsapp-mcp.git && cd whatsapp-mcp && uv sync && uv run whatsapp-mcp-server)",
+   "First run: scan the QR code with the WhatsApp mobile app to authenticate the bridge (go run main.go in whatsapp-bridge/)",
+   "Windows note: go-sqlite3 needs CGO enabled + a C compiler",
+   "Restart Hermes (or reload), then verify: hermes mcp list"
+  ],
+  "url": "https://github.com/lharries/whatsapp-mcp",
+  "stars": 6138,
+  "source": "github",
+  "source_url": "https://github.com/lharries/whatsapp-mcp",
+  "verified": true
+ },
+ {
+  "name": "bb-browser",
+  "category": "BROWSER-AUTOMATION",
+  "purpose": "Browser-as-API control",
+  "description": "bb-browser turns your browser into an API: a CLI plus MCP server that lets AI agents drive Chrome using your existing logged-in sessions. Designed for agentic browsing with your real profile. Install globally via npm.",
+  "price_model": "FREE",
+  "install_command": "npm install -g bb-browser",
+  "connect_steps": [
+   "Add to Hermes config.yaml mcp_servers: \"bb-browser\" -> command: npm install -g bb-browser (or run: hermes mcp add bb-browser -- npm install -g bb-browser)",
+   "Launch with the bb-browser CLI, then expose MCP endpoint to client",
+   "Uses your existing Chrome login sessions",
+   "Restart Hermes (or reload), then verify: hermes mcp list"
+  ],
+  "url": "https://github.com/epiral/bb-browser",
+  "stars": 6046,
+  "source": "github",
+  "source_url": "https://github.com/epiral/bb-browser",
+  "verified": true
+ },
+ {
+  "name": "mobile-mcp",
+  "category": "MISC",
+  "purpose": "Mobile device automation",
+  "description": "Model Context Protocol server for mobile automation and scraping on iOS, Android, and emulators. Lets AI agents interact with mobile apps, capture screens, and extract data from devices. Useful for mobile QA and app testing agents.",
+  "price_model": "FREE",
+  "install_command": "npx @mobilenext/mobile-mcp@latest",
+  "connect_steps": [
+   "Add to Hermes config.yaml mcp_servers: \"mobile-mcp\" -> command: npx @mobilenext/mobile-mcp@latest (or run: hermes mcp add mobile-mcp -- npx @mobilenext/mobile-mcp@latest)",
+   "Connect a device/emulator via adb (Android) or XCUITest (iOS)",
+   "Server discovers connected devices automatically",
+   "Restart Hermes (or reload), then verify: hermes mcp list"
+  ],
+  "url": "https://github.com/mobile-next/mobile-mcp",
+  "stars": 5885,
+  "source": "github",
+  "source_url": "https://github.com/mobile-next/mobile-mcp",
+  "verified": true
+ },
+ {
+  "name": "mcp-atlassian",
+  "category": "PRODUCTIVITY",
+  "purpose": "Confluence & Jira tools",
+  "description": "MCP server for Atlassian tools: Confluence space/wiki search, page ops, and Jira issue management for AI agents. Configures one or both products via environment variables. Popular for team documentation and ticketing workflows.",
+  "price_model": "FREE",
+  "install_command": "uvx mcp-atlassian",
+  "connect_steps": [
+   "Add to Hermes config.yaml mcp_servers: \"mcp-atlassian\" -> command: uvx mcp-atlassian (or run: hermes mcp add mcp-atlassian -- uvx mcp-atlassian)",
+   "Set CONFLUENCE_URL + CONFLUENCE_EMAIL + CONFLUENCE_API_TOKEN (and/or JIRA_URL, JIRA_EMAIL, JIRA_API_TOKEN)",
+   "uvx mcp-atlassian --all-confluence --all-jira to enable both",
+   "Restart Hermes (or reload), then verify: hermes mcp list"
+  ],
+  "url": "https://github.com/sooperset/mcp-atlassian",
+  "stars": 5726,
+  "source": "github",
+  "source_url": "https://github.com/sooperset/mcp-atlassian",
+  "verified": true
+ },
+ {
+  "name": "executeautomation-playwright",
+  "category": "BROWSER-AUTOMATION",
+  "purpose": "Playwright browser tools",
+  "description": "Playwright MCP server from Execute Automation for automating browsers and APIs in Claude Desktop and other clients. Wraps Playwright for navigation, interaction, and API testing. A long-standing popular alternative to the official Playwright MCP.",
+  "price_model": "FREE",
+  "install_command": "npx @executeautomation/playwright-mcp-server",
+  "connect_steps": [
+   "Add to Hermes config.yaml mcp_servers: \"executeautomation-playwright\" -> command: npx @executeautomation/playwright-mcp-server (or run: hermes mcp add executeautomation-playwright -- npx @executeautomation/playwright-mcp-server)",
+   "npx @executeautomation/playwright-mcp-server with stdio transport",
+   "Older install path: npx @michaellatman/mcp-get@latest install @executeautomation/playwright-mcp-server",
+   "Restart Hermes (or reload), then verify: hermes mcp list"
+  ],
+  "url": "https://github.com/executeautomation/mcp-playwright",
+  "stars": 5633,
+  "source": "github",
+  "source_url": "https://github.com/executeautomation/mcp-playwright",
+  "verified": true
+ },
+ {
+  "name": "agent-infra-sandbox",
+  "category": "DEVOPS",
+  "purpose": "All-in-one agent sandbox",
+  "description": "All-in-One Sandbox for AI agents combining browser, shell, file, MCP, and VSCode server in one Docker container. Gives agents a safe, isolated execution environment with an API key gate. Runs as a single Docker image with an HTTP API.",
+  "price_model": "FREE",
+  "install_command": "docker run --security-opt seccomp=unconfined --rm -it -e SANDBOX_API_KEY=your-secret-key -p 127.0.0.1:8080:8080 ghcr.io/agent-infra/sandbox:latest",
+  "connect_steps": [
+   "Add to Hermes config.yaml mcp_servers: \"agent-infra-sandbox\" -> command: docker run --security-opt seccomp=unconfined --rm -it -e SANDBOX_API_KEY=your-secret-key -p 127.0.0.1:8080:8080 ghcr.io/agent-infra/sandbox:latest (or run: hermes mcp add agent-infra-sandbox -- docker run --security-opt seccomp=unconfined --rm -it -e SANDBOX_API_KEY=your-secret-key -p 127.0.0.1:8080:8080 ghcr.io/agent-infra/sandbox:latest)",
+   "Set SANDBOX_API_KEY (services stay open without it for backwards compat)",
+   "Access via X-AIO-API-Key header or ?api_key= query param",
+   "Restart Hermes (or reload), then verify: hermes mcp list"
+  ],
+  "url": "https://github.com/agent-infra/sandbox",
+  "stars": 5673,
+  "source": "github",
+  "source_url": "https://github.com/agent-infra/sandbox",
+  "verified": true
+ },
+ {
+  "name": "godot-mcp",
+  "category": "CODING",
+  "purpose": "Godot game engine control",
+  "description": "MCP server for interfacing with the Godot game engine: launching the editor, running scenes, and inspecting the game tree from AI agents. Lets agents drive Godot projects during development. Configurable with GODOT_PATH and debug flags.",
+  "price_model": "FREE",
+  "install_command": "npx @coding-solo/godot-mcp",
+  "connect_steps": [
+   "Add to Hermes config.yaml mcp_servers: \"godot-mcp\" -> command: npx @coding-solo/godot-mcp (or run: hermes mcp add godot-mcp -- npx @coding-solo/godot-mcp)",
+   "claude mcp add godot -e GODOT_PATH=/path/to/godot -e DEBUG=true -- npx @coding-solo/godot-mcp",
+   "Requires Godot 4.x installed locally",
+   "Restart Hermes (or reload), then verify: hermes mcp list"
+  ],
+  "url": "https://github.com/Coding-Solo/godot-mcp",
+  "stars": 5157,
+  "source": "github",
+  "source_url": "https://github.com/Coding-Solo/godot-mcp",
+  "verified": true
+ },
+ {
+  "name": "peekaboo",
+  "category": "MISC",
+  "purpose": "macOS screen capture",
+  "description": "Peekaboo is a macOS CLI and optional MCP server that lets AI agents capture screenshots and screen recordings. Also provides vision analysis helpers for agents working on Mac. Useful for computer-use and UI-testing agents on macOS.",
+  "price_model": "FREE",
+  "install_command": "npx -y @steipete/peekaboo --version",
+  "connect_steps": [
+   "Add to Hermes config.yaml mcp_servers: \"peekaboo\" -> command: npx -y @steipete/peekaboo --version (or run: hermes mcp add peekaboo -- npx -y @steipete/peekaboo --version)",
+   "Run npx -y @steipete/peekaboo --serve to start MCP server mode",
+   "Grant Screen Recording permission in macOS System Settings",
+   "Restart Hermes (or reload), then verify: hermes mcp list"
+  ],
+  "url": "https://github.com/openclaw/Peekaboo",
+  "stars": 4979,
+  "source": "github",
+  "source_url": "https://github.com/openclaw/Peekaboo",
+  "verified": true
+ },
+ {
+  "name": "exa-mcp-server",
+  "category": "SEARCH-RESEARCH",
+  "purpose": "Web search & crawl",
+  "description": "Exa MCP for web search and web crawling: neural search over the live web with content extraction to markdown. Can be used via Exa's hosted remote server (https://mcp.exa.ai/mcp) or the local npm package. Requires an Exa API key.",
+  "price_model": "FREE-TIER+ADDON",
+  "install_command": "npx -y exa-mcp-server@latest",
+  "connect_steps": [
+   "Add to Hermes config.yaml mcp_servers: \"exa-mcp-server\" -> command: npx -y exa-mcp-server@latest (or run: hermes mcp add exa-mcp-server -- npx -y exa-mcp-server@latest)",
+   "Set EXA_API_KEY env var (exa.ai dashboard)",
+   "Hosted alternative: point client at https://mcp.exa.ai/mcp with EXA_API_KEY",
+   "Restart Hermes (or reload), then verify: hermes mcp list"
+  ],
+  "url": "https://github.com/exa-labs/exa-mcp-server",
+  "stars": 4852,
+  "source": "github",
+  "source_url": "https://github.com/exa-labs/exa-mcp-server",
+  "verified": true
+ },
+ {
+  "name": "deep-research",
+  "category": "SEARCH-RESEARCH",
+  "purpose": "LLM deep research agent",
+  "description": "Use any LLM for deep research with SSE API and MCP server support. Runs research agents that query multiple sources and compile reports, deployable via Docker. Bring-your-own-LLM with configurable providers.",
+  "price_model": "FREE",
+  "install_command": "docker run -d --name deep-research -p 3333:3000 xiangfa/deep-research",
+  "connect_steps": [
+   "Add to Hermes config.yaml mcp_servers: \"deep-research\" -> command: docker run -d --name deep-research -p 3333:3000 xiangfa/deep-research (or run: hermes mcp add deep-research -- docker run -d --name deep-research -p 3333:3000 xiangfa/deep-research)",
+   "Set LLM provider keys (OpenAI/Anthropic/etc.) via env vars",
+   "Access UI/API at http://localhost:3333, MCP endpoint exposed too",
+   "Restart Hermes (or reload), then verify: hermes mcp list"
+  ],
+  "url": "https://github.com/u14app/deep-research",
+  "stars": 4685,
+  "source": "github",
+  "source_url": "https://github.com/u14app/deep-research",
+  "verified": true
+ },
+ {
+  "name": "notion-mcp-server",
+  "category": "PRODUCTIVITY",
+  "purpose": "Notion workspace tools",
+  "description": "Official Notion MCP server giving AI agents access to Notion pages, databases, and search. Enables creating pages, querying databases, and updating content programmatically. Requires a Notion integration token.",
+  "price_model": "FREE",
+  "install_command": "npx @notionhq/notion-mcp-server",
+  "connect_steps": [
+   "Add to Hermes config.yaml mcp_servers: \"notion-mcp-server\" -> command: npx @notionhq/notion-mcp-server (or run: hermes mcp add notion-mcp-server -- npx @notionhq/notion-mcp-server)",
+   "Set NOTION_TOKEN env var (create an integration at notion.so/my-integrations)",
+   "Grant the integration access to the target workspace/pages",
+   "Restart Hermes (or reload), then verify: hermes mcp list"
+  ],
+  "url": "https://github.com/makenotion/notion-mcp-server",
+  "stars": 4586,
+  "source": "github",
+  "source_url": "https://github.com/makenotion/notion-mcp-server",
+  "verified": true
+ },
+ {
+  "name": "ha-mcp",
+  "category": "MISC",
+  "purpose": "Home Assistant control",
+  "description": "The unofficial Home Assistant MCP server connecting AI agents to your smart home: lights, sensors, switches, and automations. Runs via uvx/PyPI, Docker, or a Home Assistant custom component. Requires Home Assistant URL and long-lived token.",
+  "price_model": "FREE",
+  "install_command": "uvx ha-mcp@latest",
+  "connect_steps": [
+   "Add to Hermes config.yaml mcp_servers: \"ha-mcp\" -> command: uvx ha-mcp@latest (or run: hermes mcp add ha-mcp -- uvx ha-mcp@latest)",
+   "Set HOMEASSISTANT_URL and HOMEASSISTANT_TOKEN (long-lived access token)",
+   "Configure exactly one install method per client (uvx vs add-on vs component)",
+   "Restart Hermes (or reload), then verify: hermes mcp list"
+  ],
+  "url": "https://github.com/homeassistant-ai/ha-mcp",
+  "stars": 4353,
+  "source": "github",
+  "source_url": "https://github.com/homeassistant-ai/ha-mcp",
+  "verified": true
+ },
+ {
+  "name": "mcp-server-chart",
+  "category": "MEDIA",
+  "purpose": "Chart & data visualization",
+  "description": "AntV MCP server for charting: exposes 25+ chart types (from Ant Design Charts) that AI agents can render from data. Pairs with chart-visualization skills for polished data-viz output. Great for agent-generated dashboards and reports.",
+  "price_model": "FREE",
+  "install_command": "npx -y @antv/mcp-server-chart",
+  "connect_steps": [
+   "Add to Hermes config.yaml mcp_servers: \"mcp-server-chart\" -> command: npx -y @antv/mcp-server-chart (or run: hermes mcp add mcp-server-chart -- npx -y @antv/mcp-server-chart)",
+   "Config: command npx, args [\"-y\",\"@antv/mcp-server-chart\"]",
+   "Optionally add antvis/chart-visualization-skills via npx skills add",
+   "Restart Hermes (or reload), then verify: hermes mcp list"
+  ],
+  "url": "https://github.com/antvis/mcp-server-chart",
+  "stars": 4306,
+  "source": "github",
+  "source_url": "https://github.com/antvis/mcp-server-chart",
+  "verified": true
+ },
+ {
+  "name": "spec-workflow-mcp",
+  "category": "CODING",
+  "purpose": "Spec-driven development",
+  "description": "MCP server providing structured spec-driven development workflows: drafting specs, tracking tasks, and validating implementation against requirements. Helps agents follow plan-spec-implement loops. Includes a dashboard mode.",
+  "price_model": "FREE",
+  "install_command": "npx -y @pimzino/spec-workflow-mcp@latest --dashboard",
+  "connect_steps": [
+   "Add to Hermes config.yaml mcp_servers: \"spec-workflow-mcp\" -> command: npx -y @pimzino/spec-workflow-mcp@latest --dashboard (or run: hermes mcp add spec-workflow-mcp -- npx -y @pimzino/spec-workflow-mcp@latest --dashboard)",
+   "Run without --dashboard for headless stdio mode",
+   "Dashboard flag serves a local review UI",
+   "Restart Hermes (or reload), then verify: hermes mcp list"
+  ],
+  "url": "https://github.com/Pimzino/spec-workflow-mcp",
+  "stars": 4290,
+  "source": "github",
+  "source_url": "https://github.com/Pimzino/spec-workflow-mcp",
+  "verified": true
+ },
+ {
+  "name": "mcp-obsidian",
+  "category": "PRODUCTIVITY",
+  "purpose": "Obsidian vault access",
+  "description": "MCP server that interacts with Obsidian through the Obsidian Local REST API community plugin: read/write notes, search vault, and manage markdown. Popular way to give agents access to a knowledge base. Requires the Local REST API plugin enabled.",
+  "price_model": "FREE",
+  "install_command": "uvx mcp-obsidian",
+  "connect_steps": [
+   "Add to Hermes config.yaml mcp_servers: \"mcp-obsidian\" -> command: uvx mcp-obsidian (or run: hermes mcp add mcp-obsidian -- uvx mcp-obsidian)",
+   "Enable the \"Local REST API\" community plugin in Obsidian and set an API key",
+   "Config: command uvx, args [\"mcp-obsidian\"] (or uv --directory /path/to/mcp-obsidian run mcp-obsidian)",
+   "Restart Hermes (or reload), then verify: hermes mcp list"
+  ],
+  "url": "https://github.com/MarkusPfundstein/mcp-obsidian",
+  "stars": 4287,
+  "source": "github",
+  "source_url": "https://github.com/MarkusPfundstein/mcp-obsidian",
+  "verified": true
+ },
+ {
+  "name": "excel-mcp-server",
+  "category": "PRODUCTIVITY",
+  "purpose": "Excel file manipulation",
+  "description": "MCP server for Excel file manipulation: read, write, and transform .xlsx files from AI agents. Supports formulas, sheets, and formatting operations. Runs via uvx with stdio transport.",
+  "price_model": "FREE",
+  "install_command": "uvx excel-mcp-server stdio",
+  "connect_steps": [
+   "Add to Hermes config.yaml mcp_servers: \"excel-mcp-server\" -> command: uvx excel-mcp-server stdio (or run: hermes mcp add excel-mcp-server -- uvx excel-mcp-server stdio)",
+   "Point at target .xlsx paths via tools at runtime",
+   "Use \"stdio\" transport arg for local MCP clients",
+   "Restart Hermes (or reload), then verify: hermes mcp list"
+  ],
+  "url": "https://github.com/haris-musa/excel-mcp-server",
+  "stars": 4103,
+  "source": "github",
+  "source_url": "https://github.com/haris-musa/excel-mcp-server",
+  "verified": true
+ },
+ {
+  "name": "cloudflare-mcp-server",
+  "category": "CLOUD-INFRA",
+  "purpose": "Cloudflare platform ops",
+  "description": "Cloudflare MCP servers exposing Cloudflare services to agents: docs search, Workers bindings/builds, observability, containers, browser rendering, logpush, AI gateway, DNS analytics, and more. Hosted stateless servers at *.mcp.cloudflare.com/mcp endpoints.",
+  "price_model": "FREE-TIER+ADDON",
+  "install_command": "https://docs.mcp.cloudflare.com/mcp (remote URL)",
+  "connect_steps": [
+   "Add to Hermes config.yaml mcp_servers: \"cloudflare-mcp-server\" -> command: https://docs.mcp.cloudflare.com/mcp (remote URL) (or run: hermes mcp add cloudflare-mcp-server -- https://docs.mcp.cloudflare.com/mcp (remote URL))",
+   "Connect client as remote MCP (Streamable HTTP) to a chosen endpoint e.g. https://docs.mcp.cloudflare.com/mcp",
+   "OAuth/credentials and account selection handled by Cloudflare",
+   "Restart Hermes (or reload), then verify: hermes mcp list"
+  ],
+  "url": "https://github.com/cloudflare/mcp-server-cloudflare",
+  "stars": 4062,
+  "source": "github",
+  "source_url": "https://github.com/cloudflare/mcp-server-cloudflare",
+  "verified": true
+ },
+ {
+  "name": "tradingview-mcp",
+  "category": "FINANCE",
+  "purpose": "Real-time market data",
+  "description": "TradingView MCP server providing real-time market data, technical analysis, screeners, and backtesting to AI agents. Covers stocks, crypto, forex, and futures. Free to use with TradingView public data.",
+  "price_model": "FREE",
+  "install_command": "pip install tradingview-mcp-server",
+  "connect_steps": [
+   "Add to Hermes config.yaml mcp_servers: \"tradingview-mcp\" -> command: pip install tradingview-mcp-server (or run: hermes mcp add tradingview-mcp -- pip install tradingview-mcp-server)",
+   "No API key required for core data tools",
+   "Optionally run via uvx tradingview-mcp-server",
+   "Restart Hermes (or reload), then verify: hermes mcp list"
+  ],
+  "url": "https://github.com/atilaahmettaner/tradingview-mcp",
+  "stars": 3929,
+  "source": "github",
+  "source_url": "https://github.com/atilaahmettaner/tradingview-mcp",
+  "verified": true
+ },
+ {
+  "name": "mcp-feedback-enhanced",
+  "category": "CODING",
+  "purpose": "Interactive feedback & commands",
+  "description": "Enhanced MCP server for interactive user feedback and command execution in AI-assisted development. Adds approval flows and structured feedback loops for agent actions. Useful for safer agentic coding.",
+  "price_model": "FREE",
+  "install_command": "uvx mcp-feedback-enhanced@latest",
+  "connect_steps": [
+   "Add to Hermes config.yaml mcp_servers: \"mcp-feedback-enhanced\" -> command: uvx mcp-feedback-enhanced@latest (or run: hermes mcp add mcp-feedback-enhanced -- uvx mcp-feedback-enhanced@latest)",
+   "Runs stdio; no API key required",
+   "Use version subcommand to verify install: uvx mcp-feedback-enhanced@latest version",
+   "Restart Hermes (or reload), then verify: hermes mcp list"
+  ],
+  "url": "https://github.com/Minidoracat/mcp-feedback-enhanced",
+  "stars": 3780,
+  "source": "github",
+  "source_url": "https://github.com/Minidoracat/mcp-feedback-enhanced",
+  "verified": true
+ },
+ {
+  "name": "laravel-boost",
+  "category": "CODING",
+  "purpose": "Laravel dev acceleration",
+  "description": "Laravel Boost is the official Laravel MCP server that provides Laravel-specific context and structure to AI coding agents. Installed as a composer package, it injects framework knowledge to generate high-quality Laravel code.",
+  "price_model": "FREE",
+  "install_command": "composer require laravel/boost --dev && php artisan boost:install",
+  "connect_steps": [
+   "Add to Hermes config.yaml mcp_servers: \"laravel-boost\" -> command: composer require laravel/boost --dev && php artisan boost:install (or run: hermes mcp add laravel-boost -- composer require laravel/boost --dev && php artisan boost:install)",
+   "Requires a Laravel 11+ project with Composer",
+   "Documentation: laravel.com/docs/boost",
+   "Restart Hermes (or reload), then verify: hermes mcp list"
+  ],
+  "url": "https://github.com/laravel/boost",
+  "stars": 3569,
+  "source": "github",
+  "source_url": "https://github.com/laravel/boost",
+  "verified": true
+ },
+ {
+  "name": "browserbase-mcp",
+  "category": "BROWSER-AUTOMATION",
+  "purpose": "Cloud browser control",
+  "description": "Browserbase MCP server lets LLMs control cloud-hosted browsers via Browserbase and Stagehand: navigation, extraction, and agentic browsing at scale. Runs headless browsers in the cloud with session recording. Requires Browserbase API key (free tier available).",
+  "price_model": "FREE-TIER+ADDON",
+  "install_command": "npx @browserbasehq/mcp",
+  "connect_steps": [
+   "Add to Hermes config.yaml mcp_servers: \"browserbase-mcp\" -> command: npx @browserbasehq/mcp (or run: hermes mcp add browserbase-mcp -- npx @browserbasehq/mcp)",
+   "Set BROWSERBASE_API_KEY and BROWSERBASE_PROJECT_ID env vars (browserbase.com)",
+   "Optional GEMINI_API_KEY for Stagehand vision features",
+   "Restart Hermes (or reload), then verify: hermes mcp list"
+  ],
+  "url": "https://github.com/browserbase/mcp-server-browserbase",
+  "stars": 3413,
+  "source": "github",
+  "source_url": "https://github.com/browserbase/mcp-server-browserbase",
+  "verified": true
+ },
+ {
+  "name": "mcp-grafana",
+  "category": "DEVOPS",
+  "purpose": "Grafana observability",
+  "description": "MCP server for Grafana: query dashboards, datasources, incidents, and on-call from AI agents. Lets agents pull metrics and investigate alerts across Grafana stack. Configure via environment variables.",
+  "price_model": "FREE",
+  "install_command": "uvx mcp-grafana",
+  "connect_steps": [
+   "Add to Hermes config.yaml mcp_servers: \"mcp-grafana\" -> command: uvx mcp-grafana (or run: hermes mcp add mcp-grafana -- uvx mcp-grafana)",
+   "Set GRAFANA_URL, GRAFANA_API_KEY (service account token), and optional GRAFANA_ONCALL_URL/TOKEN",
+   "uvx mcp-grafana --grafana-url ... --grafana-api-key ...",
+   "Restart Hermes (or reload), then verify: hermes mcp list"
+  ],
+  "url": "https://github.com/grafana/mcp-grafana",
+  "stars": 3342,
+  "source": "github",
+  "source_url": "https://github.com/grafana/mcp-grafana",
+  "verified": true
+ },
+ {
+  "name": "dbhub",
+  "category": "DATABASES",
+  "purpose": "Token-conscious DB access",
+  "description": "Bytebase DBHub: token-conscious database MCP server for Postgres, MySQL, SQL Server, MariaDB, and SQLite. Minimizes tokens sent to LLMs via schema-aware querying and result pagination. Query production databases safely with approval gates.",
+  "price_model": "FREE",
+  "install_command": "npx @bytebase/dbhub@latest --transport http --port 8080 --dsn \"postgres://user:***@localhost:5432/dbname?sslmode=disable\"",
+  "connect_steps": [
+   "Add to Hermes config.yaml mcp_servers: \"dbhub\" -> command: npx @bytebase/dbhub@latest --transport http --port 8080 --dsn \"postgres://user:***@localhost:5432/dbname?sslmode=disable\" (or run: hermes mcp add dbhub -- npx @bytebase/dbhub@latest --transport http --port 8080 --dsn \"postgres://user:***@localhost:5432/dbname?sslmode=disable\")",
+   "Replace DSN with your database connection string",
+   "Use --transport http for remote clients or stdio for local",
+   "Restart Hermes (or reload), then verify: hermes mcp list"
+  ],
+  "url": "https://github.com/bytebase/dbhub",
+  "stars": 3335,
+  "source": "github",
+  "source_url": "https://github.com/bytebase/dbhub",
+  "verified": true
+ },
+ {
+  "name": "apify-mcp-server",
+  "category": "SEARCH-RESEARCH",
+  "purpose": "Social & web scraping",
+  "description": "Apify MCP server enables AI agents to extract data from social media, search engines, and 5,000+ Apify Actors. Includes actors, docs, and a RAG web browser tool. Requires an Apify API token (free tier with monthly credits).",
+  "price_model": "FREE-TIER+ADDON",
+  "install_command": "npx @apify/actors-mcp-server --tools actors,docs,apify/rag-web-browser",
+  "connect_steps": [
+   "Add to Hermes config.yaml mcp_servers: \"apify-mcp-server\" -> command: npx @apify/actors-mcp-server --tools actors,docs,apify/rag-web-browser (or run: hermes mcp add apify-mcp-server -- npx @apify/actors-mcp-server --tools actors,docs,apify/rag-web-browser)",
+   "Set APIFY_TOKEN env var (console.apify.com)",
+   "Pick tools flag: actors, docs, or apify/rag-web-browser",
+   "Restart Hermes (or reload), then verify: hermes mcp list"
+  ],
+  "url": "https://github.com/apify/apify-mcp-server",
+  "stars": 3272,
+  "source": "github",
+  "source_url": "https://github.com/apify/apify-mcp-server",
+  "verified": true
+ },
+ {
+  "name": "ghidra-mcp-bethington",
+  "category": "CODING",
+  "purpose": "Ghidra 200+ tools bridge",
+  "description": "Ghidra MCP server exposing 200+ MCP tools for AI-powered reverse engineering with a GUI plugin and headless mode. Builds and deploys a Ghidra extension plus Python bridge. Advanced alternative to LaurieWired GhidraMCP.",
+  "price_model": "FREE",
+  "install_command": "git clone https://github.com/bethington/ghidra-mcp.git && cd ghidra-mcp && python -m tools.setup ensure-prereqs --ghidra-path \"C:/path/to/ghidra\" && python -m tools.setup build && python -m tools.setup deploy --ghidra-path \"C:/path/to/ghidra\"",
+  "connect_steps": [
+   "Add to Hermes config.yaml mcp_servers: \"ghidra-mcp-bethington\" -> command: git clone https://github.com/bethington/ghidra-mcp.git && cd ghidra-mcp && python -m tools.setup ensure-prereqs --ghidra-path \"C:/path/to/ghidra\" && python -m tools.setup build && python -m tools.setup deploy --ghidra-path \"C:/path/to/ghidra\" (or run: hermes mcp add ghidra-mcp-bethington -- git clone https://github.com/bethington/ghidra-mcp.git && cd ghidra-mcp && python -m tools.setup ensure-prereqs --ghidra-path \"C:/path/to/ghidra\" && python -m tools.setup build && python -m tools.setup deploy --ghidra-path \"C:/path/to/ghidra\")",
+   "Requires Ghidra installed; run python -m tools.setup preflight first",
+   "deploy installs extension, patches user config, and starts Ghidra",
+   "Restart Hermes (or reload), then verify: hermes mcp list"
+  ],
+  "url": "https://github.com/bethington/ghidra-mcp",
+  "stars": 3269,
+  "source": "github",
+  "source_url": "https://github.com/bethington/ghidra-mcp",
+  "verified": true
+ },
+ {
+  "name": "notebooklm-mcp",
+  "category": "PRODUCTIVITY",
+  "purpose": "NotebookLM research access",
+  "description": "MCP server for Google NotebookLM: lets AI agents (Claude Code, Codex) research documentation, create notebooks, and query sources. Bridges NotebookLM's source-grounded Q&A into agent workflows. Requires Google auth.",
+  "price_model": "FREE",
+  "install_command": "npx notebooklm-mcp@latest",
+  "connect_steps": [
+   "Add to Hermes config.yaml mcp_servers: \"notebooklm-mcp\" -> command: npx notebooklm-mcp@latest (or run: hermes mcp add notebooklm-mcp -- npx notebooklm-mcp@latest)",
+   "Authenticate with Google account on first run (browser OAuth)",
+   "Keep browser session valid for the server process",
+   "Restart Hermes (or reload), then verify: hermes mcp list"
+  ],
+  "url": "https://github.com/PleasePrompto/notebooklm-mcp",
+  "stars": 3221,
+  "source": "github",
+  "source_url": "https://github.com/PleasePrompto/notebooklm-mcp",
+  "verified": true
+ },
+ {
+  "name": "linkedin-mcp-server",
+  "category": "COMMUNICATION",
+  "purpose": "LinkedIn profile ops",
+  "description": "Open-source MCP server for LinkedIn: gives Claude and other agents access to profile data, search, and messaging (within platform limits). Uses your logged-in browser session for auth. Popular for sales and recruiting agents.",
+  "price_model": "FREE",
+  "install_command": "uvx mcp-server-linkedin@latest --import-from-browser",
+  "connect_steps": [
+   "Add to Hermes config.yaml mcp_servers: \"linkedin-mcp-server\" -> command: uvx mcp-server-linkedin@latest --import-from-browser (or run: hermes mcp add linkedin-mcp-server -- uvx mcp-server-linkedin@latest --import-from-browser)",
+   "Uses existing browser LinkedIn session (--import-from-browser)",
+   "Self-hosting at scale requires enterprise API access",
+   "Restart Hermes (or reload), then verify: hermes mcp list"
+  ],
+  "url": "https://github.com/stickerdaniel/linkedin-mcp-server",
+  "stars": 3085,
+  "source": "github",
+  "source_url": "https://github.com/stickerdaniel/linkedin-mcp-server",
+  "verified": true
+ },
+ {
+  "name": "arxiv-mcp-server",
+  "category": "SEARCH-RESEARCH",
+  "purpose": "arXiv paper search",
+  "description": "MCP server for searching and analyzing arXiv papers: full-text search, metadata lookup, and PDF download to a local storage path. Supports querying by keyword, author, and category. Great for research agents.",
+  "price_model": "FREE",
+  "install_command": "uvx arxiv-mcp-server --storage-path /absolute/path/to/papers",
+  "connect_steps": [
+   "Add to Hermes config.yaml mcp_servers: \"arxiv-mcp-server\" -> command: uvx arxiv-mcp-server --storage-path /absolute/path/to/papers (or run: hermes mcp add arxiv-mcp-server -- uvx arxiv-mcp-server --storage-path /absolute/path/to/papers)",
+   "Set --storage-path where downloaded PDFs are saved",
+   "No API key required",
+   "Restart Hermes (or reload), then verify: hermes mcp list"
+  ],
+  "url": "https://github.com/blazickjp/arxiv-mcp-server",
+  "stars": 3041,
+  "source": "github",
+  "source_url": "https://github.com/blazickjp/arxiv-mcp-server",
+  "verified": true
+ },
+ {
+  "name": "google-workspace-mcp",
+  "category": "PRODUCTIVITY",
+  "purpose": "Gmail/Calendar/Docs control",
+  "description": "MCP server to control Gmail, Google Calendar, Docs, Sheets, Slides, Chat, Forms, Tasks, Search, and Drive from AI agents. Broad coverage of Google Workspace via OAuth. Configure tool tiers to control scope.",
+  "price_model": "FREE",
+  "install_command": "uvx workspace-mcp --tool-tier core",
+  "connect_steps": [
+   "Add to Hermes config.yaml mcp_servers: \"google-workspace-mcp\" -> command: uvx workspace-mcp --tool-tier core (or run: hermes mcp add google-workspace-mcp -- uvx workspace-mcp --tool-tier core)",
+   "Set up Google OAuth client ID/secret (gws config)",
+   "Tiers: core (essential tools) vs full (all apps)",
+   "Restart Hermes (or reload), then verify: hermes mcp list"
+  ],
+  "url": "https://github.com/taylorwilsdon/google_workspace_mcp",
+  "stars": 3000,
+  "source": "github",
+  "source_url": "https://github.com/taylorwilsdon/google_workspace_mcp",
+  "verified": true
+ },
+ {
+  "name": "shadcn-ui-mcp-server",
+  "category": "CODING",
+  "purpose": "shadcn/ui component context",
+  "description": "MCP server that gives LLMs context about shadcn/ui component structure, usage, and installation. Lets agents generate correct shadcn/ui code with proper registry imports. Popular with frontend coding agents.",
+  "price_model": "FREE",
+  "install_command": "npx @jpisnice/shadcn-ui-mcp-server",
+  "connect_steps": [
+   "Add to Hermes config.yaml mcp_servers: \"shadcn-ui-mcp-server\" -> command: npx @jpisnice/shadcn-ui-mcp-server (or run: hermes mcp add shadcn-ui-mcp-server -- npx @jpisnice/shadcn-ui-mcp-server)",
+   "Runs stdio, no API key",
+   "Query components by name for registry/usage details",
+   "Restart Hermes (or reload), then verify: hermes mcp list"
+  ],
+  "url": "https://github.com/Jpisnice/shadcn-ui-mcp-server",
+  "stars": 2926,
+  "source": "github",
+  "source_url": "https://github.com/Jpisnice/shadcn-ui-mcp-server",
+  "verified": true
+ },
+ {
+  "name": "markdownify-mcp",
+  "category": "PRODUCTIVITY",
+  "purpose": "Anything to Markdown",
+  "description": "MCP server for converting almost anything (PDF, DOCX, images, audio, URLs) to clean Markdown. Powered by Microsoft MarkItDown. Local install via bun, or Docker with path mounts.",
+  "price_model": "FREE",
+  "install_command": "git clone https://github.com/zcaceres/markdownify-mcp.git && cd markdownify-mcp && bun install && bun run mcp-server.ts",
+  "connect_steps": [
+   "Add to Hermes config.yaml mcp_servers: \"markdownify-mcp\" -> command: git clone https://github.com/zcaceres/markdownify-mcp.git && cd markdownify-mcp && bun install && bun run mcp-server.ts (or run: hermes mcp add markdownify-mcp -- git clone https://github.com/zcaceres/markdownify-mcp.git && cd markdownify-mcp && bun install && bun run mcp-server.ts)",
+   "Docker alternative: docker build -t markdownify-mcp . && docker run --rm -i -v \"$HOME/Documents:/data:ro\" -e MD_ALLOWED_PATHS=/data markdownify-mcp",
+   "bun install is required for full feature set (audio/image)",
+   "Restart Hermes (or reload), then verify: hermes mcp list"
+  ],
+  "url": "https://github.com/zcaceres/markdownify-mcp",
+  "stars": 2909,
+  "source": "github",
+  "source_url": "https://github.com/zcaceres/markdownify-mcp",
+  "verified": true
+ },
+ {
+  "name": "obsidian-local-rest-api",
+  "category": "PRODUCTIVITY",
+  "purpose": "Obsidian vault REST/MCP",
+  "description": "Obsidian Local REST API plugin ships a built-in MCP server running inside Obsidian with direct access to vault metadata, active file, and command palette. Install as a community plugin; no separate server process needed. Includes REST endpoints plus MCP tools.",
+  "price_model": "FREE",
+  "install_command": "Obsidian plugin: Community plugins -> install \"Local REST API\"",
+  "connect_steps": [
+   "Add to Hermes config.yaml mcp_servers: \"obsidian-local-rest-api\" -> command: Obsidian plugin: Community plugins -> install \"Local REST API\" (or run: hermes mcp add obsidian-local-rest-api -- Obsidian plugin: Community plugins -> install \"Local REST API\")",
+   "Enable the plugin and the built-in MCP server in settings",
+   "Point client at http://127.0.0.1:27124/mcp",
+   "Restart Hermes (or reload), then verify: hermes mcp list"
+  ],
+  "url": "https://github.com/coddingtonbear/obsidian-local-rest-api",
+  "stars": 2775,
+  "source": "github",
+  "source_url": "https://github.com/coddingtonbear/obsidian-local-rest-api",
+  "verified": true
+ },
+ {
+  "name": "radar",
+  "category": "DEVOPS",
+  "purpose": "Kubernetes UI + MCP",
+  "description": "Radar is an open-source Kubernetes UI with a built-in MCP server for AI agents: see cluster state, inspect workloads, and act on resources. Installed via Homebrew tap. Bridges K8s observability into agent workflows.",
+  "price_model": "FREE",
+  "install_command": "brew install skyhook-io/tap/radar",
+  "connect_steps": [
+   "Add to Hermes config.yaml mcp_servers: \"radar\" -> command: brew install skyhook-io/tap/radar (or run: hermes mcp add radar -- brew install skyhook-io/tap/radar)",
+   "Requires kubeconfig access to target cluster",
+   "Run radar then connect client to its MCP endpoint",
+   "Restart Hermes (or reload), then verify: hermes mcp list"
+  ],
+  "url": "https://github.com/skyhook-io/radar",
+  "stars": 2840,
+  "source": "github",
+  "source_url": "https://github.com/skyhook-io/radar",
+  "verified": true
+ },
+ {
+  "name": "brightdata-mcp",
+  "category": "SEARCH-RESEARCH",
+  "purpose": "Web scraping via Bright Data",
+  "description": "Bright Data MCP server providing all-in-one web scraping: search engine results, social media, and structured data extraction from their proxy/collector network. Hosted server or npx package with API token. Free tier (\"Rapid Mode\") plus paid collectors.",
+  "price_model": "PAID",
+  "install_command": "npx @brightdata/mcp",
+  "connect_steps": [
+   "Add to Hermes config.yaml mcp_servers: \"brightdata-mcp\" -> command: npx @brightdata/mcp (or run: hermes mcp add brightdata-mcp -- npx @brightdata/mcp)",
+   "Set API_TOKEN env var (Bright Data dashboard)",
+   "Hosted option: connect to Bright Data remote MCP endpoint with token",
+   "Restart Hermes (or reload), then verify: hermes mcp list"
+  ],
+  "url": "https://github.com/brightdata/brightdata-mcp",
+  "stars": 2581,
+  "source": "github",
+  "source_url": "https://github.com/brightdata/brightdata-mcp",
+  "verified": true
+ },
+ {
+  "name": "perplexity-mcp",
+  "category": "AI-MODELS",
+  "purpose": "Perplexity API search",
+  "description": "Official MCP server implementation for the Perplexity API platform: grounded web-search answers with citations for AI agents. Run via npx or Docker with a Perplexity API key. Pay-per-request pricing.",
+  "price_model": "PAID",
+  "install_command": "npx -y @perplexity-ai/mcp-server",
+  "connect_steps": [
+   "Add to Hermes config.yaml mcp_servers: \"perplexity-mcp\" -> command: npx -y @perplexity-ai/mcp-server (or run: hermes mcp add perplexity-mcp -- npx -y @perplexity-ai/mcp-server)",
+   "Set PERPLEXITY_API_KEY env var (perplexity.ai settings -> API)",
+   "Docker alternative: docker run -p 8080:8080 -e PERPLEXITY_API_KEY=your_key_here perplexity-mcp-server",
+   "Restart Hermes (or reload), then verify: hermes mcp list"
+  ],
+  "url": "https://github.com/perplexityai/modelcontextprotocol",
+  "stars": 2442,
+  "source": "github",
+  "source_url": "https://github.com/perplexityai/modelcontextprotocol",
+  "verified": true
+ },
+ {
+  "name": "tavily-mcp",
+  "category": "SEARCH-RESEARCH",
+  "purpose": "Tavily search & extract",
+  "description": "Production-ready MCP server with Tavily real-time search, extract, map, and crawl capabilities. Gives agents clean, LLM-optimized search results. Requires a Tavily API key (free tier available).",
+  "price_model": "FREE-TIER+ADDON",
+  "install_command": "npx -y tavily-mcp@latest",
+  "connect_steps": [
+   "Add to Hermes config.yaml mcp_servers: \"tavily-mcp\" -> command: npx -y tavily-mcp@latest (or run: hermes mcp add tavily-mcp -- npx -y tavily-mcp@latest)",
+   "Set TAVILY_API_KEY env var (tavily.com dashboard)",
+   "Config: command npx, args [\"-y\",\"tavily-mcp@latest\"]",
+   "Restart Hermes (or reload), then verify: hermes mcp list"
+  ],
+  "url": "https://github.com/tavily-ai/tavily-mcp",
+  "stars": 2311,
+  "source": "github",
+  "source_url": "https://github.com/tavily-ai/tavily-mcp",
+  "verified": true
+ },
+ {
+  "name": "jcodemunch-mcp",
+  "category": "CODING",
+  "purpose": "Token-efficient code exploration",
+  "description": "jcodemunch cuts AI token costs on code exploration with symbol-level, precise code retrieval instead of dumping whole files. The leading MCP server for token-efficient codebase queries. Install via pip.",
+  "price_model": "FREE",
+  "install_command": "pip install jcodemunch-mcp",
+  "connect_steps": [
+   "Add to Hermes config.yaml mcp_servers: \"jcodemunch-mcp\" -> command: pip install jcodemunch-mcp (or run: hermes mcp add jcodemunch-mcp -- pip install jcodemunch-mcp)",
+   "No API key required",
+   "Optionally run via uvx jcodemunch-mcp",
+   "Restart Hermes (or reload), then verify: hermes mcp list"
+  ],
+  "url": "https://github.com/jgravelle/jcodemunch-mcp",
+  "stars": 2541,
+  "source": "github",
+  "source_url": "https://github.com/jgravelle/jcodemunch-mcp",
+  "verified": true
+ }
+]

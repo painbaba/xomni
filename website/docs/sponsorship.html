@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sponsorship — XOMNI Docs</title>
+<meta name="description" content="How XOMNI sponsorship works: the sponsor line, impressions per work event, and the earnings formula.">
+<link rel="icon" type="image/svg+xml" href="../favicon.svg">
+<link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="logo" href="../index.html"><span class="logo-x">X</span>OMNI</a>
+    <nav class="site-nav" id="site-nav" aria-label="Primary">
+      <a href="../index.html" class="nav-link" data-nav="index">Home</a>
+      <a href="install.html" class="nav-link" data-nav="install">Install</a>
+      <a href="byo-provider.html" class="nav-link" data-nav="byo">BYO Provider</a>
+      <a href="sponsorship.html" class="nav-link" data-nav="sponsorship">Sponsorship</a>
+      <a href="faq.html" class="nav-link" data-nav="faq">FAQ</a>
+      <a href="security.html" class="nav-link" data-nav="security">Security</a>
+      <a href="../skills.html" class="nav-link" data-nav="skills">Skills</a>
+      <a class="nav-cta" href="https://github.com/painbaba/xomni" target="_blank" rel="noopener">GitHub ↗</a>
+    </nav>
+    <button class="nav-toggle" id="nav-toggle" aria-expanded="false" aria-controls="site-nav" aria-label="Toggle navigation">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+
+<main id="main">
+  <div class="container page">
+    <aside class="docs-side" aria-label="Docs navigation">
+      <p class="docs-h">Docs</p>
+      <a href="install.html" class="docs-link">Install</a>
+      <a href="byo-provider.html" class="docs-link">BYO Provider</a>
+      <a href="sponsorship.html" class="docs-link active">Sponsorship</a>
+      <a href="faq.html" class="docs-link">FAQ</a>
+      <a href="security.html" class="docs-link">Security</a>
+      <p class="docs-h">Site</p>
+      <a href="../skills.html" class="docs-link">Skills</a>
+      <a href="../index.html" class="docs-link">Home</a>
+    </aside>
+
+    <article class="docs-body">
+      <h1>Sponsorship</h1>
+      <p class="lead">The <span class="mono">waitperk</span> and <span class="mono">perkline</span> plugins turn your idle agent time into income. While XOMNI works, a sponsor line runs in the statusline — and every work event pays.</p>
+
+      <h2 id="mechanics">Mechanics</h2>
+      <ul class="check-list">
+        <li><strong>Sponsor line.</strong> A rotating sponsor message rendered by <span class="mono">perkline</span> in the statusline while the agent is working.</li>
+        <li><strong>Work events.</strong> Each discrete unit of agent work — a tool call, a task step, a completed subtask — counts as one work event.</li>
+        <li><strong>Impressions.</strong> Every work event generates impressions for the sponsors in the rotation. Impressions accrue <em>while the agent works</em>, not while you watch — that's the <span class="mono">waitperk</span> guarantee.</li>
+        <li><strong>Payout.</strong> Earnings accumulate locally and are settled per your payout settings.</li>
+      </ul>
+
+      <h2 id="formula">The earnings formula</h2>
+      <div class="formula-box">
+        <p class="formula-label">earnings per work event</p>
+        <p class="formula"><span class="mono">earnings = min( 0.5 × P × share , 0.5 × P )</span></p>
+      </div>
+      <ul class="check-list">
+        <li><strong>P</strong> — the price the sponsor pays per impression, per work event.</li>
+        <li><strong>share</strong> — the sponsor's share of impressions for this event, from 0 to 1.</li>
+        <li><strong>The 0.5 floor.</strong> You keep at least half of every impression, no matter the share.</li>
+        <li><strong>The 0.5 cap.</strong> No single sponsor can pay you more than half of <span class="mono">P</span> per event — the line stays diverse and no sponsor dominates your statusline.</li>
+      </ul>
+
+      <h2 id="example">Worked example</h2>
+      <p>Suppose a sponsor pays <span class="mono">P = 0.10</span> per impression and is allocated <span class="mono">share = 0.4</span> of the impressions in a work event:</p>
+      <div class="code-block">
+        <div class="code-head"><span class="dot dot-green"></span><span class="code-title">payout</span></div>
+        <pre><code><span class="prompt">$</span> earnings = min( 0.5 × 0.10 × 0.4 , 0.5 × 0.10 )
+           = min( 0.02 , 0.05 )
+           = 0.02 per work event
+
+100 work events  →  2.00
+1,000 work events →  20.00</code></pre>
+      </div>
+
+      <h2 id="control">Control &amp; privacy</h2>
+      <ul class="check-list">
+        <li>Sponsorship is <strong>opt-in</strong>. No sponsor line until you enable it.</li>
+        <li>You choose the sponsor categories you'll accept; XOMNI filters the rotation.</li>
+        <li>Sponsor messages are rendered locally — they never see your prompts, files, or keys.</li>
+        <li>Disable anytime with <span class="mono">xomni perkline off</span>.</li>
+      </ul>
+
+      <h2 id="fairness">Fairness rules</h2>
+      <p>Sponsors buy impressions, never influence. XOMNI enforces three rules: the sponsor line never interrupts agent output, impressions only accrue during real work events, and the 0.5 cap keeps any single sponsor at most half of the line. The statusline stays yours; sponsors just share the spare pixels.</p>
+    </article>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <div>
+      <p class="footer-brand"><span class="logo-x">X</span>OMNI</p>
+      <p class="muted">one agent. every feature. every free model.</p>
+    </div>
+    <div class="footer-cols">
+      <div class="footer-col">
+        <p class="footer-h">Docs</p>
+        <a href="install.html">Install</a>
+        <a href="byo-provider.html">BYO Provider</a>
+        <a href="sponsorship.html">Sponsorship</a>
+      </div>
+      <div class="footer-col">
+        <p class="footer-h">More</p>
+        <a href="faq.html">FAQ</a>
+        <a href="security.html">Security</a>
+        <a href="../skills.html">Skills</a>
+      </div>
+      <div class="footer-col">
+        <p class="footer-h">Project</p>
+        <a href="https://github.com/painbaba/xomni" target="_blank" rel="noopener">GitHub</a>
+        <a href="../index.html">Home</a>
+      </div>
+    </div>
+  </div>
+  <p class="footer-bottom muted">© <span data-year>2026</span> XOMNI · compose, don't merge.</p>
+</footer>
+
+<script src="../js/site.js"></script>
+</body>
+</html>

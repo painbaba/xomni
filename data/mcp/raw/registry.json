@@ -1,0 +1,762 @@
+[
+  {
+    "name": "everything",
+    "category": "MISC",
+    "purpose": "MCP reference test server",
+    "description": "Official reference server from the MCP steering group demonstrating every protocol feature: tools, resources, prompts, and sampling. Use it to test MCP clients and learn the protocol surface.",
+    "price_model": "FREE",
+    "install_command": "npx -y @modelcontextprotocol/server-everything",
+    "connect_steps": [
+      "config.yaml: mcp_servers.everything: {command: \"cmd\", args: [\"/c\", \"npx\", \"-y\", \"@modelcontextprotocol/server-everything\"]} (Windows npx wrapper)",
+      "hermes mcp add everything --command npx --args -y @modelcontextprotocol/server-everything",
+      "No API keys required",
+      "Restart Hermes and run hermes mcp list to verify"
+    ],
+    "url": "https://github.com/modelcontextprotocol/servers/tree/main/src/everything",
+    "stars": 89000,
+    "source": "official-registry",
+    "source_url": "https://github.com/modelcontextprotocol/servers",
+    "verified": true
+  },
+  {
+    "name": "fetch",
+    "category": "SEARCH-RESEARCH",
+    "purpose": "Fetch and convert web content",
+    "description": "Official Python reference server that fetches URLs and converts web content (HTML to Markdown, JSON, etc.) for efficient LLM consumption. Handles redirects, robots.txt, and content-size limits.",
+    "price_model": "FREE",
+    "install_command": "uvx mcp-server-fetch",
+    "connect_steps": [
+      "config.yaml: mcp_servers.fetch: {command: \"uvx\", args: [\"mcp-server-fetch\"]}",
+      "hermes mcp add fetch --command uvx --args mcp-server-fetch",
+      "No API keys required (respects robots.txt)",
+      "Restart Hermes and run hermes mcp list to verify"
+    ],
+    "url": "https://github.com/modelcontextprotocol/servers/tree/main/src/fetch",
+    "stars": 89000,
+    "source": "official-registry",
+    "source_url": "https://github.com/modelcontextprotocol/servers",
+    "verified": true
+  },
+  {
+    "name": "filesystem",
+    "category": "MISC",
+    "purpose": "Secure local file operations",
+    "description": "Official reference server providing secure file operations (read, write, search, list) restricted to a configured allowlist of directories. Uses MCP Roots for access control.",
+    "price_model": "FREE",
+    "install_command": "npx -y @modelcontextprotocol/server-filesystem /path/to/allowed/files",
+    "connect_steps": [
+      "config.yaml: mcp_servers.filesystem: {command: \"cmd\", args: [\"/c\", \"npx\", \"-y\", \"@modelcontextprotocol/server-filesystem\", \"C:/path/to/allowed\"]} (Windows npx wrapper)",
+      "hermes mcp add filesystem --command npx --args -y @modelcontextprotocol/server-filesystem <allowed-dir>",
+      "No API keys; pass allowed directory as final arg",
+      "Restart Hermes and run hermes mcp list to verify"
+    ],
+    "url": "https://github.com/modelcontextprotocol/servers/tree/main/src/filesystem",
+    "stars": 89000,
+    "source": "official-registry",
+    "source_url": "https://github.com/modelcontextprotocol/servers",
+    "verified": true
+  },
+  {
+    "name": "git",
+    "category": "CODING",
+    "purpose": "Read, search, manipulate Git repos",
+    "description": "Official Python reference server exposing git operations as MCP tools: status, log, diff, blame, commit, branch management, and more. Point it at a repository path to give agents native git powers.",
+    "price_model": "FREE",
+    "install_command": "uvx mcp-server-git --repository /path/to/repo",
+    "connect_steps": [
+      "config.yaml: mcp_servers.git: {command: \"uvx\", args: [\"mcp-server-git\", \"--repository\", \"C:/path/to/repo\"]}",
+      "hermes mcp add git --command uvx --args mcp-server-git --repository <repo-path>",
+      "No API keys required",
+      "Restart Hermes and run hermes mcp list to verify"
+    ],
+    "url": "https://github.com/modelcontextprotocol/servers/tree/main/src/git",
+    "stars": 89000,
+    "source": "official-registry",
+    "source_url": "https://github.com/modelcontextprotocol/servers",
+    "verified": true
+  },
+  {
+    "name": "memory",
+    "category": "MISC",
+    "purpose": "Knowledge-graph persistent memory",
+    "description": "Official reference server implementing a persistent knowledge graph memory with entities, relations, and observations. Gives assistants long-term memory across sessions.",
+    "price_model": "FREE",
+    "install_command": "npx -y @modelcontextprotocol/server-memory",
+    "connect_steps": [
+      "config.yaml: mcp_servers.memory: {command: \"cmd\", args: [\"/c\", \"npx\", \"-y\", \"@modelcontextprotocol/server-memory\"]} (Windows npx wrapper)",
+      "hermes mcp add memory --command npx --args -y @modelcontextprotocol/server-memory",
+      "No API keys required (memory persists to local file)",
+      "Restart Hermes and run hermes mcp list to verify"
+    ],
+    "url": "https://github.com/modelcontextprotocol/servers/tree/main/src/memory",
+    "stars": 89000,
+    "source": "official-registry",
+    "source_url": "https://github.com/modelcontextprotocol/servers",
+    "verified": true
+  },
+  {
+    "name": "sequentialthinking",
+    "category": "MISC",
+    "purpose": "Structured step-by-step reasoning",
+    "description": "Official reference server implementing dynamic, reflective problem-solving through sequential thought chains. Lets models break problems into verifiable steps and backtrack when needed.",
+    "price_model": "FREE",
+    "install_command": "npx -y @modelcontextprotocol/server-sequential-thinking",
+    "connect_steps": [
+      "config.yaml: mcp_servers.sequentialthinking: {command: \"cmd\", args: [\"/c\", \"npx\", \"-y\", \"@modelcontextprotocol/server-sequential-thinking\"]} (Windows npx wrapper)",
+      "hermes mcp add sequentialthinking --command npx --args -y @modelcontextprotocol/server-sequential-thinking",
+      "No API keys required",
+      "Restart Hermes and run hermes mcp list to verify"
+    ],
+    "url": "https://github.com/modelcontextprotocol/servers/tree/main/src/sequentialthinking",
+    "stars": 89000,
+    "source": "official-registry",
+    "source_url": "https://github.com/modelcontextprotocol/servers",
+    "verified": true
+  },
+  {
+    "name": "time",
+    "category": "MISC",
+    "purpose": "Time and timezone conversion",
+    "description": "Official Python reference server providing current time and timezone conversion tools. Useful for any agent that must reason about schedules, deadlines, or timestamps across zones.",
+    "price_model": "FREE",
+    "install_command": "uvx mcp-server-time",
+    "connect_steps": [
+      "config.yaml: mcp_servers.time: {command: \"uvx\", args: [\"mcp-server-time\"]}",
+      "hermes mcp add time --command uvx --args mcp-server-time",
+      "No API keys required",
+      "Restart Hermes and run hermes mcp list to verify"
+    ],
+    "url": "https://github.com/modelcontextprotocol/servers/tree/main/src/time",
+    "stars": 89000,
+    "source": "official-registry",
+    "source_url": "https://github.com/modelcontextprotocol/servers",
+    "verified": true
+  },
+  {
+    "name": "github (archived reference)",
+    "category": "CODING",
+    "purpose": "GitHub API repository management",
+    "description": "Archived official reference server for GitHub: repo management, issue/PR operations, and file access via the GitHub API. Superseded by the official github/github-mcp-server (docker) — prefer that for production.",
+    "price_model": "FREE",
+    "install_command": "npx -y @modelcontextprotocol/server-github",
+    "connect_steps": [
+      "config.yaml: mcp_servers.github: {command: \"cmd\", args: [\"/c\", \"npx\", \"-y\", \"@modelcontextprotocol/server-github\"], env: {GITHUB_PERSONAL_ACCESS_TOKEN: \"<token>\"}}",
+      "hermes mcp add github --command npx --args -y @modelcontextprotocol/server-github",
+      "Env: GITHUB_PERSONAL_ACCESS_TOKEN (classic PAT with repo scope)",
+      "Restart Hermes and run hermes mcp list to verify"
+    ],
+    "url": "https://github.com/modelcontextprotocol/servers-archived/tree/main/src/github",
+    "stars": null,
+    "source": "official-registry",
+    "source_url": "https://github.com/modelcontextprotocol/servers-archived",
+    "verified": true
+  },
+  {
+    "name": "postgres (archived reference)",
+    "category": "DATABASES",
+    "purpose": "Read-only PostgreSQL database access",
+    "description": "Archived official reference server providing read-only access to PostgreSQL databases with schema inspection. Pass a connection string to query, list tables, and inspect schemas safely.",
+    "price_model": "FREE",
+    "install_command": "npx -y @modelcontextprotocol/server-postgres postgresql://localhost/mydb",
+    "connect_steps": [
+      "config.yaml: mcp_servers.postgres: {command: \"cmd\", args: [\"/c\", \"npx\", \"-y\", \"@modelcontextprotocol/server-postgres\", \"postgresql://user:pass@localhost:5432/db\"]}",
+      "hermes mcp add postgres --command npx --args -y @modelcontextprotocol/server-postgres <connection-string>",
+      "No extra env; credentials go in the connection-string arg",
+      "Restart Hermes and run hermes mcp list to verify"
+    ],
+    "url": "https://github.com/modelcontextprotocol/servers-archived/tree/main/src/postgres",
+    "stars": null,
+    "source": "official-registry",
+    "source_url": "https://github.com/modelcontextprotocol/servers-archived",
+    "verified": true
+  },
+  {
+    "name": "sqlite (archived reference)",
+    "category": "DATABASES",
+    "purpose": "SQLite database interaction and BI",
+    "description": "Archived official reference server for SQLite databases: run queries, inspect tables, and do business-intelligence analysis. Simple, file-based, zero-config database MCP.",
+    "price_model": "FREE",
+    "install_command": "uvx mcp-server-sqlite --db-path /tmp/test.db",
+    "connect_steps": [
+      "config.yaml: mcp_servers.sqlite: {command: \"uvx\", args: [\"mcp-server-sqlite\", \"--db-path\", \"C:/path/to/db.sqlite\"]}",
+      "hermes mcp add sqlite --command uvx --args mcp-server-sqlite --db-path <db-file>",
+      "No API keys; choose the .db file path",
+      "Restart Hermes and run hermes mcp list to verify"
+    ],
+    "url": "https://github.com/modelcontextprotocol/servers-archived/tree/main/src/sqlite",
+    "stars": null,
+    "source": "official-registry",
+    "source_url": "https://github.com/modelcontextprotocol/servers-archived",
+    "verified": true
+  },
+  {
+    "name": "brave-search (archived reference)",
+    "category": "SEARCH-RESEARCH",
+    "purpose": "Web and local search via Brave",
+    "description": "Archived official reference server for web and local search using the Brave Search API. Superseded by the official brave/brave-search-mcp-server — prefer that for new installs.",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "npx -y @modelcontextprotocol/server-brave-search",
+    "connect_steps": [
+      "config.yaml: mcp_servers.brave-search: {command: \"cmd\", args: [\"/c\", \"npx\", \"-y\", \"@modelcontextprotocol/server-brave-search\"], env: {BRAVE_API_KEY: \"<key>\"}}",
+      "hermes mcp add brave-search --command npx --args -y @modelcontextprotocol/server-brave-search",
+      "Env: BRAVE_API_KEY (free tier from brave.com/search/api)",
+      "Restart Hermes and run hermes mcp list to verify"
+    ],
+    "url": "https://github.com/modelcontextprotocol/servers-archived/tree/main/src/brave-search",
+    "stars": null,
+    "source": "official-registry",
+    "source_url": "https://github.com/modelcontextprotocol/servers-archived",
+    "verified": true
+  },
+  {
+    "name": "puppeteer (archived reference)",
+    "category": "BROWSER-AUTOMATION",
+    "purpose": "Headless Chrome browser automation",
+    "description": "Archived official reference server wrapping Puppeteer for headless Chrome automation: navigate pages, extract content, take screenshots, and run JS in the page. Still widely used for scraping tasks.",
+    "price_model": "FREE",
+    "install_command": "npx -y @modelcontextprotocol/server-puppeteer",
+    "connect_steps": [
+      "config.yaml: mcp_servers.puppeteer: {command: \"cmd\", args: [\"/c\", \"npx\", \"-y\", \"@modelcontextprotocol/server-puppeteer\"]}",
+      "hermes mcp add puppeteer --command npx --args -y @modelcontextprotocol/server-puppeteer",
+      "No API keys; downloads Chromium on first run",
+      "Restart Hermes and run hermes mcp list to verify"
+    ],
+    "url": "https://github.com/modelcontextprotocol/servers-archived/tree/main/src/puppeteer",
+    "stars": null,
+    "source": "official-registry",
+    "source_url": "https://github.com/modelcontextprotocol/servers-archived",
+    "verified": true
+  },
+  {
+    "name": "slack (archived reference)",
+    "category": "COMMUNICATION",
+    "purpose": "Slack messaging and channel management",
+    "description": "Archived official reference server for Slack: post messages, read channels, manage conversations via the Slack Web API. Superseded by zencoderai/slack-mcp-server (docker).",
+    "price_model": "FREE",
+    "install_command": "npx -y @modelcontextprotocol/server-slack",
+    "connect_steps": [
+      "config.yaml: mcp_servers.slack: {command: \"cmd\", args: [\"/c\", \"npx\", \"-y\", \"@modelcontextprotocol/server-slack\"], env: {SLACK_BOT_TOKEN: \"xoxb-...\", SLACK_TEAM_ID: \"T...\"}}",
+      "hermes mcp add slack --command npx --args -y @modelcontextprotocol/server-slack",
+      "Env: SLACK_BOT_TOKEN (Bot User OAuth token), SLACK_TEAM_ID",
+      "Restart Hermes and run hermes mcp list to verify"
+    ],
+    "url": "https://github.com/modelcontextprotocol/servers-archived/tree/main/src/slack",
+    "stars": null,
+    "source": "official-registry",
+    "source_url": "https://github.com/modelcontextprotocol/servers-archived",
+    "verified": true
+  },
+  {
+    "name": "redis (archived reference)",
+    "category": "DATABASES",
+    "purpose": "Redis key-value store interaction",
+    "description": "Archived official reference server for Redis: get/set keys, inspect data structures, and run commands against a Redis instance. Lightweight way to give agents key-value store access.",
+    "price_model": "FREE",
+    "install_command": "uvx mcp-server-redis redis://localhost:6379",
+    "connect_steps": [
+      "config.yaml: mcp_servers.redis: {command: \"uvx\", args: [\"mcp-server-redis\", \"redis://localhost:6379\"]}",
+      "hermes mcp add redis --command uvx --args mcp-server-redis redis://localhost:6379",
+      "No API keys; Redis URL passed as arg (add password if auth required)",
+      "Restart Hermes and run hermes mcp list to verify"
+    ],
+    "url": "https://github.com/modelcontextprotocol/servers-archived/tree/main/src/redis",
+    "stars": null,
+    "source": "official-registry",
+    "source_url": "https://github.com/modelcontextprotocol/servers-archived",
+    "verified": true
+  },
+  {
+    "name": "github-mcp-server",
+    "category": "CODING",
+    "purpose": "Official GitHub repository management",
+    "description": "GitHub's official production MCP server (Go binary in docker) covering the full GitHub REST API: repos, issues, PRs, actions, search. The recommended GitHub integration going forward.",
+    "price_model": "FREE",
+    "install_command": "docker run -i --rm -e GITHUB_PERSONAL_ACCESS_TOKEN ghcr.io/github/github-mcp-server",
+    "connect_steps": [
+      "config.yaml: mcp_servers.github: {command: \"docker\", args: [\"run\", \"-i\", \"--rm\", \"-e\", \"GITHUB_PERSONAL_ACCESS_TOKEN\", \"ghcr.io/github/github-mcp-server\"]}",
+      "hermes mcp add github --command docker --args run -i --rm -e GITHUB_PERSONAL_ACCESS_TOKEN ghcr.io/github/github-mcp-server",
+      "Env: GITHUB_PERSONAL_ACCESS_TOKEN (fine-grained or classic PAT)",
+      "Restart Hermes and run hermes mcp list to verify (Docker Desktop must be running)"
+    ],
+    "url": "https://github.com/github/github-mcp-server",
+    "stars": 32000,
+    "source": "awesome-mcp-servers",
+    "source_url": "https://github.com/wong2/awesome-mcp-servers",
+    "verified": true
+  },
+  {
+    "name": "playwright",
+    "category": "BROWSER-AUTOMATION",
+    "purpose": "Browser automation and web scraping",
+    "description": "Microsoft's official Playwright MCP server for browser automation: navigate, click, fill forms, extract structured data, and run accessibility snapshots. The current standard for agent-driven browsing.",
+    "price_model": "FREE",
+    "install_command": "npx -y @playwright/mcp@latest",
+    "connect_steps": [
+      "config.yaml: mcp_servers.playwright: {command: \"cmd\", args: [\"/c\", \"npx\", \"-y\", \"@playwright/mcp@latest\"]} (Windows npx wrapper)",
+      "hermes mcp add playwright --command npx --args -y @playwright/mcp@latest",
+      "No API keys; browsers auto-installed on first run",
+      "Restart Hermes and run hermes mcp list to verify"
+    ],
+    "url": "https://github.com/microsoft/playwright-mcp",
+    "stars": 36000,
+    "source": "awesome-mcp-servers",
+    "source_url": "https://github.com/wong2/awesome-mcp-servers",
+    "verified": true
+  },
+  {
+    "name": "browserbase",
+    "category": "BROWSER-AUTOMATION",
+    "purpose": "Cloud browser automation platform",
+    "description": "Browserbase's MCP server for cloud-hosted browser sessions: navigate, extract, fill forms, and record sessions with live viewing and replays. Offloads browser infra to the cloud.",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "npx -y @browserbasehq/mcp",
+    "connect_steps": [
+      "config.yaml: mcp_servers.browserbase: {command: \"cmd\", args: [\"/c\", \"npx\", \"-y\", \"@browserbasehq/mcp\"], env: {BROWSERBASE_API_KEY: \"<key>\", BROWSERBASE_PROJECT_ID: \"<id>\"}}",
+      "hermes mcp add browserbase --command npx --args -y @browserbasehq/mcp",
+      "Env: BROWSERBASE_API_KEY, BROWSERBASE_PROJECT_ID (browserbase.com free tier)",
+      "Restart Hermes and run hermes mcp list to verify"
+    ],
+    "url": "https://github.com/browserbase/mcp-server-browserbase",
+    "stars": 3400,
+    "source": "awesome-mcp-servers",
+    "source_url": "https://github.com/wong2/awesome-mcp-servers",
+    "verified": true
+  },
+  {
+    "name": "cloudflare",
+    "category": "CLOUD-INFRA",
+    "purpose": "Cloudflare developer platform management",
+    "description": "Cloudflare's MCP servers for Workers, KV, R2, D1, pages, and observability — deploy and manage Cloudflare resources from natural language. Also available as hosted remote endpoints (mcp.cloudflare.com).",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "npx -y @cloudflare/mcp-server-cloudflare",
+    "connect_steps": [
+      "config.yaml: mcp_servers.cloudflare: {command: \"cmd\", args: [\"/c\", \"npx\", \"-y\", \"@cloudflare/mcp-server-cloudflare\"], env: {CLOUDFLARE_API_TOKEN: \"<token>\"}}",
+      "hermes mcp add cloudflare --command npx --args -y @cloudflare/mcp-server-cloudflare",
+      "Env: CLOUDFLARE_API_TOKEN (dashboard > My Profile > API Tokens); hosted alternative: https://mcp.cloudflare.com/mcp",
+      "Restart Hermes and run hermes mcp list to verify"
+    ],
+    "url": "https://github.com/cloudflare/mcp-server-cloudflare",
+    "stars": 4100,
+    "source": "awesome-mcp-servers",
+    "source_url": "https://github.com/wong2/awesome-mcp-servers",
+    "verified": false
+  },
+  {
+    "name": "chroma",
+    "category": "DATABASES",
+    "purpose": "Vector database and embeddings store",
+    "description": "Chroma's official MCP server for the open-source AI application database: embeddings, vector search, document storage, and full-text search. Connect agents to RAG pipelines over local or hosted Chroma.",
+    "price_model": "FREE",
+    "install_command": "uvx chroma-mcp",
+    "connect_steps": [
+      "config.yaml: mcp_servers.chroma: {command: \"uvx\", args: [\"chroma-mcp\"]}",
+      "hermes mcp add chroma --command uvx --args chroma-mcp",
+      "Optional: CHROMA_HOST/CHROMA_PORT for remote instances, or API keys via --dotenv-path",
+      "Restart Hermes and run hermes mcp list to verify"
+    ],
+    "url": "https://github.com/chroma-core/chroma-mcp",
+    "stars": 585,
+    "source": "awesome-mcp-servers",
+    "source_url": "https://github.com/wong2/awesome-mcp-servers",
+    "verified": true
+  },
+  {
+    "name": "context7",
+    "category": "CODING",
+    "purpose": "Up-to-date library docs for agents",
+    "description": "Context7 keeps coding agents current with up-to-date documentation for 20M+ libraries and frameworks, injected on demand. Available as a hosted server at mcp.context7.com/mcp or run locally via the npm package.",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "npx -y @upstash/context7-mcp",
+    "connect_steps": [
+      "config.yaml: mcp_servers.context7: {command: \"cmd\", args: [\"/c\", \"npx\", \"-y\", \"@upstash/context7-mcp\"]}",
+      "hermes mcp add context7 --command npx --args -y @upstash/context7-mcp",
+      "Optional free API key (context7.com/dashboard) for higher rate limits; hosted: https://mcp.context7.com/mcp",
+      "Restart Hermes and run hermes mcp list to verify"
+    ],
+    "url": "https://github.com/upstash/context7",
+    "stars": 61000,
+    "source": "awesome-mcp-servers",
+    "source_url": "https://github.com/wong2/awesome-mcp-servers",
+    "verified": false
+  },
+  {
+    "name": "firecrawl",
+    "category": "SEARCH-RESEARCH",
+    "purpose": "Web scraping and search API",
+    "description": "Firecrawl MCP server for scraping, crawling, and searching the web with clean markdown output — handles JS-rendered pages, structured extraction, and site-wide crawls. Wraps the Firecrawl cloud API.",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "npx -y firecrawl-mcp",
+    "connect_steps": [
+      "config.yaml: mcp_servers.firecrawl: {command: \"cmd\", args: [\"/c\", \"npx\", \"-y\", \"firecrawl-mcp\"], env: {FIRECRAWL_API_KEY: \"fc-...\"}}",
+      "hermes mcp add firecrawl --command npx --args -y firecrawl-mcp",
+      "Env: FIRECRAWL_API_KEY (free tier at firecrawl.dev)",
+      "Restart Hermes and run hermes mcp list to verify"
+    ],
+    "url": "https://github.com/firecrawl/firecrawl-mcp-server",
+    "stars": 7200,
+    "source": "awesome-mcp-servers",
+    "source_url": "https://github.com/wong2/awesome-mcp-servers",
+    "verified": true
+  },
+  {
+    "name": "tavily",
+    "category": "SEARCH-RESEARCH",
+    "purpose": "AI-optimized web search API",
+    "description": "Tavily's MCP server for AI-optimized search: search, extract, and crawling endpoints returning clean, LLM-ready results. Also offered as a hosted remote server at mcp.tavily.com.",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "npx -y tavily-mcp@latest",
+    "connect_steps": [
+      "config.yaml: mcp_servers.tavily: {command: \"cmd\", args: [\"/c\", \"npx\", \"-y\", \"tavily-mcp@latest\"], env: {TAVILY_API_KEY: \"tvly-...\"}}",
+      "hermes mcp add tavily --command npx --args -y tavily-mcp@latest",
+      "Env: TAVILY_API_KEY (free tier at tavily.com); hosted: https://mcp.tavily.com/mcp",
+      "Restart Hermes and run hermes mcp list to verify"
+    ],
+    "url": "https://github.com/tavily-ai/tavily-mcp",
+    "stars": 2300,
+    "source": "awesome-mcp-servers",
+    "source_url": "https://github.com/wong2/awesome-mcp-servers",
+    "verified": true
+  },
+  {
+    "name": "notion",
+    "category": "PRODUCTIVITY",
+    "purpose": "Notion pages, search, and blocks",
+    "description": "Notion's official MCP server letting agents search workspaces, read/write pages, and manage blocks via the Notion API. Connect your Notion workspace to automation workflows.",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "npx @notionhq/notion-mcp-server",
+    "connect_steps": [
+      "config.yaml: mcp_servers.notion: {command: \"cmd\", args: [\"/c\", \"npx\", \"-y\", \"@notionhq/notion-mcp-server\"], env: {NOTION_TOKEN: \"secret_...\"}}",
+      "hermes mcp add notion --command npx --args -y @notionhq/notion-mcp-server",
+      "Env: NOTION_TOKEN (internal integration token from notion.so/my-integrations)",
+      "Restart Hermes and run hermes mcp list to verify"
+    ],
+    "url": "https://github.com/makenotion/notion-mcp-server",
+    "stars": 4600,
+    "source": "awesome-mcp-servers",
+    "source_url": "https://github.com/wong2/awesome-mcp-servers",
+    "verified": true
+  },
+  {
+    "name": "figma",
+    "category": "PRODUCTIVITY",
+    "purpose": "Figma design files to code",
+    "description": "Figma-Context-MCP (figma-developer-mcp) gives coding agents access to Figma data — frames, components, styles, and export assets — to implement designs in any framework. Extremely popular for design-to-code.",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "npx -y figma-developer-mcp",
+    "connect_steps": [
+      "config.yaml: mcp_servers.figma: {command: \"cmd\", args: [\"/c\", \"npx\", \"-y\", \"figma-developer-mcp\", \"--figma-api-key=<key>\", \"--stdio\"]}",
+      "hermes mcp add figma --command npx --args -y figma-developer-mcp --figma-api-key <key> --stdio",
+      "Env: FIGMA_API_KEY (personal access token from Figma account settings)",
+      "Restart Hermes and run hermes mcp list to verify"
+    ],
+    "url": "https://github.com/GLips/Figma-Context-MCP",
+    "stars": 16000,
+    "source": "awesome-mcp-servers",
+    "source_url": "https://github.com/wong2/awesome-mcp-servers",
+    "verified": true
+  },
+  {
+    "name": "aiven",
+    "category": "CLOUD-INFRA",
+    "purpose": "Aiven cloud data services management",
+    "description": "Aiven's official MCP server to navigate Aiven projects and interact with PostgreSQL, Kafka, ClickHouse, OpenSearch, and other managed services. Provision and inspect cloud data infrastructure via chat.",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "npx -y mcp-aiven",
+    "connect_steps": [
+      "config.yaml: mcp_servers.aiven: {command: \"cmd\", args: [\"/c\", \"npx\", \"-y\", \"mcp-aiven\"], env: {AIVEN_TOKEN: \"<token>\"}}",
+      "hermes mcp add aiven --command npx --args -y mcp-aiven",
+      "Env: AIVEN_TOKEN (API token from Aiven console; free trial available)",
+      "Restart Hermes and run hermes mcp list to verify"
+    ],
+    "url": "https://github.com/Aiven-Open/mcp-aiven",
+    "stars": 26,
+    "source": "awesome-mcp-servers",
+    "source_url": "https://github.com/wong2/awesome-mcp-servers",
+    "verified": true
+  },
+  {
+    "name": "sentry",
+    "category": "DEVOPS",
+    "purpose": "Sentry issues and error monitoring",
+    "description": "Sentry's official MCP server for retrieving and analyzing issues, errors, and traces from Sentry.io. Lets agents triage production errors and propose fixes from stack traces.",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "npx @sentry/mcp-server@latest --access-token=<sentry-user-token>",
+    "connect_steps": [
+      "config.yaml: mcp_servers.sentry: {command: \"cmd\", args: [\"/c\", \"npx\", \"-y\", \"@sentry/mcp-server@latest\", \"--access-token=<token>\"]}",
+      "hermes mcp add sentry --command npx --args -y @sentry/mcp-server@latest --access-token <token>",
+      "Env/token: SENTRY_AUTH_TOKEN (user token from sentry.io/settings/auth) or --access-token arg",
+      "Restart Hermes and run hermes mcp list to verify"
+    ],
+    "url": "https://github.com/getsentry/sentry-mcp",
+    "stars": 809,
+    "source": "awesome-mcp-servers",
+    "source_url": "https://github.com/wong2/awesome-mcp-servers",
+    "verified": true
+  },
+  {
+    "name": "21st.dev",
+    "category": "CODING",
+    "purpose": "UI component generation for coders",
+    "description": "21st.dev (formerly Magic MCP) generates production-grade UI components inspired by top design engineers, usable from Cursor, Claude, VS Code, and Windsurf. Provides a hosted HTTP MCP at 21st.dev/api/mcp.",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "npx @21st-dev/cli@latest init --client claude",
+    "connect_steps": [
+      "config.yaml: mcp_servers.21st: {type: \"http\", url: \"https://21st.dev/api/mcp\", headers: {x-api-key: \"<21ST_API_KEY>\"}}",
+      "hermes mcp add 21st --url https://21st.dev/api/mcp (or stdio: npx -y @21st-dev/magic@latest API_KEY=...)",
+      "Env: 21ST_API_KEY (generate at 21st.dev/mcp; legacy Magic keys were reset)",
+      "Restart Hermes and run hermes mcp list to verify"
+    ],
+    "url": "https://github.com/21st-dev/magic-mcp",
+    "stars": 5600,
+    "source": "awesome-mcp-servers",
+    "source_url": "https://github.com/wong2/awesome-mcp-servers",
+    "verified": true
+  },
+  {
+    "name": "supabase",
+    "category": "CLOUD-INFRA",
+    "purpose": "Supabase projects, tables, and queries",
+    "description": "Supabase's official MCP server connecting AI assistants to Supabase projects: manage tables, fetch config, and query data. Hosted at mcp.supabase.com/mcp (OAuth login) or run locally from the npm package.",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "npx -y @supabase/mcp-server-supabase",
+    "connect_steps": [
+      "config.yaml: mcp_servers.supabase: {type: \"http\", url: \"https://mcp.supabase.com/mcp\"} (hosted, OAuth) or stdio: {command: \"cmd\", args: [\"/c\", \"npx\", \"-y\", \"@supabase/mcp-server-supabase\"]}",
+      "hermes mcp add supabase --url https://mcp.supabase.com/mcp (hosted) or --command npx --args -y @supabase/mcp-server-supabase",
+      "Auth: OAuth via browser, or SUPABASE_ACCESS_TOKEN personal token",
+      "Restart Hermes and run hermes mcp list to verify"
+    ],
+    "url": "https://github.com/supabase/mcp",
+    "stars": 2900,
+    "source": "awesome-mcp-servers",
+    "source_url": "https://github.com/wong2/awesome-mcp-servers",
+    "verified": false
+  },
+  {
+    "name": "neon",
+    "category": "DATABASES",
+    "purpose": "Neon serverless Postgres management",
+    "description": "Neon's official MCP server for interacting with serverless Postgres on Neon in natural language: create branches, run SQL, manage databases. Hosted at mcp.neon.tech/mcp or run locally from the npm package.",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "npx -y @neondatabase/mcp-server-neon",
+    "connect_steps": [
+      "config.yaml: mcp_servers.neon: {type: \"http\", url: \"https://mcp.neon.tech/mcp\"} (hosted) or stdio: {command: \"cmd\", args: [\"/c\", \"npx\", \"-y\", \"@neondatabase/mcp-server-neon\"]}",
+      "hermes mcp add neon --url https://mcp.neon.tech/mcp (hosted) or --command npx --args -y @neondatabase/mcp-server-neon",
+      "Env: NEON_API_KEY (neon.tech console, free tier)",
+      "Restart Hermes and run hermes mcp list to verify"
+    ],
+    "url": "https://github.com/neondatabase/mcp-server-neon",
+    "stars": 622,
+    "source": "awesome-mcp-servers",
+    "source_url": "https://github.com/wong2/awesome-mcp-servers",
+    "verified": false
+  },
+  {
+    "name": "motherduck",
+    "category": "DATABASES",
+    "purpose": "DuckDB analytics via MotherDuck",
+    "description": "MotherDuck's official MCP server for querying DuckDB databases locally or in the MotherDuck cloud: run SQL, inspect schemas, and analyze data with business-intelligence tools.",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "uvx mcp-server-motherduck --db-path :memory: --read-write --allow-switch-databases",
+    "connect_steps": [
+      "config.yaml: mcp_servers.motherduck: {command: \"uvx\", args: [\"mcp-server-motherduck\", \"--db-path\", \":memory:\", \"--read-write\", \"--allow-switch-databases\"]}",
+      "hermes mcp add motherduck --command uvx --args mcp-server-motherduck --db-path :memory: --read-write --allow-switch-databases",
+      "Env: MOTHERDUCK_TOKEN (from app.motherduck.com; free tier)",
+      "Restart Hermes and run hermes mcp list to verify"
+    ],
+    "url": "https://github.com/motherduckdb/mcp-server-motherduck",
+    "stars": 504,
+    "source": "awesome-mcp-servers",
+    "source_url": "https://github.com/wong2/awesome-mcp-servers",
+    "verified": true
+  },
+  {
+    "name": "elasticsearch",
+    "category": "SEARCH-RESEARCH",
+    "purpose": "Elasticsearch query and analysis",
+    "description": "Elastic's official MCP server for querying Elasticsearch clusters: full-text search, aggregations, and index inspection. Ships as a docker image configured with ES_URL and ES_API_KEY.",
+    "price_model": "FREE",
+    "install_command": "docker run -i --rm -e ES_URL -e ES_API_KEY docker.elastic.co/mcp/elasticsearch stdio",
+    "connect_steps": [
+      "config.yaml: mcp_servers.elasticsearch: {command: \"docker\", args: [\"run\", \"-i\", \"--rm\", \"-e\", \"ES_URL\", \"-e\", \"ES_API_KEY\", \"docker.elastic.co/mcp/elasticsearch\", \"stdio\"]}",
+      "hermes mcp add elasticsearch --command docker --args run -i --rm -e ES_URL -e ES_API_KEY docker.elastic.co/mcp/elasticsearch stdio",
+      "Env: ES_URL (e.g. https://my-cluster.es.us-east-1.aws.cloud.es.io), ES_API_KEY",
+      "Restart Hermes and run hermes mcp list to verify (Docker Desktop must be running)"
+    ],
+    "url": "https://github.com/elastic/mcp-server-elasticsearch",
+    "stars": 703,
+    "source": "awesome-mcp-servers",
+    "source_url": "https://github.com/wong2/awesome-mcp-servers",
+    "verified": true
+  },
+  {
+    "name": "mongodb",
+    "category": "DATABASES",
+    "purpose": "MongoDB query and aggregation",
+    "description": "MongoDB's official MCP server for querying MongoDB databases and Atlas clusters: CRUD, aggregation pipelines, and schema inspection. Supports read-only mode for safety.",
+    "price_model": "FREE",
+    "install_command": "npx -y mongodb-mcp-server@latest --readOnly",
+    "connect_steps": [
+      "config.yaml: mcp_servers.mongodb: {command: \"cmd\", args: [\"/c\", \"npx\", \"-y\", \"mongodb-mcp-server@latest\", \"--readOnly\"], env: {MDB_MCP_CONNECTION_STRING: \"mongodb://...\"}}",
+      "hermes mcp add mongodb --command npx --args -y mongodb-mcp-server@latest --readOnly",
+      "Env: MDB_MCP_CONNECTION_STRING (MongoDB connection string)",
+      "Restart Hermes and run hermes mcp list to verify"
+    ],
+    "url": "https://github.com/mongodb-js/mongodb-mcp-server",
+    "stars": 1100,
+    "source": "awesome-mcp-servers",
+    "source_url": "https://github.com/wong2/awesome-mcp-servers",
+    "verified": true
+  },
+  {
+    "name": "postgres-mcp",
+    "category": "DATABASES",
+    "purpose": "Production-safe Postgres management",
+    "description": "crystaldba's Postgres MCP server for safe production database management: schema inspection, indexes, EXPLAIN plans, slow-query analysis, and query tuning. Built for DBAs working through agents.",
+    "price_model": "FREE",
+    "install_command": "uvx postgres-mcp postgresql://user:pass@host:5432/db",
+    "connect_steps": [
+      "config.yaml: mcp_servers.postgres-mcp: {command: \"uvx\", args: [\"postgres-mcp\", \"postgresql://user:pass@host:5432/db\"]}",
+      "hermes mcp add postgres-mcp --command uvx --args postgres-mcp postgresql://user:pass@host:5432/db",
+      "No extra env; connection string passed as arg",
+      "Restart Hermes and run hermes mcp list to verify"
+    ],
+    "url": "https://github.com/crystaldba/postgres-mcp",
+    "stars": 3200,
+    "source": "awesome-mcp-servers",
+    "source_url": "https://github.com/wong2/awesome-mcp-servers",
+    "verified": true
+  },
+  {
+    "name": "kubernetes",
+    "category": "CLOUD-INFRA",
+    "purpose": "Kubernetes cluster management",
+    "description": "Flux159's Kubernetes MCP server letting agents inspect and manage clusters: pods, deployments, services, logs, and resource manifests against a kubeconfig or in-cluster config.",
+    "price_model": "FREE",
+    "install_command": "npx mcp-server-kubernetes",
+    "connect_steps": [
+      "config.yaml: mcp_servers.kubernetes: {command: \"cmd\", args: [\"/c\", \"npx\", \"-y\", \"mcp-server-kubernetes\"]}",
+      "hermes mcp add kubernetes --command npx --args -y mcp-server-kubernetes",
+      "Env: KUBECONFIG (path to kubeconfig) or run in-cluster",
+      "Restart Hermes and run hermes mcp list to verify"
+    ],
+    "url": "https://github.com/Flux159/mcp-server-kubernetes",
+    "stars": 1500,
+    "source": "awesome-mcp-servers",
+    "source_url": "https://github.com/wong2/awesome-mcp-servers",
+    "verified": true
+  },
+  {
+    "name": "azure-devops",
+    "category": "DEVOPS",
+    "purpose": "Azure DevOps work items and pipelines",
+    "description": "Microsoft's official MCP server for Azure DevOps: manage work items, boards, repos, and pipelines. Authenticates via PAT or Azure CLI (azcli).",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "npx -y @azure-devops/mcp <org>",
+    "connect_steps": [
+      "config.yaml: mcp_servers.azuredevops: {command: \"cmd\", args: [\"/c\", \"npx\", \"-y\", \"@azure-devops/mcp\", \"<org>\"]}",
+      "hermes mcp add azure-devops --command npx --args -y @azure-devops/mcp <org>",
+      "Auth: AZURE_DEVOPS_PAT env or --authentication azcli (Azure CLI login)",
+      "Restart Hermes and run hermes mcp list to verify"
+    ],
+    "url": "https://github.com/microsoft/azure-devops-mcp",
+    "stars": 2000,
+    "source": "awesome-mcp-servers",
+    "source_url": "https://github.com/wong2/awesome-mcp-servers",
+    "verified": true
+  },
+  {
+    "name": "youtube-transcript",
+    "category": "MEDIA",
+    "purpose": "YouTube transcripts and subtitles",
+    "description": "Community MCP server that fetches transcripts and subtitles for YouTube videos by URL or search. Lets agents summarize, quote, and analyze video content without watching it.",
+    "price_model": "FREE",
+    "install_command": "npx -y @kimtaeyoon83/mcp-server-youtube-transcript",
+    "connect_steps": [
+      "config.yaml: mcp_servers.youtube-transcript: {command: \"cmd\", args: [\"/c\", \"npx\", \"-y\", \"@kimtaeyoon83/mcp-server-youtube-transcript\"]}",
+      "hermes mcp add youtube-transcript --command npx --args -y @kimtaeyoon83/mcp-server-youtube-transcript",
+      "No API keys required",
+      "Restart Hermes and run hermes mcp list to verify"
+    ],
+    "url": "https://github.com/kimtaeyoon83/mcp-server-youtube-transcript",
+    "stars": 582,
+    "source": "awesome-mcp-servers",
+    "source_url": "https://github.com/wong2/awesome-mcp-servers",
+    "verified": false
+  },
+  {
+    "name": "slack (zencoder)",
+    "category": "COMMUNICATION",
+    "purpose": "Slack messaging and channel management",
+    "description": "Zencoder's maintained successor to the archived Slack reference server: channel management and messaging via the Slack API. Runs as a docker container with SLACK_BOT_TOKEN and SLACK_TEAM_ID.",
+    "price_model": "FREE",
+    "install_command": "docker run --rm -e SLACK_BOT_TOKEN=<token> -e SLACK_TEAM_ID=<team> zencoderai/slack-mcp:latest",
+    "connect_steps": [
+      "config.yaml: mcp_servers.slack: {command: \"docker\", args: [\"run\", \"--rm\", \"-e\", \"SLACK_BOT_TOKEN\", \"-e\", \"SLACK_TEAM_ID\", \"zencoderai/slack-mcp:latest\"]}",
+      "hermes mcp add slack --command docker --args run --rm -e SLACK_BOT_TOKEN -e SLACK_TEAM_ID zencoderai/slack-mcp:latest",
+      "Env: SLACK_BOT_TOKEN (xoxb-...), SLACK_TEAM_ID",
+      "Restart Hermes and run hermes mcp list to verify (Docker Desktop must be running)"
+    ],
+    "url": "https://github.com/zencoderai/slack-mcp-server",
+    "stars": 75,
+    "source": "awesome-mcp-servers",
+    "source_url": "https://github.com/wong2/awesome-mcp-servers",
+    "verified": true
+  },
+  {
+    "name": "brave-search",
+    "category": "SEARCH-RESEARCH",
+    "purpose": "Web and local search via Brave",
+    "description": "Brave's official MCP server (successor to the archived reference) for web and local search through the Brave Search API. Npx or docker install with a free-tier BRAVE_API_KEY.",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "npx -y @brave/brave-search-mcp-server",
+    "connect_steps": [
+      "config.yaml: mcp_servers.brave-search: {command: \"cmd\", args: [\"/c\", \"npx\", \"-y\", \"@brave/brave-search-mcp-server\"], env: {BRAVE_API_KEY: \"<key>\"}}",
+      "hermes mcp add brave-search --command npx --args -y @brave/brave-search-mcp-server",
+      "Env: BRAVE_API_KEY (free tier at brave.com/search/api)",
+      "Restart Hermes and run hermes mcp list to verify"
+    ],
+    "url": "https://github.com/brave/brave-search-mcp-server",
+    "stars": 1400,
+    "source": "awesome-mcp-servers",
+    "source_url": "https://github.com/wong2/awesome-mcp-servers",
+    "verified": true
+  },
+  {
+    "name": "apify",
+    "category": "SEARCH-RESEARCH",
+    "purpose": "3000+ web scrapers and extractors",
+    "description": "Apify's Actors MCP server giving agents access to 3000+ pre-built cloud tools to extract data from websites, e-commerce, social media, search engines, and maps. Requires an Apify API token.",
+    "price_model": "FREE-TIER+ADDON",
+    "install_command": "npx @apify/actors-mcp-server",
+    "connect_steps": [
+      "config.yaml: mcp_servers.apify: {command: \"cmd\", args: [\"/c\", \"npx\", \"-y\", \"@apify/actors-mcp-server\"], env: {APIFY_TOKEN: \"apify_api_...\"}}",
+      "hermes mcp add apify --command npx --args -y @apify/actors-mcp-server",
+      "Env: APIFY_TOKEN (apify.com console, free monthly credits)",
+      "Restart Hermes and run hermes mcp list to verify"
+    ],
+    "url": "https://github.com/apify/actors-mcp-server",
+    "stars": 3300,
+    "source": "awesome-mcp-servers",
+    "source_url": "https://github.com/wong2/awesome-mcp-servers",
+    "verified": true
+  },
+  {
+    "name": "qdrant",
+    "category": "DATABASES",
+    "purpose": "Qdrant vector search database",
+    "description": "Qdrant's official MCP server for the vector search engine: collection management, point operations, and similarity search. Connects agents to RAG pipelines on self-hosted or cloud Qdrant.",
+    "price_model": "FREE",
+    "install_command": "uvx mcp-server-qdrant",
+    "connect_steps": [
+      "config.yaml: mcp_servers.qdrant: {command: \"uvx\", args: [\"mcp-server-qdrant\"]}",
+      "hermes mcp add qdrant --command uvx --args mcp-server-qdrant",
+      "Env: QDRANT_URL, QDRANT_API_KEY (cloud) or default localhost:6333",
+      "Restart Hermes and run hermes mcp list to verify"
+    ],
+    "url": "https://github.com/qdrant/mcp-server-qdrant",
+    "stars": 1500,
+    "source": "awesome-mcp-servers",
+    "source_url": "https://github.com/wong2/awesome-mcp-servers",
+    "verified": true
+  }
+]

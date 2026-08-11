@@ -1,0 +1,76 @@
+{
+  "raw_total": 519,
+  "scrape_files": [
+    "scrape1.json",
+    "scrape2.json",
+    "scrape3.json",
+    "scrape4.json",
+    "scrape5.json",
+    "scrape6.json"
+  ],
+  "unique_total": 475,
+  "rejected": 0,
+  "curated_total": 180,
+  "scored_total": 467,
+  "sources": {
+    "obra/superpowers": 14,
+    "microsoft/skills": 69,
+    "awesome-claude-code": 36,
+    "NVIDIA/skills": 119,
+    "anthropics/skills": 18,
+    "google/skills": 44,
+    "angular/skills": 2,
+    "microsoft/SkillOpt": 1,
+    "claude-code-docs": 3,
+    "openclaw": 117,
+    "LambdaTest/agent-skills": 3,
+    "sudokar/openspec-plus": 6,
+    "SnailSploit/Claude-Red": 8,
+    "awesome-cursorrules": 6,
+    "resend/resend-skills": 1,
+    "factory.ai docs": 1,
+    "veniceai/skills": 2,
+    "gadievron/raptor": 6,
+    "vercel-labs/skills": 1,
+    "geekjourneyx/md2wechat-skill": 1,
+    "composio (skills-lock)": 1,
+    "crewai-tools": 5,
+    "qiye45/wechatDownload": 1,
+    "club-cog/devin-handoff": 1,
+    "0xBadai/devin-skills": 1
+  },
+  "categories": {
+    "agent-tooling": 86,
+    "data": 72,
+    "media": 20,
+    "creative": 10,
+    "productivity": 20,
+    "coding": 61,
+    "cloud": 110,
+    "misc": 16,
+    "research": 30,
+    "ops": 27,
+    "security": 15
+  },
+  "verdicts": {
+    "PASS": 410,
+    "REVIEW": 57
+  },
+  "verdicts_all": {
+    "PASS": 417,
+    "REVIEW": 58
+  },
+  "score_dist": {
+    "10": 29,
+    "9": 237,
+    "8": 138,
+    "7": 54,
+    "6": 8,
+    "5": 1
+  },
+  "dedup_detail": {
+    "raw": 519,
+    "unique": 475,
+    "removed_exact_or_near": 44
+  }
+}
