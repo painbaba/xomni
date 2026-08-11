@@ -1,0 +1,16 @@
+{
+  "id": "ch01",
+  "title": "ACT ONE — THE RAID",
+  "dur": 300.0,
+  "music": "bed-tense",
+  "fast": false,
+  "scenes": [
+    {"id":"a1s1","kind":"divider","eyebrow":"Act One","headline":"THE RAID THAT SHOOK MUMBAI","sub":"One officer. A state on edge.","narration":"a1s1","riser":true},
+    {"id":"a1s2","kind":"stat","eyebrow":"The campaign","stat":"1131","statLabel":"inspections in under two months","sub":"As reported by The Indian Express.","narration":"a1s2","boom":true,"count":true},
+    {"id":"a1s3","kind":"headline","eyebrow":"As reported · July 2026","masthead":"The icons under the spotlight","headline":"THE ICONS UNDER THE <span class=\"red\">SPOTLIGHT</span>","deck":"K Rustom and Company. Noor Mohammadi. Shalimar. Their licences suspended.","attr":"Licence suspensions reported by Moneycontrol, Gulf News, India Today","narration":"a1s3"},
+    {"id":"a1s4","kind":"quote","quote":"No leniency whatsoever will be shown.","attr":"His first press note — May 28, 2026","narration":"a1s4"},
+    {"id":"a1s5","kind":"timeline","eyebrow":"How it unfolded","headline":"TWO MONTHS THAT CHANGED THE MAP","nodes":[{"t":"May 2026","label":"Takes charge"},{"t":"Jun 2026","label":"Milk raids"},{"t":"Jul 2026","label":"Restaurants"},{"t":"Aug 2026","label":"High Court"}],"narration":"a1s5"},
+    {"id":"a1s6","kind":"list","eyebrow":"The front lines","headline":"WHAT THEY <span class=\"red\">FOUND</span>","items":["Water and urea in milk","Synthetic milk units","Gutka networks under MCOCA","Banned medicines"],"narration":"a1s6"},
+    {"id":"a1s7","kind":"endcard","eyebrow":"Coming next","headline":"THE FULL <span class=\"red\">DOCUMENTARY</span>","sub":"Thirty-three minutes. The whole story.","credits":"Narration: edge-tts · Music: CC0 · Built with HyperFrames","narration":"a1s7"}
+  ]
+}

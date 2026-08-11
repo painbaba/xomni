@@ -122,11 +122,16 @@ Hermes/OpenCode/Codex/Aider/Goose to `http://127.0.0.1:11434/v1` with
 ## The skills you already inherit
 
 XOMNI runs **on Hermes** — same host, same install — so every skill Hermes
-loads is yours with zero extra setup: **200+ skills verified live** (kanban,
-code review, TUI, MCP wiring, obsidian, docx, video pipelines, cloudflare,
-web-perf, data science, and the full built-in + user skill catalog), plus
-memory, cron, and gateway multi-platform support. You don't install the
-features — the host brings them.
+loads is yours with zero extra setup. The full catalog ships in the repo:
+
+- **`skills/` — 170 procedural skills** across 42 domains, committed in-tree:
+  cloudflare (workers, durable objects, wrangler), hyperframes (video/motion
+  graphics), media-use (audio/video pipelines), research (papers, scraping),
+  productivity (docx, powerpoint, obsidian, note-taking), devops, data
+  science, mlops (vllm, lm-evaluation-harness), mobile, github, security,
+  web-perf, sandbox-sdk, turnstile, and more.
+- Plus memory, cron, and gateway multi-platform support — the host brings the
+  features, you don't install them.
 
 ## The sponsorship model (how it earns)
 

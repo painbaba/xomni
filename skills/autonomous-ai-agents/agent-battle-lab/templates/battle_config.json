@@ -1,0 +1,22 @@
+{
+  "columns": [
+    {
+      "label": "👻 GHOST",
+      "side": "ghost",
+      "color": "#ef4444",
+      "files": [
+        "C:/Users/HP/AppData/Local/hermes/cache/delegation/live/deleg_GHOST_ID/task-*.log"
+      ]
+    },
+    {
+      "label": "🛡 DEFENDERS",
+      "side": "def",
+      "color": "#3b82f6",
+      "files": [
+        "C:/Users/HP/AppData/Local/hermes/cache/delegation/live/deleg_DEFENDERS_ID/task-*.log"
+      ]
+    }
+  ],
+  "intel": "C:/Users/HP/ai-workforce/ghost-lab/ghost_sandbox/intel.md",
+  "bank_log": "C:/Users/HP/ai-workforce/bank-war/bank_v2.log"
+}

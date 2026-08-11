@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>🌆 GOD VIEW — Living Territory</title>
+<style>
+  body { margin:0; overflow:hidden; background:#04040a; font-family:"Cascadia Mono",Consolas,monospace; }
+  #hud { position:fixed; top:14px; left:14px; z-index:10; color:#d4af37; font-size:14px; letter-spacing:1px;
+         text-shadow:0 0 10px rgba(212,175,55,.6); pointer-events:none; }
+  #hud .sub { color:#999; font-size:11px; margin-top:4px; }
+  #legend { position:fixed; bottom:14px; left:14px; z-index:10; color:#ccc; font-size:11px; background:rgba(8,8,18,.85);
+            border:1px solid #2a2a3f; border-radius:8px; padding:10px 14px; pointer-events:none; }
+  #legend div { margin:2px 0; }
+  .dot { display:inline-block; width:10px; height:10px; border-radius:2px; margin-right:8px; vertical-align:middle; }
+  #tip { position:fixed; bottom:14px; right:14px; z-index:10; color:#666; font-size:10px; pointer-events:none; }
+  #clock { position:fixed; top:14px; right:14px; z-index:10; color:#9fb4ff; font-size:11px; pointer-events:none; }
+</style>
+</head>
+<body>
+<div id="hud">🌆 GOD VIEW — THE LIVING TERRITORY<br><span class="sub" id="stats">loading…</span></div>
+<div id="clock">☀ day cycle</div>
+<div id="legend">
+  <div><span class="dot" style="background:#ef4444"></span>Ghost Commonwealth</div>
+  <div><span class="dot" style="background:#d4af37"></span>God's People / Workfolk</div>
+  <div><span class="dot" style="background:#60a5fa"></span>City districts</div>
+  <div><span class="dot" style="background:#4ade80"></span>ACME BANK (9988)</div>
+  <div><span class="dot" style="background:#a78bfa"></span>Live streams</div>
+  <div><span class="dot" style="background:#fcd34d"></span>Citizens walking</div>
+</div>
+<div id="tip">drag: orbit · wheel: zoom · right-drag: pan</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+<script>
+let scene, camera, renderer, controls, cityGroup, people = [], stars;
+let dayT = 0.35;
+const gltfLoader = new THREE.GLTFLoader();
+const modelCache = {};
+
+function init(){
+  scene = new THREE.Scene();
+  scene.fog = new THREE.FogExp2(0x04040a, 0.008);
+  camera = new THREE.PerspectiveCamera(50, innerWidth/innerHeight, 0.1, 600);
+  camera.position.set(55, 42, 60);
+  renderer = new THREE.WebGLRenderer({antialias:true});
+  renderer.setSize(innerWidth, innerHeight);
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  renderer.shadowMap.enabled = true;
+  document.body.appendChild(renderer.domElement);
+  controls = new THREE.OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true; controls.maxPolarAngle = Math.PI/2.05; controls.minDistance = 15; controls.maxDistance = 220;
+  stars = new THREE.Points(new THREE.BufferGeometry(), new THREE.PointsMaterial({color:0xffffff, size:0.4, transparent:true, opacity:0.7}));
+  const sp = []; for(let i=0;i<800;i++){ sp.push((Math.random()-0.5)*400, Math.random()*200+40, (Math.random()-0.5)*400); }
+  stars.geometry.setAttribute('position', new THREE.Float32BufferAttribute(sp, 3));
+  scene.add(stars);
+  const g = new THREE.Mesh(new THREE.PlaneGeometry(160,160), new THREE.MeshStandardMaterial({color:0x0b0b18, roughness:0.9}));
+  g.rotation.x = -Math.PI/2; scene.add(g);
+  scene.add(new THREE.GridHelper(120, 24, 0x1c1c38, 0x14142e));
+  scene.add(new THREE.AmbientLight(0x334, 0.5));
+  const dir = new THREE.DirectionalLight(0xfff4dd, 1.0); dir.position.set(40,60,30); scene.add(dir);
+  cityGroup = new THREE.Group(); scene.add(cityGroup);
+  animate();
+}
+
+function box(w,h,d,color,x,y,z,o={}){
+  const m = new THREE.Mesh(new THREE.BoxGeometry(w,h,d),
+    new THREE.MeshStandardMaterial({color, emissive:o.emissive||0x000000, emissiveIntensity:o.ei||0.3, roughness:0.55}));
+  m.position.set(x,y,z); return m;
+}
+
+function makePerson(color){
+  // NOTE: CapsuleGeometry does NOT exist in r128 — `new THREE.CapsuleGeometry` THROWS
+  // (even in a ternary it errors: `new undefined`). Use CylinderGeometry.
+  const g = new THREE.Group();
+  const body = new THREE.Mesh(new THREE.CylinderGeometry(0.28,0.34,1.0,8), new THREE.MeshStandardMaterial({color, roughness:0.6}));
+  body.position.y = 0.75;
+  const head = new THREE.Mesh(new THREE.SphereGeometry(0.22,10,10), new THREE.MeshStandardMaterial({color:0xf0c8a0, roughness:0.5}));
+  head.position.y = 1.45;
+  g.add(body, head);
+  return g;
+}
+
+function spawnPeople(count, color, area){
+  for(let i=0;i<count;i++){
+    const p = makePerson(color);
+    p.position.set(area.x+(Math.random()-0.5)*area.w, 0, area.z+(Math.random()-0.5)*area.d);
+    cityGroup.add(p);
+    people.push({mesh:p, a:{x:area.x,z:area.z,w:area.w,d:area.d},
+      dest:{x:area.x+(Math.random()-0.5)*area.w, z:area.z+(Math.random()-0.5)*area.d},
+      speed:0.4+Math.random()*0.6, tick:Math.random()*100});
+  }
+}
+
+function movePeople(dt){
+  people.forEach(pp=>{
+    pp.tick += dt;
+    const dx = pp.dest.x - pp.mesh.position.x, dz = pp.dest.z - pp.mesh.position.z;
+    const dist = Math.sqrt(dx*dx+dz*dz);
+    if(dist < 0.3){ pp.dest = {x:pp.a.x+(Math.random()-0.5)*pp.a.w, z:pp.a.z+(Math.random()-0.5)*pp.a.d}; }
+    else {
+      pp.mesh.position.x += (dx/dist)*pp.speed*dt;
+      pp.mesh.position.z += (dz/dist)*pp.speed*dt;
+      pp.mesh.rotation.y = Math.atan2(dx, dz);
+      pp.mesh.position.y = Math.abs(Math.sin(pp.tick*6))*0.12;
+    }
+  });
+}
+
+function loadModel(name, x, z, scale, rotY){
+  // serves from /assets/assets_<Name>.glb — download from Khronos glTF-Sample-Models repo
+  if(modelCache[name]){ const m = modelCache[name].clone(); m.position.set(x,0,z); m.scale.setScalar(scale); m.rotation.y=rotY||0; cityGroup.add(m); return; }
+  gltfLoader.load('/assets/assets_'+name+'.glb', (gltf)=>{
+    const m = gltf.scene;
+    m.position.set(x,0,z); m.scale.setScalar(scale); m.rotation.y=rotY||0;
+    cityGroup.add(m); modelCache[name] = gltf.scene.clone();
+  }, undefined, ()=>console.log('model fail', name));
+}
+
+function label3d(text, color){
+  const c = document.createElement('canvas'); c.width=512; c.height=96;
+  const x = c.getContext('2d');
+  x.font='bold 30px Consolas,monospace'; x.fillStyle=color; x.shadowColor='#000'; x.shadowBlur=14;
+  x.textAlign='center'; x.textBaseline='middle'; x.fillText(text,256,48);
+  const t = new THREE.CanvasTexture(c); t.minFilter = THREE.LinearFilter;
+  return new THREE.Sprite(new THREE.SpriteMaterial({map:t, transparent:true, depthTest:false}));
+}
+
+function buildCity(state){
+  while(cityGroup.children.length) cityGroup.remove(cityGroup.children[0]);
+  people = [];
+  const districts = state.districts||[];
+  const bankUp = (state.bank||'').startsWith('UP');
+  // civ platforms
+  cityGroup.add(box(20,1,20,0x2a0f0f,-30,0.5,-20,{emissive:0xef4444,ei:0.18}));
+  const gl = label3d('👻 GHOST COMMONWEALTH','#ef4444'); gl.position.set(-30,2.5,-20); gl.scale.set(18,3.4,1); cityGroup.add(gl);
+  spawnPeople(8, 0xef4444, {x:-30,w:16,z:-20,d:16});
+  cityGroup.add(box(20,1,20,0x33290f,32,0.5,22,{emissive:0xd4af37,ei:0.2}));
+  const wl = label3d("👑 GOD'S PEOPLE",'#d4af37'); wl.position.set(32,2.5,22); wl.scale.set(16,3.4,1); cityGroup.add(wl);
+  spawnPeople(10, 0xd4af37, {x:32,w:16,z:22,d:16});
+  // farm crops (golden rows inside god's territory)
+  for(let i=0;i<5;i++) for(let j=0;j<5;j++){
+    const c = new THREE.Mesh(new THREE.CylinderGeometry(0.12,0.12,0.4,6), new THREE.MeshStandardMaterial({color:0xd4b45a}));
+    c.position.set(28+i*1.4, 0.2, 18+j*1.4); cityGroup.add(c);
+  }
+  const fl = label3d('🌾 FARM','#fcd34d'); fl.position.set(35,1.4,17); fl.scale.set(8,1.6,1); cityGroup.add(fl);
+  // districts as buildings (height = population)
+  const colors = [0x60a5fa,0x34d399,0xf472b6,0xfbbf24,0x818cf8,0x22d3ee,0xf87171,0x4ade80];
+  districts.forEach((d,i)=>{
+    const x=(i%4)*8-12, z=Math.floor(i/4)*8-6;
+    const h=2.5+(d.pop||0)*1.2+(d.opinions||0)*0.6;
+    cityGroup.add(box(4.5,h,4.5,colors[i%colors.length],x,h/2,z));
+    const lab = label3d(d.name.toUpperCase()+(d.pop?' ·'+d.pop:''),'#9fb4ff');
+    lab.position.set(x,h+2,z); lab.scale.set(11,2.2,1); cityGroup.add(lab);
+    spawnPeople(1+(d.pop||0), colors[i%colors.length], {x,w:5,z,d:5});
+  });
+  // bank tower (green crown UP, red squat DOWN)
+  const bh = bankUp?14:5;
+  const bm = new THREE.Mesh(new THREE.CylinderGeometry(2.6,3.2,bh,12),
+    new THREE.MeshStandardMaterial({color:0x1d3a1d, emissive:bankUp?0x22c55e:0x881111, emissiveIntensity:bankUp?0.5:0.4}));
+  bm.position.y=bh/2; cityGroup.add(bm);
+  const crown = new THREE.Mesh(new THREE.SphereGeometry(0.7,10,10), new THREE.MeshBasicMaterial({color:bankUp?0x4ade80:0xef4444}));
+  crown.position.y=bh+0.8; cityGroup.add(crown);
+  const bl = label3d('🏦 ACME BANK '+(bankUp?'●':'○'), bankUp?'#4ade80':'#ef4444');
+  bl.position.set(0,bh+3,0); bl.scale.set(14,2.6,1); cityGroup.add(bl);
+  spawnPeople(6, 0x4ade80, {x:0,w:8,z:0,d:8});
+  // real glTF world models (served from /assets/)
+  loadModel('Duck', 30, 16, 1.2, 0.5);
+  loadModel('Fox', 38, 26, 0.35, -0.8);
+  loadModel('BrainStem', -25, -14, 0.06, 1.2);
+  loadModel('BoomBox', 3, -3, 2.2, 0.3);
+  loadModel('AntiqueCamera', -1, 4, 1.4, 2.1);
+  // streams as floating orbs
+  (state.streams||[]).slice(0,36).forEach((s,i)=>{
+    const o = new THREE.Mesh(new THREE.SphereGeometry(0.3,8,8), new THREE.MeshBasicMaterial({color:0xa78bfa, transparent:true, opacity:0.85}));
+    o.position.set((i%9)*3-12, 10+(i%4)*2.5, 40+Math.floor(i/9)*3); cityGroup.add(o);
+  });
+  document.getElementById('stats').textContent =
+    'bank: '+state.bank+' · districts: '+districts.length+' · streams: '+(state.streams||[]).length+' · citizens: '+people.length+' · '+state.ts;
+}
+
+function cycle(dt){
+  dayT = (dayT + dt*0.008) % 1;
+  const sun = dayT < 0.5 ? dayT/0.5 : (1-dayT)/0.5;
+  const sky = new THREE.Color().setHSL(0.62, 0.55, 0.04 + sun*0.10);
+  scene.background = sky; scene.fog.color = sky;
+  stars.material.opacity = 0.75 - sun*0.75;
+  document.getElementById('clock').textContent = sun > 0.65 ? '☀ day' : sun > 0.3 ? '🌅 dawn/dusk' : '🌙 night';
+}
+
+async function tick(){
+  try{
+    const r = await fetch('/api/state');
+    if(r.ok){
+      const s = await r.json();
+      if(document.getElementById('stats').textContent.includes('loading')) buildCity(s);
+      else document.getElementById('stats').textContent =
+        'bank: '+s.bank+' · districts: '+s.districts.length+' · streams: '+(s.streams||[]).length+' · citizens: '+people.length+' · '+s.ts;
+    }
+  }catch(e){}
+}
+
+let last = performance.now();
+function animate(now){
+  requestAnimationFrame(animate);
+  const dt = Math.min(0.05, (now-last)/1000); last = now;
+  controls.update(); movePeople(dt); cycle(dt);
+  renderer.render(scene, camera);
+}
+addEventListener('resize', ()=>{ camera.aspect=innerWidth/innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth,innerHeight); });
+init();
+buildCity({bank:'UP (0)', districts:[{name:'BANK',pop:3},{name:'BUSINESS',pop:6},{name:'MILITARY',pop:6},{name:'MEDICAL',pop:3},{name:'UNDERWORLD',pop:3},{name:'COURIERS',pop:3},{name:'LEDGER',pop:3},{name:'FARM',pop:3}], streams:[], ts:''});
+tick();
+setInterval(tick, 5000);
+</script>
+</body>
+</html>

@@ -11,6 +11,12 @@ __pycache__/
 # pattern needed; git does not expand ~, so tilde patterns are dead weight.
 state.json
 
+# hermes runtime state (per-install, regenerated)
+.bundled_manifest
+.curator_state
+.usage.json
+.usage.json.lock
+
 # os
 .DS_Store
 Thumbs.db

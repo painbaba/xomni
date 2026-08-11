@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<!-- GOD VIEW 2D — isometric Canvas2D territory viewer. ZERO WebGL/GPU/dependencies.
+     Works in ANY browser. Serve at /3d2 behind an /api/state JSON endpoint that
+     returns {bank, districts:[{name,pop,opinions}], civilizations:[], streams:[], ts}.
+     Controls: wheel=zoom, drag=pan. Verified Aug 2026 as the last-resort view when
+     the user's Chrome stayed black on the Three.js /3d page despite local vendor libs,
+     no-cache headers, and a daylight-clamped cycle. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>🏙 GOD VIEW 2D — Isometric Territory</title>
+<style>
+  body { margin:0; overflow:hidden; background:#0a1020; font-family:"Cascadia Mono",Consolas,monospace; }
+  #hud { position:fixed; top:14px; left:14px; z-index:10; color:#d4af37; font-size:14px; letter-spacing:1px;
+         text-shadow:0 0 10px rgba(212,175,55,.6); pointer-events:none; }
+  #hud .sub { color:#99a; font-size:11px; margin-top:4px; }
+  #legend { position:fixed; bottom:14px; left:14px; z-index:10; color:#ccc; font-size:11px; background:rgba(8,8,18,.85);
+            border:1px solid #2a2a3f; border-radius:8px; padding:10px 14px; pointer-events:none; }
+  #legend div { margin:2px 0; }
+  .dot { display:inline-block; width:10px; height:10px; border-radius:2px; margin-right:8px; vertical-align:middle; }
+  #tip { position:fixed; bottom:14px; right:14px; z-index:10; color:#667; font-size:10px; pointer-events:none; }
+  canvas { display:block; }
+</style>
+</head>
+<body>
+<div id="hud">🏙 GOD VIEW 2D — THE TERRITORY (isometric · works on any browser)<br><span class="sub" id="stats">loading…</span></div>
+<div id="legend">
+  <div><span class="dot" style="background:#ef4444"></span>Ghost Commonwealth</div>
+  <div><span class="dot" style="background:#d4af37"></span>God's People / Workfolk</div>
+  <div><span class="dot" style="background:#60a5fa"></span>City districts</div>
+  <div><span class="dot" style="background:#4ade80"></span>ACME BANK</div>
+  <div><span class="dot" style="background:#fcd34d"></span>Citizens</div>
+</div>
+<div id="tip">scroll: zoom · drag: pan</div>
+<script>
+const cv = document.createElement('canvas');
+document.body.insertBefore(cv, document.body.firstChild);
+const ctx = cv.getContext('2d');
+let W, H, zoom = 1, panX = 0, panY = 0;
+let state = null, citizens = [], animT = 0;
+
+function resize(){ W = cv.width = innerWidth; H = cv.height = innerHeight; }
+addEventListener('resize', resize); resize();
+
+// isometric projection: world (x,z) -> screen
+function iso(x, z, y){
+  return { sx: (x - z) * 0.866 * 22 * zoom + W/2 + panX, sy: (x + z) * 0.5 * 22 * zoom - y * 22 * zoom + H/2 + panY };
+}
+
+function shade(hex, f){
+  const n = parseInt(hex.slice(1), 16);
+  const r = Math.min(255, Math.floor(((n>>16)&255)*f)), g = Math.min(255, Math.floor(((n>>8)&255)*f)), b = Math.min(255, Math.floor((n&255)*f));
+  return `rgb(${r},${g},${b})`;
+}
+
+function drawBlock(x, z, w, d, h, color, topColor){
+  const corners = [[0,0],[w,0],[w,d],[0,d]].map(([cx,cz]) => iso(x+cx, z+cz, 0));
+  const top = [[0,0],[w,0],[w,d],[0,d]].map(([cx,cz]) => iso(x+cx, z+cz, h));
+  ctx.fillStyle = topColor || shade(color, 1.15);
+  ctx.beginPath(); ctx.moveTo(top[0].sx, top[0].sy);
+  for(let i=1;i<4;i++) ctx.lineTo(top[i].sx, top[i].sy);
+  ctx.closePath(); ctx.fill();
+  ctx.fillStyle = shade(color, 0.75);
+  ctx.beginPath(); ctx.moveTo(corners[0].sx, corners[0].sy); ctx.lineTo(corners[1].sx, corners[1].sy);
+  ctx.lineTo(top[1].sx, top[1].sy); ctx.lineTo(top[0].sx, top[0].sy);
+  ctx.closePath(); ctx.fill();
+  ctx.fillStyle = shade(color, 0.55);
+  ctx.beginPath(); ctx.moveTo(corners[1].sx, corners[1].sy); ctx.lineTo(corners[2].sx, corners[2].sy);
+  ctx.lineTo(top[2].sx, top[2].sy); ctx.lineTo(top[1].sx, top[1].sy);
+  ctx.closePath(); ctx.fill();
+  ctx.strokeStyle = 'rgba(0,0,0,0.35)'; ctx.lineWidth = 1; ctx.stroke();
+}
+
+function drawGround(){
+  const grad = ctx.createLinearGradient(0,0,0,H);
+  grad.addColorStop(0, '#7fb2e5'); grad.addColorStop(0.55, '#cfe3f5'); grad.addColorStop(1, '#e8f0d8');
+  ctx.fillStyle = grad; ctx.fillRect(0,0,W,H);
+  ctx.fillStyle = '#3d5a3d';
+  ctx.beginPath();
+  for(const [gx,gz] of [[-60,-60],[60,-60],[60,60],[-60,60]]){
+    const p = iso(gx,gz,0); if(gx===-60&&gz===-60) ctx.moveTo(p.sx,p.sy); else ctx.lineTo(p.sx,p.sy);
+  }
+  ctx.closePath(); ctx.fill();
+  ctx.strokeStyle = 'rgba(255,255,255,0.12)'; ctx.lineWidth = 1;
+  for(let i=-60;i<=60;i+=10){
+    const a = iso(i,-60,0), b = iso(i,60,0); ctx.beginPath(); ctx.moveTo(a.sx,a.sy); ctx.lineTo(b.sx,b.sy); ctx.stroke();
+    const c = iso(-60,i,0), d = iso(60,i,0); ctx.beginPath(); ctx.moveTo(c.sx,c.sy); ctx.lineTo(d.sx,d.sy); ctx.stroke();
+  }
+}
+
+function drawCitizen(x,z,color,phase){
+  const p = iso(x,z,0);
+  const bob = Math.sin(phase)*3;
+  ctx.fillStyle = '#222';
+  ctx.beginPath(); ctx.ellipse(p.sx, p.sy, 3.5*zoom, 2*zoom, 0, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = color;
+  ctx.beginPath(); ctx.arc(p.sx, p.sy - 12*zoom + bob, 4.5*zoom, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = shade(color, 0.7);
+  ctx.fillRect(p.sx - 3*zoom, p.sy - 8*zoom + bob, 6*zoom, 8*zoom);
+}
+
+function drawLabel(text, x, z, y, color){
+  const p = iso(x,z,y);
+  ctx.font = `bold ${12*zoom+8}px Consolas,monospace`;
+  ctx.textAlign = 'center';
+  ctx.strokeStyle = 'rgba(0,0,0,0.8)'; ctx.lineWidth = 4;
+  ctx.strokeText(text, p.sx, p.sy);
+  ctx.fillStyle = color; ctx.fillText(text, p.sx, p.sy);
+}
+
+function render(){
+  ctx.clearRect(0,0,W,H);
+  drawGround();
+  if(!state){ ctx.fillStyle='#fff'; ctx.font='16px Consolas'; ctx.fillText('loading territory…', W/2, H/2); return; }
+  const districts = state.districts || [];
+  const bankUp = (state.bank||'').startsWith('UP');
+
+  drawBlock(-30, -20, 20, 20, 1, '#5a1f1f', '#8a3a3a');
+  drawLabel('GHOST COMMONWEALTH', -30, -20, 3, '#ff8a8a');
+  drawBlock(32, 22, 20, 20, 1, '#5a4a1a', '#8a753a');
+  drawLabel("GOD'S PEOPLE", 32, 22, 3, '#ffd970');
+  for(let i=0;i<4;i++) for(let j=0;j<4;j++){
+    const p = iso(28+i*1.5, 18+j*1.5, 0);
+    ctx.fillStyle = '#d4b45a'; ctx.fillRect(p.sx-2, p.sy-4, 4, 7*zoom);
+  }
+  drawLabel('🌾 FARM', 35, 17, 1, '#fcd34d');
+
+  const colors = ['#60a5fa','#34d399','#f472b6','#fbbf24','#818cf8','#22d3ee','#f87171','#4ade80'];
+  districts.forEach((d,i)=>{
+    const x = (i%4)*8 - 12, z = Math.floor(i/4)*8 - 6;
+    const h = 2 + (d.pop||0)*0.8;
+    drawBlock(x, z, 4.5, 4.5, h, colors[i%colors.length]);
+    drawLabel(d.name.toUpperCase(), x, z, h+1.5, '#e8ecff');
+    for(let c=0;c<(d.pop||0);c++){
+      citizens.push({x: x+(Math.random()-0.5)*5, z: z+(Math.random()-0.5)*5, color: colors[i%colors.length], phase: Math.random()*6.28});
+    }
+  });
+
+  const bh = bankUp? 8 : 3;
+  drawBlock(0, 0, 6, 6, bh, bankUp?'#1d6b2d':'#7a2222', bankUp?'#2ea043':'#a33a3a');
+  drawLabel('🏦 ACME BANK '+(bankUp?'●':'○'), 0, 0, bh+1.5, bankUp?'#7dffa0':'#ff7d7d');
+
+  for(let i=0;i<10;i++) drawBlock(-50+Math.random()*100, -45+Math.random()*100, 0.4, 0.4, 1.2, '#2d6a3f');
+
+  citizens.forEach(c=>{
+    c.x += Math.sin(animT*0.5 + c.phase)*0.002;
+    c.z += Math.cos(animT*0.4 + c.phase)*0.002;
+    drawCitizen(c.x, c.z, c.color, animT*3 + c.phase);
+  });
+
+  document.getElementById('stats').textContent =
+    'bank: '+state.bank+' · districts: '+districts.length+' · citizens: '+citizens.length+' · '+state.ts;
+}
+
+async function tick(){
+  try{
+    const r = await fetch('/api/state');
+    if(r.ok){
+      const s = await r.json();
+      const wasNull = !state;
+      state = s;
+      if(wasNull || (s.districts||[]).length !== (state.districts||[]).length) citizens = [];
+      render();
+    }
+  }catch(e){}
+  requestAnimationFrame(tick);
+}
+
+addEventListener('wheel', e=>{ zoom = Math.max(0.4, Math.min(3, zoom * (e.deltaY<0?1.1:0.9))); render(); });
+let drag = null;
+addEventListener('mousedown', e=>{ drag = {x:e.clientX, y:e.clientY}; });
+addEventListener('mousemove', e=>{ if(drag){ panX += e.clientX-drag.x; panY += e.clientY-drag.y; drag = {x:e.clientX,y:e.clientY}; render(); } });
+addEventListener('mouseup', ()=>{ drag = null; });
+
+setInterval(()=>{ animT += 0.1; render(); }, 50);
+tick();
+</script>
+</body>
+</html>

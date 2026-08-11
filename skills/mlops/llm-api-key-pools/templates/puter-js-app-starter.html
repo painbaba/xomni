@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<!--
+  Puter.js app starter — copy & modify.
+  Proven pattern (2026-08-07): Puter auth + cloud KV persistence + free
+  GLM-5.2 via puter.ai.chat (model z-ai/glm-5.2). No backend, no API key.
+  Requirements: serve over HTTP (not file://); keep the "Powered by Puter"
+  footer link. Docs: https://docs.puter.com/llms.txt
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Puter Todo</title>
+<style>
+  :root {
+    --bg: #0f1117; --card: #171a23; --border: #262b3a;
+    --text: #e8eaf0; --muted: #8b91a7; --accent: #6366f1;
+    --accent-2: #a78bfa; --green: #34d399; --red: #f87171;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: radial-gradient(1200px 600px at 50% -100px, #1c2040 0%, var(--bg) 60%);
+    color: var(--text); min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    padding: 24px 16px;
+  }
+  .card {
+    width: 100%; max-width: 560px; background: var(--card); border: 1px solid var(--border);
+    border-radius: 16px; padding: 24px; box-shadow: 0 20px 60px rgba(0,0,0,.45);
+  }
+  header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+  h1 { font-size: 20px; font-weight: 700; letter-spacing: -.02em; }
+  h1 span { color: var(--accent-2); }
+  .userchip { font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 8px; }
+  .userchip button {
+    background: none; border: 1px solid var(--border); color: var(--muted); font-size: 11px;
+    padding: 4px 10px; border-radius: 999px; cursor: pointer; transition: .15s;
+  }
+  .userchip button:hover { color: var(--red); border-color: var(--red); }
+  .signin { text-align: center; padding: 48px 20px; display: none; }
+  .signin h2 { font-size: 18px; margin-bottom: 8px; }
+  .signin p { color: var(--muted); font-size: 13px; margin-bottom: 24px; }
+  .btn {
+    background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: #fff; border: none;
+    border-radius: 10px; padding: 10px 18px; font-size: 14px; font-weight: 600; cursor: pointer;
+    transition: transform .1s, opacity .15s;
+  }
+  .btn:hover { transform: translateY(-1px); opacity: .92; }
+  .btn:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+  .btn-ghost {
+    background: none; border: 1px solid var(--border); color: var(--text);
+    border-radius: 10px; padding: 8px 14px; font-size: 13px; font-weight: 600; cursor: pointer; transition: .15s;
+  }
+  .btn-ghost:hover { border-color: var(--accent); color: var(--accent-2); }
+  .btn-ghost:disabled { opacity: .45; cursor: wait; }
+  .app { display: none; }
+  .addrow { display: flex; gap: 8px; margin-bottom: 16px; }
+  .addrow input {
+    flex: 1; background: var(--bg); border: 1px solid var(--border); color: var(--text);
+    border-radius: 10px; padding: 10px 14px; font-size: 14px; outline: none; transition: border .15s;
+  }
+  .addrow input:focus { border-color: var(--accent); }
+  .addrow input::placeholder { color: var(--muted); }
+  .airow { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+  .ainote { font-size: 12px; color: var(--accent-2); flex: 1; line-height: 1.45; }
+  .ainote.err { color: var(--red); }
+  ul { list-style: none; }
+  li {
+    display: flex; align-items: center; gap: 12px; padding: 10px 6px;
+    border-bottom: 1px solid var(--border); animation: slidein .18s ease;
+  }
+  @keyframes slidein { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+  li:last-child { border-bottom: none; }
+  .checkbox {
+    width: 20px; height: 20px; border-radius: 6px; border: 2px solid var(--border);
+    cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    font-size: 12px; color: transparent; transition: .15s; background: transparent;
+  }
+  li.done .checkbox { background: var(--green); border-color: var(--green); color: #06281c; }
+  li.done .text { text-decoration: line-through; color: var(--muted); }
+  .text { flex: 1; font-size: 14px; word-break: break-word; cursor: pointer; }
+  .del {
+    background: none; border: none; color: var(--muted); font-size: 15px; cursor: pointer;
+    padding: 2px 6px; border-radius: 6px; opacity: 0; transition: .15s;
+  }
+  li:hover .del { opacity: 1; }
+  .del:hover { color: var(--red); background: rgba(248,113,113,.1); }
+  footer {
+    display: flex; align-items: center; justify-content: space-between; margin-top: 18px;
+    padding-top: 14px; border-top: 1px solid var(--border); font-size: 12px; color: var(--muted);
+  }
+  footer a { color: var(--muted); text-decoration: none; }
+  footer a:hover { color: var(--accent-2); }
+  .count { font-size: 12px; color: var(--muted); margin-top: 10px; }
+  .empty { text-align: center; color: var(--muted); font-size: 13px; padding: 28px 0; }
+  .spin { display: inline-block; animation: spin 1s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+  <div class="card">
+    <header>
+      <h1>Puter<span>Todo</span></h1>
+      <div class="userchip" id="userchip" style="display:none">
+        <span id="username"></span>
+        <button onclick="signOut()">Sign out</button>
+      </div>
+    </header>
+
+    <!-- Signed-out view -->
+    <div class="signin" id="signin">
+      <h2>Your tasks, in the cloud</h2>
+      <p>Sign in with your Puter account. Tasks sync to the cloud and live anywhere — no backend, no database setup.</p>
+      <button class="btn" onclick="signIn()">Continue with Puter</button>
+    </div>
+
+    <!-- App view -->
+    <div class="app" id="app">
+      <div class="addrow">
+        <input id="input" type="text" placeholder="Add a task…  (Enter to add)" autocomplete="off">
+        <button class="btn" onclick="addTodo()">Add</button>
+      </div>
+
+      <div class="airow">
+        <button class="btn-ghost" id="aibtn" onclick="aiPrioritize()">✨ AI Prioritize</button>
+        <div class="ainote" id="ainote"></div>
+      </div>
+
+      <ul id="list"></ul>
+      <div class="empty" id="empty" style="display:none">Nothing here. Add your first task above.</div>
+      <div class="count" id="count"></div>
+
+      <footer>
+        <span id="synced">☁ synced</span>
+        <a href="https://developer.puter.com" target="_blank" rel="noopener">Powered by Puter</a>
+      </footer>
+    </div>
+  </div>
+
+  <script src="https://js.puter.com/v2/"></script>
+  <script>
+    const $ = id => document.getElementById(id);
+    let todos = [];
+    let saveChain = Promise.resolve();
+
+    /* ---------- persistence (cloud KV, serialized writes) ---------- */
+    function save() {
+      saveChain = saveChain.then(() =>
+        puter.kv.set('todos', JSON.stringify(todos)).then(() => {
+          $('synced').textContent = '☁ synced';
+        }).catch(e => {
+          $('synced').textContent = '⚠ save failed — retrying';
+          return save(); // retry once after the chain settles
+        })
+      );
+      return saveChain;
+    }
+
+    async function load() {
+      try {
+        const v = await puter.kv.get('todos');
+        todos = v ? JSON.parse(v) : [];
+      } catch (e) { todos = []; }
+      render();
+    }
+
+    /* ---------- auth ---------- */
+    async function signIn() {
+      try {
+        await puter.auth.signIn();
+        await enterApp();
+      } catch (e) { setNote('Sign-in cancelled or failed.', true); }
+    }
+
+    async function signOut() {
+      await puter.auth.signOut();
+      todos = [];
+      $('app').style.display = 'none';
+      $('signin').style.display = 'block';
+      $('userchip').style.display = 'none';
+      setNote('');
+    }
+
+    async function enterApp() {
+      const u = await puter.auth.getUser();
+      $('username').textContent = u.username;
+      $('userchip').style.display = 'flex';
+      $('signin').style.display = 'none';
+      $('app').style.display = 'block';
+      await load();
+    }
+
+    /* ---------- todo ops ---------- */
+    function addTodo() {
+      const inp = $('input');
+      const text = inp.value.trim();
+      if (!text) return;
+      todos.push({ id: crypto.randomUUID(), text, done: false });
+      inp.value = '';
+      inp.focus();
+      save().then(render);
+    }
+
+    function toggleTodo(id) {
+      const t = todos.find(t => t.id === id);
+      if (t) { t.done = !t.done; save().then(render); }
+    }
+
+    function deleteTodo(id) {
+      todos = todos.filter(t => t.id !== id);
+      save().then(render);
+    }
+
+    /* ---------- AI: GLM-5.2 prioritization (free via Puter) ---------- */
+    async function aiPrioritize() {
+      if (todos.length < 2) { setNote('Add at least 2 tasks first.'); return; }
+      const btn = $('aibtn');
+      btn.disabled = true;
+      setNote('<span class="spin">◌</span> GLM-5.2 is thinking…');
+      try {
+        const payload = todos.map(t => ({ id: t.id, text: t.text, done: t.done }));
+        const resp = await puter.ai.chat([
+          { role: 'system', content: 'You are a ruthless productivity coach. Reorder the user\'s tasks by true priority: urgent AND important first, then important, then everything else. Reply with ONLY valid JSON, no markdown fences, exactly this shape: {"order":["<id>",...],"note":"<one short sentence explaining the #1 priority>"}' },
+          { role: 'user', content: JSON.stringify(payload) }
+        ], { model: 'z-ai/glm-5.2', temperature: 0.2, max_tokens: 400 });
+
+        const raw = resp.message?.content ?? resp;
+        const text = typeof raw === 'string' ? raw : JSON.stringify(raw);
+        const clean = text.replace(/```(?:json)?/g, '').trim();
+        const parsed = JSON.parse(clean);
+        if (!Array.isArray(parsed.order)) throw new Error('bad shape');
+
+        const byId = new Map(todos.map(t => [t.id, t]));
+        const ordered = parsed.order.map(id => byId.get(id)).filter(Boolean);
+        const rest = todos.filter(t => !parsed.order.includes(t.id));
+        todos = [...ordered, ...rest];
+        save().then(render);
+        setNote('✨ GLM-5.2: ' + (parsed.note || 'Prioritized.'));
+      } catch (e) {
+        setNote('AI call failed: ' + (e.message || e), true);
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    function setNote(txt, isErr) {
+      const n = $('ainote');
+      n.innerHTML = txt;
+      n.className = 'ainote' + (isErr ? ' err' : '');
+    }
+
+    /* ---------- render ---------- */
+    function render() {
+      const list = $('list');
+      list.innerHTML = '';
+      $('empty').style.display = todos.length ? 'none' : 'block';
+
+      for (const t of todos) {
+        const li = document.createElement('li');
+        if (t.done) li.className = 'done';
+
+        const cb = document.createElement('span');
+        cb.className = 'checkbox';
+        cb.textContent = t.done ? '✓' : '';
+        cb.onclick = () => toggleTodo(t.id);
+
+        const txt = document.createElement('span');
+        txt.className = 'text';
+        txt.textContent = t.text;
+        txt.onclick = () => toggleTodo(t.id);
+
+        const del = document.createElement('button');
+        del.className = 'del';
+        del.textContent = '✕';
+        del.title = 'Delete';
+        del.onclick = () => deleteTodo(t.id);
+
+        li.append(cb, txt, del);
+        list.appendChild(li);
+      }
+
+      const done = todos.filter(t => t.done).length;
+      $('count').textContent = `${todos.length - done} left · ${done} done`;
+    }
+
+    /* ---------- init ---------- */
+    $('input').addEventListener('keydown', e => { if (e.key === 'Enter') addTodo(); });
+
+    (async () => {
+      try {
+        if (await puter.auth.isSignedIn()) {
+          await enterApp();
+        } else {
+          $('signin').style.display = 'block';
+        }
+      } catch (e) {
+        $('signin').style.display = 'block';
+        $('signin').querySelector('p').textContent = 'Puter.js failed to load (' + e.message + ') — check your connection.';
+      }
+    })();
+  </script>
+</body>
+</html>
