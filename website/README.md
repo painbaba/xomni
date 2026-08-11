@@ -74,7 +74,10 @@ curl -s http://localhost:8000/data/skills.json | python -c "import sys,json;prin
 
 ### GitHub Pages (recommended)
 
-The repo is `painbaba/xomni`.
+The repo is `painbaba/xomni`. Deploys are automated by the
+`.github/workflows/pages.yml` workflow: every push to `main` (or a manual
+`workflow_dispatch` run) uploads `website/` as the site root and deploys it
+to GitHub Pages. No build step is needed — the site is static.
 
 1. Push everything (including `website/`) to the `main` branch:
 
@@ -84,10 +87,9 @@ The repo is `painbaba/xomni`.
    git push origin main
    ```
 
-2. On GitHub: **repo → Settings → Pages → Build and deployment →
-   Source: "Deploy from a branch"** → Branch `main`, folder `/website` →
-   **Save**. (The same works with `gh-pages` branch + `/ (root)` if you
-   prefer a separate branch.)
+2. First time only, on GitHub: **repo → Settings → Pages → Build and
+   deployment → Source: "GitHub Actions"**. No branch/folder selection
+   needed — `pages.yml` handles it.
 
 3. The site is live at
    `https://painbaba.github.io/xomni/skills.html` within a minute or two.

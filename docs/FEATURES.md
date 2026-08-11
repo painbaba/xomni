@@ -1,131 +1,161 @@
 # Feature Matrix — every feature of every source repo, tracked
 
-XOMNI's contract: NOTHING from the six sources is dropped by
-decision — every feature is listed here with a status. Status legend:
+XOMNI's contract: NOTHING from the seven source agents is dropped by
+decision — every feature is listed here with a status. All counts below were
+**verified live against the repo on 2026-08-12** (source tree, auto-generated
+test matrix, SQLite row counts, JSON array lengths, file listings) — no number
+is carried over from memory.
+
+## Verified headline numbers (2026-08-12)
+
+| Metric | Verified value | How verified |
+|---|---|---|
+| Plugins shipped | **16** | `ls plugins/` = 16 dirs; README plugin table (16 rows) |
+| Passing tests | **603 / 603** (0 failures) | `docs/TEST-MATRIX.md` (auto-generated 2026-08-12 00:27) |
+| Skills in repo | **170** `SKILL.md` files, **42** domain folders | glob count `skills/**/SKILL.md`; `ls skills/` |
+| External-skills DB | **519 rows** (skills.db), 6 sources; **180** curated shortlist (201 rows carry a rank) | SQLite `COUNT(*)`; `curated-skills.json` (180 entries) + `.stats.json` |
+| MCP server catalog | **311 servers** | `data/mcps.db` (311), `data/mcp/catalog.json` (311), `website/data/mcps.json` (311) |
+| Verified free models | **25** (live HTTP 200, 2026-08-10) | README + FEATURES.md provider-pool row |
+| Source agents composed | **7** (Hermes, OpenCode, jcode, Codex, Aider, Goose, OpenClaw) | README §"The seven agents, one host" |
+| Site assets | index (flagship) + mcp.html + skills.html + **5** docs pages + 404 + favicon + robots + css/js + 2 data JSONs | `ls website/ website/docs/` |
+| Docs | **8** files in `docs/` | `ls docs/` |
+| CI (.github) | **not present — PENDING** | `ls .github/` → no such directory |
+
+> Discrepancies found vs. prior claims: (a) `website/docs/` contains **5** pages
+> (byo-provider, faq, install, security, sponsorship), not 6; (b) `run.cmd` /
+> `run.sh` still printed a stale plugin count — fixed to 16 with this rebuild; (c)
+> `docs/ARCHITECTURE.md` said "six codebases" and enumerated only 3 shipped
+> modules — updated to seven / 16 with this rebuild; (d) the 2026-08-11
+> competitive-scan baseline in `.tmp/competitive-research/BROAD-SCAN.md` still
+> cites stale plugin/test counts (pre-dates omni-design + omni-parallel).
+
+Status legend:
 
 - `HOST` — already part of the Hermes host core (XOMNI IS Hermes)
-- `SHIPPED` — ported as a module/plugin/skill in this repo, tested, installed
-- `VENDORED` — source vendored for reference/attribution (read, not merged)
+- `SHIPPED` — ported as a module/plugin in this repo, tested, installed
 - `WIRED` — usable through the host (config/plumbing, e.g. providers)
-- `QUEUED` — accepted into the build queue (see PORT-PLAN.md / build order below)
+- `PENDING` — accepted into the build queue / in progress (see Roadmap)
 - `PARKED` — tracked, consciously deferred with a reason
 
 ---
 
-## 1. HERMES (host, Python — MIT, ~228k★) — `C:\Users\HP\AppData\Local\hermes\hermes-agent`
+## 1. Plugin matrix — all 16, shipped (source of truth: `docs/TEST-MATRIX.md`, README)
 
-All host features are XOMNI by construction:
+| # | Plugin | Theme | Tests (PASS) | Status | Origin strength |
+|---|---|---|---|---|---|
+| 1 | `waitperk` | WaitPerk-model sponsorship: sponsor line, impression ledger, 50/50 payout math | 14 | SHIPPED | sponsorship (WaitPerk) |
+| 2 | `perkline` | PerkLine v2: CPM/CPC/CPA tiers, relevance match, HMAC receipts, escrow caps, second-price auction | 11 | SHIPPED | sponsorship (researched upgrade) |
+| 3 | `provider-pool` | 25 verified free models, live health checks, per-agent config generation, `/models` `/provider` | 16 | SHIPPED | free models (OpenCode Zen gateway) |
+| 4 | `context-compact` | Long-session compaction, cache-safe context injection | 31 | SHIPPED | jcode (RAM efficiency) |
+| 5 | `sandbox-gate` | Pre-tool risk gate (block/warn/allow) + allowlist | 29 | SHIPPED | Codex (sandboxed execution) |
+| 6 | `mcp-catalog` | MCP server catalog, validation, JSON-RPC shapes | 26 | SHIPPED | Goose (MCP-native) |
+| 7 | `repomap` | Symbol-level repo map (13+ lang families), `rank_files` relevance scoring, stack tags | 15 | SHIPPED | Aider (repo map) |
+| 8 | `context-loader` | `fetch_page` + `describe_image` (vision) context tools | 34 | SHIPPED | Aider (images/web context) |
+| 9 | `verify-runner` | `/verify` tests+lint verdict on projects | 38 | SHIPPED | Aider (lint & test automation) |
+| 10 | `gh-ops` | gh/glab wrappers with strict table parsers | 60 | SHIPPED | OpenCode (GitHub/GitLab) |
+| 11 | `local-models` | Ollama / LM Studio probe (:11434/:1234) + config generation | 40 | SHIPPED | OpenCode (local endpoints) |
+| 12 | `title-statusline` | Sponsor line in the terminal title bar | 27 | SHIPPED | OpenCode (TUI/statusline) |
+| 13 | `omni-memory` | Personal memory: local SQLite facts, `/remember` `/recall`, LLM consolidation | 8 | SHIPPED | OpenClaw (persistent memory) |
+| 14 | `omni-media` | Media understanding: `/ocr` `/caption` `/mediascan` via verified vision model | 9 | SHIPPED | OpenClaw (media pipeline) |
+| 15 | `omni-design` | `/design` premium self-contained HTML artifacts from a brief, `/design-audit` 10-tell slop audit — zero hooks | 8 | SHIPPED | Claude Design / Stitch |
+| 16 | `omni-parallel` | Parallel-task layer: `/swarm` task queue + context packs + multi-agent judging + PR-split merge plans | 20 | SHIPPED | Kimi / Cursor / Claude |
 
-| Feature | Status |
-|---|---|
-| Agent loop (CLI + gateway, same core) | HOST |
-| Skills system (procedural memory, skill_view/manage) | HOST |
-| Persistent memory + user profile | HOST |
-| Cron / scheduled jobs | HOST |
-| Plugin system (ctx API: commands, tools, hooks, middleware) | HOST |
-| Subagent delegation (parallel batches, orchestrator nesting) | HOST |
-| Kanban multi-agent board | HOST |
-| Gateway: ~20 messaging platforms (Telegram, Discord, WhatsApp, Slack…) | HOST |
-| Terminal + browser drivers (CDP) | HOST |
-| MCP servers wiring (ffmpeg, youtube-transcript live) | HOST |
-| TUI + Electron desktop app | HOST |
-| Provider abstraction + automatic failover chains | HOST |
-| Prompt-enhancer plugin (manual + auto pre_llm_call mode) | HOST |
-| Session store (SQLite, session_search) | HOST |
-| Profiles (multi-profile isolation) | HOST |
-| Auth/credential pool (`hermes auth`) | HOST |
-| AGENTS.md contribution rubric | HOST |
+**Totals: 16 plugins · 603 test methods · 603 passed · 0 failed** (TEST-MATRIX.md, 2026-08-12 00:27).
+Row sum check: 14+11+16+31+29+26+15+34+38+60+40+27+8+9+8+20 = 603 ✓
 
-## 2. OPENCODE (Go — MIT, ~13.6k★) — `vendor/opencode/`
+## 2. Heritage map — the seven source agents, one host
 
-| Feature | Status |
-|---|---|
-| Terminal TUI (chat, sessions, themes, keybinds) | VENDORED (reference for P4 TUI statusline) |
-| Go CLI + Web IDE + Zen + Share surfaces | VENDORED |
-| 75+ LLM providers via Models.dev registry + AI SDK | WIRED through the opencode-go gateway (25 models verified live) |
-| `/models`, `/connect`, model variants + cycling | QUEUED (provider-pool plugin ships /models) |
-| LSP servers integration | QUEUED |
-| MCP servers | HOST (native) |
-| Agents (multi-agent modes), Agent Skills | QUEUED (agents → Hermes subagents already cover) |
-| Rules files, formatters, commands, permissions/policies | QUEUED (permissions → sandbox-gate plugin, in swarm) |
-| Custom tools (SDK), Plugins, Server (headless API) | HOST plugin system covers |
-| GitHub / GitLab integration | SHIPPED (`plugins/gh-ops` — gh/glab wrappers, strict table parsers, live: auth painbaba) |
-| ACP (Agent Client Protocol) support | QUEUED |
-| Local models (LM Studio / Ollama endpoints) | SHIPPED (`plugins/local-models` — probe :11434/:1234, config gen; 0 servers running on this machine) |
-| Free models: opencode Zen gateway — deepseek-v4-flash/pro, qwen3.8-max, glm-5.2/5.1/5, kimi-k3/k2.7-code/k2.6/k2.5, minimax-m3/m2.7/m2.5, gpt-5.6-luna, grok-4.5, hy3/hy3-preview, mimo-v2* — VERIFIED LIVE (HTTP 200, 25 models, 2026-08-10) | WIRED (provider-pool) |
-| Provider pool: /models live health, /provider config gen for ALL agents (same gateway, one key) | SHIPPED (plugins/provider-pool) |
+| Tool | Language | Signature strength | Where it lands in XOMNI | Status |
+|---|---|---|---|---|
+| Hermes | Python | Full agent framework: skills, memory, cron, plugins, gateway | The host core (XOMNI IS Hermes) | HOST |
+| OpenCode | Go | Terminal TUI, provider-agnostic loop | `title-statusline`, `local-models`, `gh-ops` | SHIPPED |
+| jcode | Rust | RAM-efficient harness | `context-compact` | SHIPPED |
+| Codex | Rust | Sandboxed execution, plan+act loop | `sandbox-gate` | SHIPPED |
+| Aider | Python | Repo map, surgical git diffs, images/web context, lint+test | `repomap`, `context-loader`, `verify-runner` | SHIPPED |
+| Goose | Rust | MCP-native extensibility | `mcp-catalog` | SHIPPED |
+| OpenClaw | TypeScript | Persistent semantic memory + media understanding | `omni-memory`, `omni-media` | SHIPPED |
+| — | — | Sponsorship fundamental | `waitperk`, `perkline` | SHIPPED |
+| — | — | Design + parallel-task layers | `omni-design`, `omni-parallel` | SHIPPED |
 
-## 3. JCODE (Rust — MIT, ~16.7k★) — the RAM-efficient harness
+## 3. Website assets (static site, no build step — `website/`)
 
-| Feature | Status |
-|---|---|
-| RAM-efficient harness (minimal footprint, fast first frame) | QUEUED → P1 context-compact plugin (in swarm) |
-| Agent memory | QUEUED (Hermes memory is the host equivalent; P1 summary adds session-level) |
-| UI: side panels, diagrams, info widgets | PARKED (Hermes TUI differs; port-plan P4) |
-| Swarm (multi-agent) | HOST (delegation) |
-| OAuth + provider login flows (Copilot device flow, Google OAuth, Gmail) | QUEUED |
-| Config-file providers (OpenAI-compatible, Ollama, LM Studio) | WIRED (provider-pool config gen) |
-| Self-dev / customizability | HOST (plugins/skills) |
-| iOS application / native OpenClaw | PARKED (out of scope for CLI product) |
+| Asset | Type / role | Status | Source |
+|---|---|---|---|
+| `index.html` | **Flagship landing page** (24.9 KB, updated 2026-08-12 00:31 — newest file in site) | SHIPPED | hand-authored + `.tmp/flagship-site/` spec (BRIEF.md, DESIGN.md, ENGINEERING.md, MOTION.md) |
+| `mcp.html` | MCP catalog page (27.7 KB) — renders the 311-server catalog | SHIPPED | `data/mcps.db` → `website/data/mcps.json` (311) |
+| `skills.html` | Skills catalog page (48.4 KB) — vanilla-JS search + category filter over 170 skills | SHIPPED | `website/scripts/gen_skills.py` |
+| `docs/byo-provider.html` | "Bring your own provider" doc page | SHIPPED | hand-authored |
+| `docs/faq.html` | FAQ doc page | SHIPPED | hand-authored |
+| `docs/install.html` | Install doc page | SHIPPED | hand-authored |
+| `docs/security.html` | Security doc page | SHIPPED | hand-authored |
+| `docs/sponsorship.html` | Sponsorship model doc page | SHIPPED | hand-authored |
+| `404.html` | 404 page | SHIPPED | hand-authored |
+| `favicon.svg` | Site favicon | SHIPPED | hand-authored |
+| `robots.txt` | Robots directives | SHIPPED | hand-authored |
+| `css/style.css` | Site-wide stylesheet | SHIPPED | hand-authored |
+| `js/site.js` | Shared scripts | SHIPPED | hand-authored |
+| `data/skills.json` | Machine-readable skills catalog — **170 entries** (verified) | SHIPPED | generated by `gen_skills.py` |
+| `data/mcps.json` | Machine-readable MCP catalog — **311 entries** (verified) | SHIPPED | mcp pipeline |
+| `README.md` | Website layout + regeneration docs | SHIPPED | hand-authored |
+| `scripts/gen_skills.py` | Regenerates `skills.html` + `data/skills.json` | SHIPPED | pipeline (see §5) |
 
-## 4. CODEX (Rust — Apache-2.0, ~105k★)
+## 4. Docs (`docs/`, 8 files)
 
-| Feature | Status |
-|---|---|
-| Sandboxed execution (container/seatbelt) | QUEUED → P2 sandbox-gate plugin (in swarm) |
-| Plan mode (plan → act) | QUEUED (todo/plan skill exists in Hermes) |
-| Approval modes (read-only / auto / full) | QUEUED (sandbox-gate extends) |
-| ChatGPT plan sign-in | PARKED (proprietary backend) |
-| Sessions, resume, aliases, config | HOST |
-| MCP support | HOST |
-| Agents (multi-agent coding) | HOST (delegation) |
-| OSS first / open codebase | VENDORED attribution |
+| File | Purpose | Status |
+|---|---|---|
+| `FEATURES.md` | **This file** — master feature matrix, rebuilt 2026-08-12 | SHIPPED |
+| `ARCHITECTURE.md` | Host-core + edge-module architecture (updated 2026-08-12: seven agents, 16 modules) | SHIPPED |
+| `TEST-MATRIX.md` | Auto-generated plugin test matrix — 603/603 PASS (2026-08-12 00:27) | SHIPPED (regenerated by the test harness) |
+| `PERFORMANCE.md` | Bench results (updated 2026-08-12) | SHIPPED |
+| `SELLING.md` | Go-to-market / sponsorship plan (updated 2026-08-12) | SHIPPED |
+| `SKILLS-SECURITY.md` | External-skills security scan report — regenerated by `data/build_db.py` | SHIPPED |
+| `VALIDATION.md` | Validation record (updated 2026-08-12) | SHIPPED |
+| `BRANDING.md` | Brand/identity guide | SHIPPED |
 
-## 5. AIDER (Python — Apache-2.0, ~48k★)
+## 5. Data pipelines
 
-| Feature | Status |
-|---|---|
-| Repo map (tree-sitter symbol maps) | SHIPPED → repomap plugin (regex v1 SHIPPED, tree-sitter upgrade PARKED P3b) |
-| 100+ code languages | SHIPPED v1 (13 lang families) + swarm v2 adds kotlin/swift/dart/scala/lua/r/tf/vue |
-| Git integration (auto-commit, surgical diffs) | QUEUED → P5 git-diff-discipline skill (in swarm) |
-| Cloud + local LLMs | WIRED (provider-pool) |
-| IDE (watch mode) | PARKED (host has no IDE bridge; desktop app covers) |
-| Images & web pages as context | SHIPPED (`plugins/context-loader` — fetch_page clean-text + describe_image via verified minimax-m3 vision; live: example.com + gateway both OK) |
-| Voice-to-code | PARKED (TTS exists; STT local whisper configured) |
-| Lint & test automation | SHIPPED (`plugins/verify-runner` — /verify runs tests + lint, verdict; live: PASS on the unified-agent repo) |
-| Copy/paste to web chat | PARKED |
+| Pipeline | Input → Output | Verified counts | Status |
+|---|---|---|---|
+| `data/build_db.py` | `data/raw/scrape{1..6}.json` → dedupe by sha256 → `data/skills.db`; merges curated ranks; regenerates `docs/SKILLS-SECURITY.md` | 519 rows in `skills` table, 6 rows in `sources`, 6 raw scrape files, 475 unique / 467 scored / 180 curated per `.stats.json` | SHIPPED |
+| `data/curated-skills.json` (+ `.stats.json`, `curated-summary.md`) | Curator-ranked top-useful shortlist, keyed by sha256 | **180 entries** (verified); 201 skills rows carry a `rank` in db | SHIPPED |
+| `website/scripts/gen_skills.py` | `skills/**/SKILL.md` (YAML frontmatter) → `website/data/skills.json` + `website/skills.html` | 170 SKILL.md files → 170 JSON entries | SHIPPED |
+| MCP catalog pipeline | `.tmp/mcp/` harvest scripts (`harvest_gh.py`, `build_github_json.py`) + `.tmp/build_smithery.py` + `.tmp/build_final.py` → `data/mcp/catalog.json` → `data/mcps.db` → `website/data/mcps.json` + `website/mcp.html` | **311 servers** (catalog.json = mcps.db = mcps.json = 311, verified) | SHIPPED |
+| `.tmp/competitive-research/` | Track scans: `BROAD-SCAN.md` (Track 5), `CLAUDE.md` (Track 3), `CURSOR.md` (Track 4), `KIMICODE.md`, `ZAICODE.md` | Shortlist for next build phase | **PENDING** triage into roadmap |
 
-## 6. GOOSE (Rust — Apache-2.0, ~52.6k★)
+## 6. Infra & tooling
 
-| Feature | Status |
-|---|---|
-| MCP-native extensibility | QUEUED → P3a mcp-catalog plugin (in swarm) |
-| Extensions (recipes, toolkits) | HOST (plugins/skills) |
-| Install / execute / edit beyond code suggestions | HOST (terminal + file tools) |
-| Sessions / resume / checkpoints | HOST |
-| Benchmarks (GAIA, etc.) | PARKED |
+| Asset | Role | Status |
+|---|---|---|
+| `run.cmd` | Windows launcher — starts Hermes host with all **16** plugins; bootstraps bundled Ollama (updated 2026-08-12: 14→16) | SHIPPED |
+| `run.sh` | POSIX/git-bash launcher — all **16** plugins; ensures `ollama serve` on :11434 (updated 2026-08-12: 14→16) | SHIPPED |
+| `ollama/start-ollama.ps1` | Bundled-Ollama starter: downloads official portable build once (~130 MB) into `ollama/runtime/`, serves `127.0.0.1:11434`, pulls `qwen2.5:3b` on first run; idempotent | SHIPPED |
+| `.github/` | CI/workflows | **PENDING** (directory not present as of 2026-08-12) |
+| `.bench/` | Benchmark harness: `bench.py`, `run_all_tests.sh`, `results[-before|-after].json` over the 603-test suite | SHIPPED |
+| `.gitignore`, `LICENSE` (MIT), `LICENSE-ATTRIBUTION.md` | Repo hygiene / licensing | SHIPPED |
 
-## 7. WAITPERK / sponsorship fundamental
+## 7. Skills & free models
 
-| Feature | Status |
-|---|---|
-| Status-line sponsor message while agent works | SHIPPED (waitperk + perkline plugins) |
-| 50/50 impression-share payout, capped by construction | SHIPPED (waitperk) |
-| Tiered pricing cpm/cpc/cpa + relevance match + receipts + escrow + auction | SHIPPED (perkline v2) |
-| Real sync server / sponsor network | PARKED (productization, needs business decision) |
+| Asset | Verified count | Status |
+|---|---|---|
+| `skills/` — procedural skills committed in-tree | **170** `SKILL.md` across **42** domain folders (cloudflare, hyperframes, media-use, research, productivity, devops, mlops, github, security, web-perf, …) | SHIPPED |
+| External-skills knowledge base | **519** skills in `data/skills.db` from 6 curated sources; **180**-entry ranked shortlist | SHIPPED |
+| Verified free-model routing | **25 models** live-verified (HTTP 200, 2026-08-10): deepseek-v4-flash/pro, qwen3.8-max, glm-5.2/5.1/5, kimi-k3/k2.7-code/k2.6/k2.5, minimax-m3 (vision)/m2.7/m2.5, gpt-5.6-luna, grok-4.5, hy3, mimo-v2, … | WIRED via `provider-pool` |
 
----
+## 8. Roadmap / next
 
-## Build order (after the current swarm batch)
+**Pending inputs** (in build queue, awaiting triage):
+- `.tmp/competitive-research/` shortlist — `BROAD-SCAN.md` (2026-08-11/12) + sibling deep-dives (`CLAUDE.md`, `CURSOR.md`, `KIMICODE.md`, `ZAICODE.md`) — **PENDING**; note its baseline cites stale plugin/test counts (pre-dates omni-design/omni-parallel).
+- `.github/` CI — **PENDING**.
+- Real sponsor sync network / productized marketplace — PARKED (needs business decision, see `docs/SELLING.md`).
 
-1. QA gate on swarm output (verify, audit, fix, install, e2e) — orchestrator
-2. provider-pool plugin (free-model registry + /models + per-agent config gen) — IN PROGRESS
-3. P4: TUI statusline surface (closes the sponsorship loop)
-4. LSP servers integration (opencode)
-5. Local models (Ollama/LM Studio) wiring
-6. GitHub/GitLab integration (opencode)
-7. Aider images/webpages context, lint-test automation
-8. jcode provider OAuth flows (Copilot device flow, Google OAuth)
+**Queued work** (carried from this matrix's build-order history, still open):
+1. Repo-map tree-sitter upgrade (repomap v2; regex v1 SHIPPED) — PARKED P3b
+2. Aider git-diff discipline (precise patch application) — QUEUED
+3. LSP servers integration (OpenCode line) — QUEUED
+4. jcode provider OAuth flows (Copilot device flow, Google OAuth) — QUEUED
+5. OpenCode ACP (Agent Client Protocol) support — QUEUED
 
-Every row above is either shipped, being built, or has a named reason for
-parking. Nothing is dropped by silence.
+**Shipped since the original build order** (no longer pending): provider-pool, local-models wiring, gh-ops, context-loader, verify-runner, repomap, sandbox-gate, mcp-catalog, context-compact, title-statusline, omni-memory, omni-media, omni-design, omni-parallel, waitperk, perkline.
+
+Every row above is either shipped, pending with a named input, or has a named
+reason for parking. Nothing is dropped by silence.

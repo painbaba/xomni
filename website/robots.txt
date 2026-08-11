@@ -4,3 +4,5 @@ Allow: /
 # XOMNI is a static site — everything is crawlable.
 # Skills data is also available as JSON for tooling:
 Allow: /data/skills.json
+
+Sitemap: https://painbaba.github.io/xomni/sitemap.xml

@@ -80,16 +80,48 @@ def _pat(p: str) -> re.Pattern:
     return re.compile(p, re.IGNORECASE | re.DOTALL)
 
 
+def _is_neutral(hex6: str) -> bool:
+    """True if the hex is a neutral gray (R~G~B) — not a hue the audit should flag."""
+    try:
+        r, g, b = int(hex6[1:3], 16), int(hex6[3:5], 16), int(hex6[5:7], 16)
+    except ValueError:
+        return True
+    return abs(r - g) <= 18 and abs(g - b) <= 18 and abs(r - b) <= 18
+
+
+def _generic_indigo(html: str) -> bool:
+    """Tell 2: a generic indigo/violet/blue accent — but NOT neutral grays."""
+    for m in re.finditer(r"#(?:[6-9][0-9a-f]{2})[0-9a-f]{3}", html):
+        h = m.group(0)
+        if h.lower() in ("#7b828a", "#8b96b0", "#a6adb5", "#565e66", "#5e7590", "#8fa8c4"):
+            continue  # known token grays
+        if _is_neutral(h):
+            continue
+        # indigo/violet family: B clearly above R (blue-dominant, not cyan-green)
+        r = int(h[1:3], 16); b = int(h[5:7], 16)
+        if b - r >= 24:
+            return True
+    return False
+
+
 def _tile_grid(html: str) -> bool:
     """Tell 3: three-plus equal icon/heading/sentence blocks (card tiles)."""
     return html.lower().count("<article") >= 3 or len(re.findall(r"<h[23]>", html)) >= 6
 
 
+def _wrong_surface(html: str) -> bool:
+    """Tell 10: a data-table presence inside a hero/landing/marketing section."""
+    m = re.search(r"<section[^>]*class=\"[^\"]*hero[^\"]*\"[^>]*>(.*?)</section>",
+                  html, re.I | re.S)
+    if m and re.search(r"<table", m.group(1)):
+        return True
+    return bool(re.search(r"<table[\s\S]{0,200}?class=\"[^\"]*(hero|marketing)", html, re.I))
+
+
 SLOP_CHECKS = [
     ("tech-gradient", _pat(r"linear-gradient\([^)]*#[0-9a-f]{6}[^)]*"),
      "recolor/re-typeset"),
-    ("generic-indigo", _pat(r"#(?:[6-7][0-9a-f]{2}|[7-9][0-9a-f]{2})[0-9a-f]{3}"),
-     "recolor/re-typeset"),
+    ("generic-indigo", _generic_indigo, "recolor/re-typeset"),
     ("feature-tile-grid", _tile_grid, "re-layout"),
     ("accent-rail", _pat(r"border-left:\s*(?:4|5|6)px\s+solid\s+(?:var\(--accent\)|#[0-9a-f]{3,6})"),
      "remove decoration"),
@@ -103,8 +135,7 @@ SLOP_CHECKS = [
      "re-layout"),
     ("default-type", _pat(r"font-family:\s*(?:Inter|system-ui)(?:,|;|\))"),
      "recolor/re-typeset"),
-    ("wrong-surface", _pat(r"table[\s\S]{0,200}?(?:hero|landing|marketing)"),
-     "re-layout"),
+    ("wrong-surface", _wrong_surface, "re-layout"),
 ]
 
 TELL_LABELS = {

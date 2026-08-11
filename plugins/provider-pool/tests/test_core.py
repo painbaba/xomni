@@ -112,6 +112,156 @@ class ProviderPoolTests(unittest.TestCase):
             self.assertIn(ch["name"], t)
         self.assertIn("wired", t)
 
+    def test_channels_text_format(self):
+        t = core.channels_text()
+        for ch in core.FREE_CHANNELS:
+            self.assertIn(f"key: {ch['key_env']}", t)
+            self.assertIn(ch["note"], t)
+        self.assertIn(str(len(core.GATEWAY_MODELS)), t)  # wired channel model count
+
+
+class AgentSnippetGenTests(unittest.TestCase):
+    """Config snippet generation for all 5 agent formats (Hermes + 4 in AGENT_CONFIGS)."""
+
+    def test_all_five_formats_covered(self):
+        self.assertEqual(len(core.AGENT_CONFIGS), 4)  # opencode, codex, aider, goose
+        for agent in ("opencode", "codex", "aider", "goose"):
+            self.assertIn(agent, core.AGENT_CONFIGS)
+        # 5th format: the Hermes YAML block
+        self.assertIn("model:", core.HERMES_PROVIDER_BLOCK)
+
+    def test_opencode_snippet_is_valid_json(self):
+        cfg = core.agent_config("opencode")
+        # snippet carries a `//` comment header line; the JSON document itself must parse
+        parsed = json.loads(cfg[cfg.index("{"):])
+        prov = parsed["provider"]["opencode-zen"]
+        self.assertEqual(prov["npm"], "@ai-sdk/openai-compatible")
+        self.assertEqual(prov["name"], "OpenCode Zen")
+        self.assertEqual(prov["options"]["baseURL"], core.GATEWAY_URL)
+        self.assertEqual(prov["options"]["apiKey"], "{env:OPENCODE_GO_API_KEY}")
+        self.assertIn("deepseek-v4-flash", prov["models"])
+        self.assertIn("minimax-m3", prov["models"])
+
+    def test_codex_snippet_toml_shape(self):
+        cfg = core.agent_config("codex")
+        self.assertIn('model_provider = "opencode-zen"', cfg)
+        self.assertIn('model = "deepseek-v4-flash"', cfg)
+        self.assertIn("[model_providers.opencode-zen]", cfg)
+        self.assertIn('env_key = "OPENCODE_GO_API_KEY"', cfg)
+        self.assertIn('wire_api = "chat"', cfg)
+
+    def test_aider_snippet_cli_flags(self):
+        cfg = core.agent_config("aider")
+        self.assertIn("--model openai/deepseek-v4-flash", cfg)
+        self.assertIn("--openai-api-base", cfg)
+        self.assertIn("--openai-api-key $OPENCODE_GO_API_KEY", cfg)
+        self.assertIn(core.GATEWAY_URL, cfg)
+
+    def test_goose_snippet_cli_flags(self):
+        cfg = core.agent_config("goose")
+        self.assertIn("goose configure --provider openai", cfg)
+        self.assertIn("--base-url", cfg)
+        self.assertIn("--api-key $OPENCODE_GO_API_KEY", cfg)
+        self.assertIn(core.GATEWAY_URL, cfg)
+
+    def test_hermes_block_provider_lines(self):
+        b = core.HERMES_PROVIDER_BLOCK
+        self.assertIn("provider: opencode-go", b)
+        self.assertIn("model: deepseek-v4-flash", b)
+        self.assertIn("key_env: OPENCODE_GO_API_KEY", b)
+        self.assertIn(core.GATEWAY_URL, b)
+        self.assertIn("openrouter", b)  # documented fallback chain
+
+
+class ModelListParsingTests(unittest.TestCase):
+    """models_text / filter_by_tag formatting and filtering."""
+
+    def test_every_model_has_required_fields(self):
+        for m in core.GATEWAY_MODELS:
+            self.assertIn("id", m)
+            self.assertTrue(m["id"])
+            self.assertIn("tags", m)
+            self.assertIsInstance(m["tags"], list)
+            self.assertIn("vision", m)
+            self.assertIsInstance(m["vision"], bool)
+
+    def test_filter_by_tag_unknown_tag_empty(self):
+        self.assertEqual(core.filter_by_tag("no-such-tag"), [])
+
+    def test_filter_by_tag_vision_only_minimax(self):
+        self.assertEqual(core.filter_by_tag("vision"), ["minimax-m3"])
+
+    def test_models_text_lists_every_registry_id(self):
+        t = core.models_text()
+        for m in core.GATEWAY_MODELS:
+            self.assertIn("\n  " + m["id"], t, f"model {m['id']} missing from /models text")
+
+    def test_models_text_unknown_tag_header_only(self):
+        t = core.models_text("bogus-tag")
+        self.assertIn("25 free models", t)
+        self.assertNotIn("\n  deepseek-v4-flash", t)  # no model rows for unknown tag
+
+    def test_models_text_filter_excludes_other_tags(self):
+        t = core.models_text("fast")
+        self.assertIn("qwen3.7-plus", t)
+        self.assertNotIn("\n  kimi-k2.7-code", t)  # coding/heavy model not in fast list
+
+    def test_models_text_recommended_line(self):
+        t = core.models_text()
+        self.assertIn("default=deepseek-v4-flash", t)
+        self.assertIn("vision=minimax-m3", t)
+
+
+class HealthCheckResultTests(unittest.TestCase):
+    """gateway_health result handling: headers, payload shapes, failures."""
+
+    def _fake(self, status: int, body: bytes):
+        fake = mock.MagicMock()
+        fake.status = status
+        fake.read.return_value = body
+        fake.__enter__.return_value = fake
+        return fake
+
+    def test_sends_auth_header_when_key_given(self):
+        with mock.patch.object(core.urllib.request, "urlopen", return_value=self._fake(200, b'{"data": []}')) as m:
+            core.gateway_health(key="sk-xyz")
+        req = m.call_args.args[0]
+        self.assertEqual(req.get_header("Authorization"), "Bearer sk-xyz")
+        self.assertIn("Mozilla", req.get_header("User-agent"))
+
+    def test_no_auth_header_without_key(self):
+        with mock.patch.object(core.urllib.request, "urlopen", return_value=self._fake(200, b'{"data": []}')) as m:
+            core.gateway_health(key="")
+        req = m.call_args.args[0]
+        self.assertIsNone(req.get_header("Authorization"))
+
+    def test_missing_data_key_counts_zero(self):
+        with mock.patch.object(core.urllib.request, "urlopen", return_value=self._fake(200, b'{"object": "list"}')):
+            h = core.gateway_health(key="k")
+        self.assertTrue(h["ok"])
+        self.assertEqual(h["model_count"], 0)
+        self.assertEqual(h["models"], [])
+
+    def test_bad_json_reports_error(self):
+        with mock.patch.object(core.urllib.request, "urlopen", return_value=self._fake(200, b"{not json")):
+            h = core.gateway_health(key="k")
+        self.assertFalse(h["ok"])
+        self.assertIsNone(h["http"])
+        self.assertTrue(h["error"])  # JSONDecodeError message captured
+
+    def test_timeout_forwarded(self):
+        with mock.patch.object(core.urllib.request, "urlopen", return_value=self._fake(200, b'{"data": []}')) as m:
+            core.gateway_health(key="k", timeout=7)
+        self.assertEqual(m.call_args.kwargs.get("timeout"), 7)
+
+    def test_load_key_quoted_value(self):
+        with tempfile.TemporaryDirectory() as d:
+            env = os.path.join(d, ".env")
+            with open(env, "w", encoding="utf-8") as f:
+                f.write('OPENCODE_GO_API_KEY="sk-quoted"\n')
+            with mock.patch.object(core.os.path, "expanduser", return_value=env):
+                self.assertEqual(core.load_key("OPENCODE_GO_API_KEY"), "sk-quoted")
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -7,25 +7,66 @@
 <meta name="description" content="Frequently asked questions about XOMNI: models, plugins, sponsorship, install, and more.">
 <link rel="icon" type="image/svg+xml" href="../favicon.svg">
 <link rel="stylesheet" href="../css/style.css">
+
+<style>
+/* ===== flagship void/emerald token aliases (map to css/style.css palette) ===== */
+:root{
+  --font-sans:var(--sans);--font-mono:var(--mono);
+  --radius-1:6px;--dur-fast:150ms;--dur-med:300ms;--ease-out-expo:cubic-bezier(.16,1,.3,1);
+  --surface-1:var(--bg-soft);--surface-2:var(--panel);--elevated:var(--card);
+  --ink:var(--text);--faint:#7B828A;
+  --accent-hover:#00FFB0;--accent-dim:var(--accent2);--success:var(--green);--danger:var(--red);--warning:var(--amber);
+}
+/* ===== flagship nav ===== */
+html{scroll-behavior:smooth}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+::selection{background:color-mix(in srgb,var(--accent) 35%,transparent)}
+.skip-link{position:absolute;left:-999px;top:0;background:var(--accent);color:#000;padding:10px 16px;z-index:100;border-radius:0 0 var(--radius-1) 0}
+.skip-link:focus{left:0}
+header.site-nav{display:block;position:sticky;top:0;z-index:50;background:var(--bg);border-bottom:1px solid var(--border);transition:box-shadow var(--dur-med),border-color var(--dur-med)}
+header.site-nav.scrolled{box-shadow:0 8px 24px rgba(0,0,0,.5)}
+.nav-inner{max-width:1200px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;gap:24px}
+.wordmark{font-family:var(--font-mono);font-weight:700;font-size:17px;letter-spacing:.12em;color:var(--accent)}
+.wordmark:hover{text-decoration:none}
+.wordmark span{color:var(--ink)}
+.nav-links{display:flex;gap:4px;margin-left:auto;align-items:center;flex-wrap:wrap}
+.nav-links a{padding:8px 12px;border-radius:var(--radius-1);color:var(--muted);font-size:14px;position:relative;transition:color var(--dur-fast)}
+.nav-links a::after{content:"";position:absolute;left:12px;right:12px;bottom:4px;height:1px;background:var(--accent);transform:scaleX(0);transform-origin:left;transition:transform var(--dur-med) var(--ease-out-expo)}
+.nav-links a:hover{color:var(--ink)}
+.nav-links a:hover::after{transform:scaleX(1)}
+.nav-links a[aria-current="page"]{color:var(--accent)}
+.nav-links a[aria-current="page"]::after{transform:scaleX(1)}
+.nav-links .nav-cta{margin-left:0;padding:8px 16px!important;min-height:36px}
+.btn-primary{background:var(--accent);border-color:var(--accent);color:#000;font-weight:600}
+.btn-primary:hover{background:var(--accent-hover);box-shadow:0 0 24px var(--accent-dim);color:#000;text-decoration:none}
+.bg-grid{position:fixed;inset:0;z-index:-1;pointer-events:none;background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);background-size:56px 56px;opacity:.35;mask-image:radial-gradient(ellipse 80% 60% at 50% 0%,#000 40%,transparent 75%)}
+/* ===== docs polish (emerald, no legacy blues) ===== */
+.docs-body h2{scroll-margin-top:96px}
+.docs-link.active{background:color-mix(in srgb,var(--accent) 8%,transparent)}
+@media(max-width:860px){
+  header.site-nav{display:block;position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--border);padding:0}
+  .nav-inner{flex-wrap:wrap;padding:12px 20px}
+  .nav-links .nav-cta{margin:0}
+}
+@media(max-width:600px){.nav-links{display:none}}
+@media (prefers-reduced-motion: reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}.bg-grid{display:none}}
+</style>
 </head>
 <body>
-<a class="skip" href="#main">Skip to content</a>
-<header class="site-header">
-  <div class="container header-inner">
-    <a class="logo" href="../index.html"><span class="logo-x">X</span>OMNI</a>
-    <nav class="site-nav" id="site-nav" aria-label="Primary">
-      <a href="../index.html" class="nav-link" data-nav="index">Home</a>
-      <a href="install.html" class="nav-link" data-nav="install">Install</a>
-      <a href="byo-provider.html" class="nav-link" data-nav="byo">BYO Provider</a>
-      <a href="sponsorship.html" class="nav-link" data-nav="sponsorship">Sponsorship</a>
-      <a href="faq.html" class="nav-link" data-nav="faq">FAQ</a>
-      <a href="security.html" class="nav-link" data-nav="security">Security</a>
-      <a href="../skills.html" class="nav-link" data-nav="skills">Skills</a>
-      <a class="nav-cta" href="https://github.com/painbaba/xomni" target="_blank" rel="noopener">GitHub ↗</a>
+<a class="skip-link" href="#main">Skip to content</a>
+<div class="bg-grid" aria-hidden="true"></div>
+<header class="site-nav" id="siteNav">
+  <div class="nav-inner">
+    <a class="wordmark" href="../index.html">XOMNI<span>.</span></a>
+    <nav class="nav-links" aria-label="Primary">
+      <a href="../index.html">Home</a>
+      <a href="../skills.html">Skills</a>
+      <a href="../mcp.html">MCP Catalog</a>
+      <a href="../docs/install.html" aria-current="page">Docs</a>
+      <a href="../docs/sponsorship.html">Sponsorship</a>
+      <a href="https://github.com/painbaba/xomni">GitHub</a>
+      <a class="nav-cta btn-primary" href="../docs/install.html">Install</a>
     </nav>
-    <button class="nav-toggle" id="nav-toggle" aria-expanded="false" aria-controls="site-nav" aria-label="Toggle navigation">
-      <span></span><span></span><span></span>
-    </button>
   </div>
 </header>
 
@@ -48,7 +89,7 @@
       <p class="lead">Quick answers to the questions people ask most.</p>
 
       <h2 id="what">What is XOMNI?</h2>
-      <p>XOMNI is a composed agent: the strengths of seven proven agents — Hermes, OpenCode, jcode, Codex, Aider, Goose, and OpenClaw — ported in as plugins and hosted on one core. It ships with 14 plugins and a pool of 25 verified free models. The philosophy is <em>compose, don't merge</em>: pick the strengths you want, skip the rest.</p>
+      <p>XOMNI is a composed agent: the strengths of seven proven agents — Hermes, OpenCode, jcode, Codex, Aider, Goose, and OpenClaw — ported in as plugins and hosted on one core. It ships with 16 plugins and a pool of 25 verified free models. The philosophy is <em>compose, don't merge</em>: pick the strengths you want, skip the rest.</p>
 
       <h2 id="free">Are the 25 models really free?</h2>
       <p>Yes. The pool is populated from the <span class="mono">opencode.ai/zen/go/v1</span> endpoint and every model is verified before it's used. There is no billing and no hidden tier. XOMNI re-verifies the pool on a schedule and drops anything that stops working.</p>

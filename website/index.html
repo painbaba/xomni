@@ -5,6 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="description" content="XOMNI — one agent. every feature. every free model. Seven open-source coding agents composed on one host, with a sponsorship engine that pays you for your installs.">
 <meta name="theme-color" content="#050607">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="XOMNI">
+<meta property="og:title" content="XOMNI — one agent. every feature. every free model.">
+<meta property="og:description" content="XOMNI — one agent. every feature. every free model. Seven open-source coding agents composed on one host, with a sponsorship engine that pays you for your installs.">
+<meta property="og:url" content="https://painbaba.github.io/xomni/">
+<meta property="og:image" content="https://painbaba.github.io/xomni/favicon.svg">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:site" content="@xomni">
 <title>XOMNI — one agent. every feature. every free model.</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23050607'/%3E%3Cpath d='M7 8l9 8-9 8M17 8l9 8-9 8' stroke='%2300E5A0' stroke-width='3' stroke-linecap='round' fill='none'/%3E%3C/svg%3E">
 <style>
@@ -170,7 +178,7 @@ footer.site-footer{border-top:1px solid var(--border);padding:40px 24px;margin-t
     <div class="stat"><strong class="num" data-count="16">0</strong><span>plugins shipped</span></div>
     <div class="stat"><strong class="num" data-count="170">0</strong><span>skills</span></div>
     <div class="stat"><strong class="num" data-count="25">0</strong><span>verified free models</span></div>
-    <div class="stat"><strong class="num" data-count="386">0</strong><span>tests passing</span></div>
+    <div class="stat"><strong class="num" data-count="603">0</strong><span>tests passing</span></div>
     <div class="stat"><strong class="num" data-count="42">0</strong><span>domains</span></div>
   </section>
   <section class="block reveal" id="compose">
@@ -281,10 +289,10 @@ footer.site-footer{border-top:1px solid var(--border);padding:40px 24px;margin-t
   function boot(){
     var cmd=qs('#typedCmd'),lines=qs('#termLines');
     var text='hermes run --compose';
-    if(RM){cmd.textContent=text;lines.innerHTML='<div class="out">▸ 7 agents online — Hermes host core</div><div class="out">▸ 16 plugins loaded — <b>0 hooks in hot path</b></div><div class="out">▸ 170 skills indexed across 42 domains</div><div class="out">▸ 25 free models verified — <b>latency 2–26s, honest</b></div><div class="out ok">▸ 386/386 tests passing</div>';return}
+    if(RM){cmd.textContent=text;lines.innerHTML='<div class="out">▸ 7 agents online — Hermes host core</div><div class="out">▸ 16 plugins loaded — <b>0 hooks in hot path</b></div><div class="out">▸ 170 skills indexed across 42 domains</div><div class="out">▸ 25 free models verified — <b>latency 2–26s, honest</b></div><div class="out ok">▸ 603/603 tests passing</div>';return}
     var i=0;
     function type(){if(i<=text.length){cmd.textContent=text.slice(0,i);i++;setTimeout(type,60+Math.random()*50)}else{enter()}}
-    function enter(){var linesArr=['<div class="out">▸ 7 agents online — Hermes host core</div>','<div class="out">▸ 16 plugins loaded — <b>0 hooks in hot path</b></div>','<div class="out">▸ 170 skills indexed across 42 domains</div>','<div class="out">▸ 25 free models verified — <b>latency 2–26s, honest</b></div>','<div class="out ok">▸ 386/386 tests passing</div>'];
+    function enter(){var linesArr=['<div class="out">▸ 7 agents online — Hermes host core</div>','<div class="out">▸ 16 plugins loaded — <b>0 hooks in hot path</b></div>','<div class="out">▸ 170 skills indexed across 42 domains</div>','<div class="out">▸ 25 free models verified — <b>latency 2–26s, honest</b></div>','<div class="out ok">▸ 603/603 tests passing</div>'];
       var k=0;function line(){if(k<linesArr.length){lines.innerHTML+=linesArr[k];k++;setTimeout(line,90)}}
       setTimeout(line,120);
     }

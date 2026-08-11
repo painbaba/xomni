@@ -2,7 +2,8 @@
 vendor/
 
 # scratch (benchmarks, subagent temp work — never committed)
-.bench/
+.bench/*
+!.bench/run_all_tests.sh
 .tmp/
 tmp/
 work/

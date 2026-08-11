@@ -2,7 +2,7 @@
 REM ============================================================
 REM  XOMNI launcher (Windows cmd)
 REM  One agent. Every feature. Every free model.
-REM  Starts the Hermes host with all 14 XOMNI plugins loaded.
+REM  Starts the Hermes host with all 16 XOMNI plugins loaded.
 REM  Usage:  run.cmd                (interactive chat)
 REM          run.cmd chat -q "..."  (one-shot)
 REM          run.cmd --continue     (resume last session)
@@ -13,5 +13,5 @@ REM models work with zero extra installs (never blocks chat).
 if exist "%~dp0ollama\start-ollama.ps1" (
     powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0ollama\start-ollama.ps1" >nul 2>&1
 )
-echo [XOMNI] starting host + 14 plugins...
+echo [XOMNI] starting host + 16 plugins...
 hermes %*

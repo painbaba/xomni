@@ -102,6 +102,123 @@ class ProbeServerTests(unittest.TestCase):
         self.assertIn("empty", r["error"])
 
 
+class ProbeParsingEdgeTests(unittest.TestCase):
+    """Edge-case payload parsing for Ollama / LM Studio / OpenAI /models responses."""
+
+    def test_extract_model_ids_skips_invalid_rows(self):
+        payload = {"data": [{"id": "a"}, {"name": "no-id"}, "b", 42, {"id": ""}, None]}
+        self.assertEqual(core._extract_model_ids(payload), ["a", "b"])
+
+    def test_extract_model_ids_mixed_shapes(self):
+        self.assertEqual(core._extract_model_ids(None), [])
+        self.assertEqual(core._extract_model_ids({"data": []}), [])
+        self.assertEqual(core._extract_model_ids("nope"), [])
+        self.assertEqual(core._extract_model_ids({"data": "not-a-list"}), [])
+        self.assertEqual(core._extract_model_ids({"models": [{"id": "x"}]}), ["x"])
+
+    def test_probe_invalid_json_reports_error(self):
+        fake = mock.MagicMock()
+        fake.status = 200
+        fake.read.return_value = b"{broken json"
+        with mock.patch.object(core, "urlopen") as m:
+            m.return_value.__enter__.return_value = fake
+            r = core.probe_server("http://127.0.0.1:11434/v1")
+        self.assertFalse(r["ok"])
+        self.assertEqual(r["models"], [])
+        self.assertTrue(r["error"])
+
+    def test_probe_json_string_payload_ok_with_no_models(self):
+        # A quoted JSON string is valid JSON: parses, but yields no model ids.
+        fake = _fake_resp(200, "just a string")
+        with mock.patch.object(core, "urlopen") as m:
+            m.return_value.__enter__.return_value = fake
+            r = core.probe_server("http://127.0.0.1:11434/v1")
+        self.assertTrue(r["ok"])
+        self.assertEqual(r["models"], [])
+
+    def test_probe_lmstudio_payload_shape(self):
+        # LM Studio returns {"data": [{"id": "...", "object": "model", ...}]}
+        fake = _fake_resp(200, {"data": [{"id": "gemma3-4b", "object": "model"}, {"id": "qwen2.5-7b"}]})
+        with mock.patch.object(core, "urlopen") as m:
+            m.return_value.__enter__.return_value = fake
+            r = core.probe_server(core.LM_STUDIO_BASE_URL)
+        self.assertEqual(r["models"], ["gemma3-4b", "qwen2.5-7b"])
+
+    def test_probe_ollama_payload_shape(self):
+        # Ollama /v1/models returns {"object":"list","data":[...]}
+        fake = _fake_resp(200, {"object": "list", "data": [{"id": "llama3.2:3b"}]})
+        with mock.patch.object(core, "urlopen") as m:
+            m.return_value.__enter__.return_value = fake
+            r = core.probe_server(core.OLLAMA_BASE_URL)
+        self.assertEqual(r["models"], ["llama3.2:3b"])
+
+
+class DetectServersExtraTests(unittest.TestCase):
+    """detect_servers with extras, timeouts and degenerate inputs."""
+
+    def test_detect_servers_with_custom_extra(self):
+        fake = _fake_resp(200, {"data": [{"id": "custom-model"}]})
+        extras = [{"id": "vllm", "name": "vLLM", "base_url": "http://127.0.0.1:8000/v1"}]
+        with mock.patch.object(core, "urlopen") as m:
+            m.return_value.__enter__.return_value = fake
+            results = core.detect_servers(defaults=extras)
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0]["server_id"], "vllm")
+        self.assertEqual(results[0]["name"], "vLLM")
+        self.assertTrue(results[0]["ok"])
+
+    def test_detect_servers_forwards_timeout(self):
+        fake = _fake_resp(200, {"data": []})
+        with mock.patch.object(core, "urlopen") as m:
+            m.return_value.__enter__.return_value = fake
+            core.detect_servers(defaults=[{"id": "x", "base_url": "http://x/v1"}], timeout=1.5)
+        self.assertEqual(m.call_args.kwargs.get("timeout"), 1.5)
+
+    def test_detect_servers_empty_base_url_flagged_without_probe(self):
+        with mock.patch.object(core, "urlopen") as m:
+            results = core.detect_servers(defaults=[{"id": "bogus", "name": "Bogus", "base_url": "  "}])
+        m.assert_not_called()  # probe_server short-circuits on empty base
+        self.assertFalse(results[0]["ok"])
+        self.assertIn("empty", results[0]["error"])
+
+
+class ScanTextTests(unittest.TestCase):
+    """/localmodels scan output format (scan_text)."""
+
+    @staticmethod
+    def _result(**kw):
+        r = {"server_id": "x", "name": "X", "base_url": "http://x/v1",
+             "ok": False, "http": None, "models": [], "error": None}
+        r.update(kw)
+        return r
+
+    def test_scan_text_up_down_format(self):
+        results = [
+            self._result(server_id="ollama", name="Ollama", base_url=core.OLLAMA_BASE_URL,
+                         ok=True, http=200, models=["llama3.2"]),
+            self._result(server_id="lmstudio", name="LM Studio", base_url=core.LM_STUDIO_BASE_URL,
+                         ok=False, error="Connection refused"),
+        ]
+        t = core.scan_text(results)
+        self.assertIn("1 of 2", t)
+        self.assertIn("UP    ollama", t)
+        self.assertIn("models: llama3.2", t)
+        self.assertIn("DOWN  lmstudio", t)
+        self.assertIn("Connection refused", t)
+        self.assertIn("usable: ollama", t)
+
+    def test_scan_text_no_models_reported_placeholder(self):
+        results = [self._result(server_id="ollama", ok=True, http=200, models=[])]
+        t = core.scan_text(results)
+        self.assertIn("(no models reported)", t)
+
+    def test_scan_text_all_down_no_usable_line(self):
+        results = [self._result(server_id="ollama", ok=False, error="refused")]
+        t = core.scan_text(results)
+        self.assertIn("0 of 1", t)
+        self.assertNotIn("usable:", t)
+
+
 class DetectServersTests(unittest.TestCase):
     def _side(self, fake):
         cm = mock.MagicMock()
@@ -177,6 +294,59 @@ class ConfigGenTests(unittest.TestCase):
         self.assertIn('"baseURL": "http://127.0.0.1:11434/v1"', text)
 
 
+class ConfigGenEdgeTests(unittest.TestCase):
+    """Snippet generators: placeholders, defaults, JSON validity, custom servers."""
+
+    def test_hermes_block_no_model_placeholder(self):
+        block = core.hermes_provider_block(ConfigGenTests.OLLAMA)
+        self.assertIn("# model: <id from /localmodels scan>", block)
+
+    def test_hermes_block_empty_model_list_placeholder(self):
+        block = core.hermes_provider_block(ConfigGenTests.OLLAMA, model_ids=[])
+        self.assertIn("# model: <id from /localmodels scan>", block)
+
+    def test_hermes_block_default_id_local(self):
+        block = core.hermes_provider_block({"name": "Custom", "base_url": "http://127.0.0.1:8000/v1"})
+        self.assertIn("provider: local", block)
+        self.assertIn("Custom", block)
+        self.assertIn("http://127.0.0.1:8000/v1", block)
+
+    def test_opencode_config_placeholder_model_when_none(self):
+        parsed = json.loads(core.opencode_config(ConfigGenTests.OLLAMA))
+        prov = parsed["provider"]["ollama"]
+        self.assertEqual(list(prov["models"].keys()), ["<model-id>"])
+        self.assertEqual(prov["options"]["apiKey"], "local")
+
+    def test_opencode_config_model_names_match_ids(self):
+        parsed = json.loads(core.opencode_config(ConfigGenTests.OLLAMA, model_ids=["a", "b"]))
+        models = parsed["provider"]["ollama"]["models"]
+        self.assertEqual(models["a"]["name"], "a")
+        self.assertEqual(models["b"]["name"], "b")
+
+    def test_opencode_config_custom_server_id(self):
+        server = {"id": "vllm", "name": "vLLM", "base_url": "http://127.0.0.1:8000/v1"}
+        parsed = json.loads(core.opencode_config(server, model_ids=["deepseek-r1"]))
+        prov = parsed["provider"]["vllm"]
+        self.assertEqual(prov["name"], "vLLM")
+        self.assertEqual(prov["options"]["baseURL"], "http://127.0.0.1:8000/v1")
+
+    def test_ollama_and_opencode_configs_identical_wiring(self):
+        self.assertEqual(
+            core.ollama_config(ConfigGenTests.LMSTUDIO, model_ids=["x"]),
+            core.opencode_config(ConfigGenTests.LMSTUDIO, model_ids=["x"]),
+        )
+
+    def test_config_text_includes_all_three_sections(self):
+        text = core.config_text(ConfigGenTests.OLLAMA, model_ids=["llama3.2"])
+        self.assertIn("local-models: Ollama", text)
+        self.assertIn("opencode.json provider block", text)
+        self.assertIn("canonical Ollama-shaped opencode block", text)
+        # the embedded opencode JSON block must still parse
+        section = text.split("opencode.json provider block:")[1].split("# canonical")[0].strip()
+        parsed = json.loads(section)
+        self.assertEqual(parsed["provider"]["ollama"]["options"]["baseURL"], core.OLLAMA_BASE_URL)
+
+
 class ServersJsonTests(unittest.TestCase):
     def test_round_trip(self):
         with tempfile.TemporaryDirectory() as d:
@@ -201,6 +371,27 @@ class ServersJsonTests(unittest.TestCase):
         a[0]["base_url"] = "http://evil.invalid/v1"
         b = core.default_servers()
         self.assertEqual(b[0]["base_url"], core.OLLAMA_BASE_URL)
+
+    def test_load_servers_dict_format(self):
+        with tempfile.TemporaryDirectory() as d:
+            p = os.path.join(d, "servers.json")
+            with open(p, "w", encoding="utf-8") as f:
+                json.dump({"servers": [{"id": "vllm", "base_url": "http://127.0.0.1:8000/v1"}]}, f)
+            self.assertEqual(core.load_servers(path=p)[0]["id"], "vllm")
+
+    def test_load_servers_unknown_shape_returns_empty(self):
+        with tempfile.TemporaryDirectory() as d:
+            p = os.path.join(d, "servers.json")
+            with open(p, "w", encoding="utf-8") as f:
+                json.dump({"nope": 1}, f)
+            self.assertEqual(core.load_servers(path=p), [])
+
+    def test_save_servers_creates_parent_dirs(self):
+        with tempfile.TemporaryDirectory() as d:
+            p = os.path.join(d, "nested", "deep", "servers.json")
+            core.save_servers([{"id": "x"}], path=p)
+            self.assertTrue(os.path.isfile(p))
+            self.assertEqual(core.load_servers(path=p), [{"id": "x"}])
 
 
 class WiringTests(unittest.TestCase):
@@ -246,6 +437,20 @@ class WiringTests(unittest.TestCase):
         self.assertIn("1 of 2", out)
         self.assertIn("llama3.2", out)
         self.assertIn("DOWN", out)
+
+    def test_command_scan_output_format(self):
+        canned = [
+            {"server_id": "ollama", "name": "Ollama", "base_url": core.OLLAMA_BASE_URL,
+             "ok": True, "http": 200, "models": ["llama3.2"], "error": None},
+            {"server_id": "lmstudio", "name": "LM Studio", "base_url": core.LM_STUDIO_BASE_URL,
+             "ok": False, "http": None, "models": [], "error": "refused"},
+        ]
+        with mock.patch.object(self.plugin.core, "detect_servers", return_value=canned):
+            out = self.plugin._handle_localmodels("scan")
+        self.assertIn("UP    ollama", out)
+        self.assertIn("DOWN  lmstudio", out)
+        self.assertIn("usable: ollama", out)
+        self.assertIn("models: llama3.2", out)
 
     def test_tool_scan_routing(self):
         canned = [

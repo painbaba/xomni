@@ -150,7 +150,7 @@ def recommend(role: str | None = None) -> str:
 # ---------------------------------------------------------------------------
 
 HERMES_PROVIDER_BLOCK = """\
-# --- unified-agent provider-pool: free models (opencode Zen gateway) ---
+# --- xomni provider-pool: free models (opencode Zen gateway) ---
 # Place under `model:` in config.yaml. Primary is the gateway; the fallback
 # chain activates automatically when the primary is unavailable.
 #   provider: opencode-go

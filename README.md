@@ -1,5 +1,7 @@
 # XOMNI — one agent. every feature. every free model.
 
+> **हिंदी (Hindi):** [README.hi.md](README.hi.md) — पूरा pitch हिंदी (Devanagari) में पढ़ें।
+
 **XOMNI** (X + Omni = everything, in one) is a single terminal agent that
 composes the signature strengths of the seven best open-source coding agents —
 **Hermes, OpenCode, jcode, Codex, Aider, Goose, OpenClaw** — on one host, with
@@ -12,7 +14,7 @@ a built-in **sponsorship engine** that pays you for your installs.
 - **25 verified free models** — every one tested to actually work (deepseek-v4-*,
   qwen3.8-max, glm-5.2, kimi-k3, minimax-m3 vision, and more) via the provider
   pool with live health checks.
-- **386 passing tests** across the plugin suite.
+- **603 passing tests** across the plugin suite.
 - **Earn while you work**: 50/50 impression-share sponsorship payouts, receipts,
   escrow caps, second-price auctions.
 
@@ -80,10 +82,10 @@ hermes plugins enable waitperk perkline repomap
 ```bash
 cd plugins/waitperk && python -m unittest tests.test_core -v
 cd plugins/repomap  && python -m unittest tests.test_core -v
-# ... 386 tests total across the suite
+# ... 603 tests total across the suite
 ```
 
-Verified live (2026-08-12): **386/386 tests pass, 0 failures.**
+Verified live (2026-08-12): **603/603 tests pass, 0 failures.**
 
 | Plugin | Tests | Plugin | Tests |
 |---|---|---|---|

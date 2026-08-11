@@ -75,9 +75,12 @@ def _slice_row(line, starts, columns):
     row = {}
     n = len(line)
     for j, col in enumerate(columns):
-        start = starts[col]
+        start = starts.get(col)
+        if start is None:
+            row[col] = ""  # column absent from the header — never invent data
+            continue
         if j + 1 < len(columns):
-            end = starts[columns[j + 1]]
+            end = starts.get(columns[j + 1], n)
         else:
             end = n
         row[col] = line[start:end].strip()

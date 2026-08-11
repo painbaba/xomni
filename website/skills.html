@@ -3,8 +3,16 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>XOMNI SKILLS — 170 Capabilities</title>
-<meta name="description" content="The full XOMNI skills catalog: 170 skills across 42 domains.">
+<title>XOMNI SKILLS — 180 Curated Capabilities</title>
+<meta name="description" content="The curated XOMNI skills catalog: 180 ranked skills across 11 domains (scores 9.1–10.2).">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="XOMNI">
+<meta property="og:title" content="XOMNI SKILLS — 180 Curated Capabilities">
+<meta property="og:description" content="The curated XOMNI skills catalog: 180 ranked skills across 11 domains (scores 9.1–10.2).">
+<meta property="og:url" content="https://painbaba.github.io/xomni/skills.html">
+<meta property="og:image" content="https://painbaba.github.io/xomni/favicon.svg">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:site" content="@xomni">
 <style>
 :root{--bg:#0b0f1a;--panel:#121826;--card:#161e30;--border:#26304a;--text:#e6ebf5;--muted:#8b96b0;--accent:#6ea8fe;--accent2:#c084fc;}
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -21,9 +29,14 @@ input:focus,select:focus{border-color:var(--accent);}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;}
 .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px 20px;display:flex;flex-direction:column;gap:8px;transition:transform .12s ease,border-color .12s ease;}
 .card:hover{transform:translateY(-2px);border-color:var(--accent);}
+.card .meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
 .card h3{font-size:1.05rem;word-break:break-word;}
 .card .desc{color:var(--muted);font-size:.92rem;flex:1;}
-.card .tag{align-self:flex-start;font-size:.72rem;text-transform:uppercase;letter-spacing:.8px;color:var(--accent2);border:1px solid var(--border);border-radius:999px;padding:3px 10px;}
+.chip{font-size:.72rem;border-radius:999px;padding:3px 10px;border:1px solid var(--border);}
+.chip.rank{color:var(--accent);font-weight:600;}
+.chip.score{color:var(--accent2);font-weight:600;}
+.chip.tag{align-self:flex-start;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);}
+.chip.source{color:var(--muted);text-transform:none;letter-spacing:0;}
 .empty{color:var(--muted);padding:40px;text-align:center;}
 footer{margin-top:48px;color:var(--muted);font-size:.85rem;text-align:center;}
 </style>
@@ -32,1043 +45,1643 @@ footer{margin-top:48px;color:var(--muted);font-size:.85rem;text-align:center;}
 <div class="wrap">
   <header>
     <h1><span class="x">XOMNI</span> SKILLS</h1>
-    <p>The complete XOMNI capability catalog — 170 skills across 42 domains, generated from <code>skills/</code> by <code>scripts/gen_skills.py</code>.</p>
+    <p>The curated XOMNI capability catalog — 180 ranked skills across 11 domains (usefulness score 9.1–10.2), generated from <code>data/curated-skills.json</code> by <code>scripts/gen_skills.py</code>.</p>
   </header>
 
   <div class="controls">
-    <input id="search" type="search" placeholder="Search skills by name, description, or tag…" autocomplete="off">
+    <input id="search" type="search" placeholder="Search skills by name, description, source, or tag…" autocomplete="off">
     <select id="domain">
       <option value="">All domains</option>
-      <option value="agents-sdk">agents-sdk</option><option value="apple">apple</option><option value="autonomous-ai-agents">autonomous-ai-agents</option><option value="cloudflare">cloudflare</option><option value="cloudflare-email-service">cloudflare-email-service</option><option value="cloudflare-one">cloudflare-one</option><option value="cloudflare-one-migrations">cloudflare-one-migrations</option><option value="creative">creative</option><option value="data-science">data-science</option><option value="devops">devops</option><option value="durable-objects">durable-objects</option><option value="email">email</option><option value="faceless-explainer">faceless-explainer</option><option value="github">github</option><option value="hyperframes">hyperframes</option><option value="hyperframes-animation">hyperframes-animation</option><option value="hyperframes-cli">hyperframes-cli</option><option value="hyperframes-core">hyperframes-core</option><option value="hyperframes-creative">hyperframes-creative</option><option value="hyperframes-keyframes">hyperframes-keyframes</option><option value="hyperframes-registry">hyperframes-registry</option><option value="media">media</option><option value="media-use">media-use</option><option value="mlops">mlops</option><option value="mlops-inference">mlops-inference</option><option value="mobile">mobile</option><option value="motion-graphics">motion-graphics</option><option value="note-taking">note-taking</option><option value="productivity">productivity</option><option value="research">research</option><option value="sandbox-sdk">sandbox-sdk</option><option value="scraping">scraping</option><option value="scraping-for-ai-knowledge-base">scraping-for-ai-knowledge-base</option><option value="security">security</option><option value="smart-home">smart-home</option><option value="social-media">social-media</option><option value="software-development">software-development</option><option value="turnstile-spin">turnstile-spin</option><option value="web-perf">web-perf</option><option value="workers-best-practices">workers-best-practices</option><option value="wrangler">wrangler</option><option value="yuanbao">yuanbao</option>
+      <option value="agent-tooling">agent-tooling</option><option value="cloud">cloud</option><option value="coding">coding</option><option value="creative">creative</option><option value="data">data</option><option value="media">media</option><option value="misc">misc</option><option value="ops">ops</option><option value="productivity">productivity</option><option value="research">research</option><option value="security">security</option>
     </select>
   </div>
 
   <div id="count"></div>
   <div id="grid" class="grid"></div>
-  <footer>XOMNI · data also available at <a href="data/skills.json">data/skills.json</a></footer>
+  <footer>XOMNI · data also available at <a href="data/skills.json">data/skills.json</a> · ranked by the curation pipeline</footer>
 </div>
 
 <script>
 const SKILLS = [
  {
-  "name": "agents-sdk",
-  "category": "agents-sdk",
-  "description": "Build AI agents on Cloudflare Workers using the Agents SDK. Load when creating stateful agents, durable workflows, real-time WebSocket apps, scheduled tasks, MCP servers, chat applications, voice agents, or browser automation. Covers Agent class, state management, callable RPC, Workflows, durable execution, queues, retries, observability, and React hooks. Biases towards retrieval from Cloudflare docs over pre-trained knowledge.",
-  "dir": "agents-sdk"
- },
- {
-  "name": "apple-notes",
-  "category": "apple",
-  "description": "Manage Apple Notes via memo CLI: create, search, edit.",
-  "dir": "apple/apple-notes"
- },
- {
-  "name": "apple-reminders",
-  "category": "apple",
-  "description": "Apple Reminders via remindctl: add, list, complete.",
-  "dir": "apple/apple-reminders"
- },
- {
-  "name": "findmy",
-  "category": "apple",
-  "description": "Track Apple devices/AirTags via FindMy.app on macOS.",
-  "dir": "apple/findmy"
- },
- {
-  "name": "imessage",
-  "category": "apple",
-  "description": "Send and receive iMessages/SMS via the imsg CLI on macOS.",
-  "dir": "apple/imessage"
- },
- {
-  "name": "macos-computer-use",
-  "category": "apple",
-  "description": "Drive the macOS desktop in the background — screenshots, mouse, keyboard,\nscroll, drag — without stealing the user's cursor, keyboard focus, or\nSpace. Works with any tool-capable model. Load this skill whenever the\n`computer_use` tool is available.",
-  "dir": "apple/macos-computer-use"
- },
- {
-  "name": "agent-battle-lab",
-  "category": "autonomous-ai-agents",
-  "description": "Run local agent-vs-agent battles (GHOST vs DEFENDERS).",
-  "dir": "autonomous-ai-agents/agent-battle-lab"
- },
- {
-  "name": "agent-civilization-simulation",
-  "category": "autonomous-ai-agents",
-  "description": "Agent civilization sims with citizens, wallets, councils",
-  "dir": "autonomous-ai-agents/agent-civilization-simulation"
- },
- {
-  "name": "agent-earning-swarm",
-  "category": "autonomous-ai-agents",
-  "description": "Operate the SurvivalSwarm earning-agent swarm (24/7 daemon).",
-  "dir": "autonomous-ai-agents/agent-earning-swarm"
- },
- {
-  "name": "agent-experiment-labs",
-  "category": "autonomous-ai-agents",
-  "description": "Sandboxed unconstrained-agent labs and live battles.",
-  "dir": "autonomous-ai-agents/agent-experiment-labs"
- },
- {
-  "name": "agent-framework-composition",
-  "category": "autonomous-ai-agents",
-  "description": "When asked to merge coding agents or build a tool prototype.",
-  "dir": "autonomous-ai-agents/agent-framework-composition"
- },
- {
-  "name": "anti-block-browsing",
-  "category": "autonomous-ai-agents",
-  "description": "Browse blocked sites: Camoufox, Nanobrowser, OpenCLI.",
-  "dir": "autonomous-ai-agents/anti-block-browsing"
- },
- {
-  "name": "autonomous-agent-economy",
-  "category": "autonomous-ai-agents",
-  "description": "Use when building agent swarms that must earn money or die.",
-  "dir": "autonomous-ai-agents/autonomous-agent-economy"
- },
- {
-  "name": "camofox-browser-ops",
-  "category": "autonomous-ai-agents",
-  "description": "Use when running or fixing the Camofox browser server.",
-  "dir": "autonomous-ai-agents/camofox-browser-ops"
- },
- {
-  "name": "camofox-server-ops",
-  "category": "autonomous-ai-agents",
-  "description": "Operate the Camofox anti-detection browser server.",
-  "dir": "autonomous-ai-agents/camofox-server-ops"
- },
- {
-  "name": "claude-code",
-  "category": "autonomous-ai-agents",
-  "description": "Delegate coding to Claude Code CLI (features, PRs).",
-  "dir": "autonomous-ai-agents/claude-code"
- },
- {
-  "name": "codex",
-  "category": "autonomous-ai-agents",
-  "description": "Delegate coding to OpenAI Codex CLI (features, PRs).",
-  "dir": "autonomous-ai-agents/codex"
- },
- {
-  "name": "computer-use",
-  "category": "autonomous-ai-agents",
-  "description": "Drive the user's desktop in the background — clicking, typing,\nscrolling, dragging — without stealing the cursor, keyboard focus,\nor switching virtual desktops / Spaces. Cross-platform: macOS,\nWindows, Linux. Works with any tool-capable model. Load this skill\nwhenever the `computer_use` tool is available.",
-  "dir": "autonomous-ai-agents/computer-use"
- },
- {
-  "name": "gemini-browser-control",
-  "category": "autonomous-ai-agents",
-  "description": "Manus-style vision-driven browser control: Camoufox (anti-detect) + Gemini 3.6 flash as eyes, 6-key rotation. Use when sites block DOM automation or a task needs visual reasoning over a page.",
-  "dir": "autonomous-ai-agents/gemini-browser-control"
- },
- {
-  "name": "hermes-agent",
-  "category": "autonomous-ai-agents",
-  "description": "Use, configure, theme, extend, and orchestrate Hermes Agent.",
-  "dir": "autonomous-ai-agents/hermes-agent"
- },
- {
-  "name": "hermes-gateway-pairing",
-  "category": "autonomous-ai-agents",
-  "description": "Use when pairing a Hermes gateway QR (WhatsApp/Baileys).",
-  "dir": "autonomous-ai-agents/hermes-gateway-pairing"
- },
- {
-  "name": "hermes-messaging-pairing",
-  "category": "autonomous-ai-agents",
-  "description": "Use when pairing Hermes gateway bridges (WhatsApp QR).",
-  "dir": "autonomous-ai-agents/hermes-messaging-pairing"
- },
- {
-  "name": "hermes-plugin-development",
-  "category": "autonomous-ai-agents",
-  "description": "Use when building Hermes plugins: slash commands, hooks.",
-  "dir": "autonomous-ai-agents/hermes-plugin-development"
- },
- {
-  "name": "hermes-plugin-swarm",
-  "category": "autonomous-ai-agents",
-  "description": "Build multiple Hermes plugins via parallel agent swarms.",
-  "dir": "autonomous-ai-agents/hermes-plugin-swarm"
- },
- {
-  "name": "hermes-session-recovery",
-  "category": "autonomous-ai-agents",
-  "description": "Use when session_search 0-hits: query state.db directly.",
-  "dir": "autonomous-ai-agents/hermes-session-recovery"
- },
- {
-  "name": "hermes-whatsapp-pairing",
-  "category": "autonomous-ai-agents",
-  "description": "Pair Hermes to personal WhatsApp via Baileys bridge QR.",
-  "dir": "autonomous-ai-agents/hermes-whatsapp-pairing"
- },
- {
-  "name": "mcp-server-wiring",
-  "category": "autonomous-ai-agents",
-  "description": "Use when wiring MCP servers into agents (Hermes, Claude).",
-  "dir": "autonomous-ai-agents/mcp-server-wiring"
- },
- {
-  "name": "opencode",
-  "category": "autonomous-ai-agents",
-  "description": "Delegate coding to OpenCode CLI (features, PR review).",
-  "dir": "autonomous-ai-agents/opencode"
- },
- {
-  "name": "parallel-implementation-swarms",
-  "category": "autonomous-ai-agents",
-  "description": "Run parallel implementation swarms with a verification gate.",
-  "dir": "autonomous-ai-agents/parallel-implementation-swarms"
- },
- {
-  "name": "cloudflare",
-  "category": "cloudflare",
-  "description": "Comprehensive Cloudflare platform skill covering Workers, Pages, storage (KV, D1, R2), AI (Workers AI, Vectorize, Agents SDK), feature flags (Flagship), networking (Tunnel, Spectrum), security (WAF, DDoS), and infrastructure-as-code (Terraform, Pulumi). Use for any Cloudflare development task. Biases towards retrieval from Cloudflare docs over pre-trained knowledge.",
-  "dir": "cloudflare"
- },
- {
-  "name": "cloudflare-email-service",
-  "category": "cloudflare-email-service",
-  "description": "Send and receive transactional emails with Cloudflare Email Service (Email Sending + Email Routing). Use when building email sending (Workers binding or REST API), email routing, Agents SDK email handling, or integrating email into any app — Workers, Node.js, Python, Go, etc. Also use for email deliverability, SPF/DKIM/DMARC, wrangler email setup, MCP email tools, or when a coding agent needs to send emails. Even for simple requests like \"add email to my Worker\" — this skill has critical config details.",
-  "dir": "cloudflare-email-service"
- },
- {
-  "name": "cloudflare-one",
-  "category": "cloudflare-one",
-  "description": "Guides Cloudflare One Zero Trust and SASE work across Access, Gateway, WARP, Tunnel, Cloudflare WAN, DLP, CASB, device posture, and identity. Use when designing, configuring, troubleshooting, or reviewing Cloudflare One deployments. Retrieval-first: use current Cloudflare docs/API schemas instead of embedded product docs.",
-  "dir": "cloudflare-one"
- },
- {
-  "name": "cloudflare-one-migrations",
-  "category": "cloudflare-one-migrations",
-  "description": "Plans migrations from Zscaler ZIA/ZPA, Palo Alto, legacy VPN, SWG, or SASE stacks to Cloudflare One. Use for migration assessments, policy mapping, rollout plans, and parity/gap analysis.",
-  "dir": "cloudflare-one-migrations"
- },
- {
-  "name": "architecture-diagram",
-  "category": "creative",
-  "description": "Dark-themed SVG architecture/cloud/infra diagrams as HTML.",
-  "dir": "creative/architecture-diagram"
- },
- {
-  "name": "ascii-art",
-  "category": "creative",
-  "description": "ASCII art: pyfiglet, cowsay, boxes, image-to-ascii.",
-  "dir": "creative/ascii-art"
- },
- {
-  "name": "ascii-video",
-  "category": "creative",
-  "description": "ASCII video: convert video/audio to colored ASCII MP4/GIF.",
-  "dir": "creative/ascii-video"
- },
- {
-  "name": "baoyu-infographic",
-  "category": "creative",
-  "description": "Infographics: 21 layouts x 21 styles (信息图, 可视化).",
-  "dir": "creative/baoyu-infographic"
- },
- {
-  "name": "claude-design",
-  "category": "creative",
-  "description": "Design one-off HTML artifacts (landing, deck, prototype).",
-  "dir": "creative/claude-design"
- },
- {
-  "name": "comfyui",
-  "category": "creative",
-  "description": "Generate images, video, and audio via diffusion workflows.",
-  "dir": "creative/comfyui"
- },
- {
-  "name": "design-md",
-  "category": "creative",
-  "description": "Author/validate/export Google's DESIGN.md token spec files.",
-  "dir": "creative/design-md"
- },
- {
-  "name": "excalidraw",
-  "category": "creative",
-  "description": "Hand-drawn Excalidraw JSON diagrams (arch, flow, seq).",
-  "dir": "creative/excalidraw"
- },
- {
-  "name": "humanizer",
-  "category": "creative",
-  "description": "Humanize text: strip AI-isms and add real voice.",
-  "dir": "creative/humanizer"
- },
- {
-  "name": "hyperframes-video-pipeline",
-  "category": "creative",
-  "description": "Build HyperFrames videos: promos, explainers, documentaries.",
-  "dir": "creative/hyperframes-video-pipeline"
- },
- {
-  "name": "hyperframes-video-production",
-  "category": "creative",
-  "description": "Use when producing videos with HeyGen HyperFrames.",
-  "dir": "creative/hyperframes-video-production"
- },
- {
-  "name": "manim-video",
-  "category": "creative",
-  "description": "Manim CE animations: 3Blue1Brown math/algo videos.",
-  "dir": "creative/manim-video"
- },
- {
-  "name": "p5js",
-  "category": "creative",
-  "description": "p5.js sketches: gen art, shaders, interactive, 3D.",
-  "dir": "creative/p5js"
- },
- {
-  "name": "persistent-world-fiction",
-  "category": "creative",
-  "description": "Use when writing in-world docs of persistent fiction worlds.",
-  "dir": "creative/persistent-world-fiction"
- },
- {
-  "name": "popular-web-designs",
-  "category": "creative",
-  "description": "54 real design systems (Stripe, Linear, Vercel) as HTML/CSS.",
-  "dir": "creative/popular-web-designs"
- },
- {
-  "name": "pretext",
-  "category": "creative",
-  "description": "Build creative browser demos with DOM-free text layout.",
-  "dir": "creative/pretext"
- },
- {
-  "name": "sketch",
-  "category": "creative",
-  "description": "Throwaway HTML mockups: 2-3 design variants to compare.",
-  "dir": "creative/sketch"
- },
- {
-  "name": "songwriting-and-ai-music",
-  "category": "creative",
-  "description": "Songwriting craft and Suno AI music prompts.",
-  "dir": "creative/songwriting-and-ai-music"
- },
- {
-  "name": "touchdesigner-mcp",
-  "category": "creative",
-  "description": "Control TouchDesigner via twozero MCP.",
-  "dir": "creative/touchdesigner-mcp"
- },
- {
-  "name": "jupyter-live-kernel",
-  "category": "data-science",
-  "description": "Iterative Python via live Jupyter kernel (hamelnb).",
-  "dir": "data-science/jupyter-live-kernel"
- },
- {
-  "name": "git-diff-discipline",
-  "category": "devops",
-  "description": "Use when applying code edits: keep diffs small, reviewed.",
-  "dir": "devops/git-diff-discipline"
- },
- {
-  "name": "kanban-orchestrator",
-  "category": "devops",
-  "description": "Decomposition playbook + anti-temptation rules for an orchestrator profile routing work through Kanban. The \"don't do the work yourself\" rule and the basic lifecycle are auto-injected into every kanban worker's system prompt; this skill is the deeper playbook when you're specifically playing the orchestrator role.",
-  "dir": "devops/kanban-orchestrator"
- },
- {
-  "name": "kanban-worker",
-  "category": "devops",
-  "description": "Pitfalls, examples, and edge cases for Hermes Kanban workers. The lifecycle itself is auto-injected into every worker's system prompt as KANBAN_GUIDANCE (from agent/prompt_builder.py); this skill is what you load when you want deeper detail on specific scenarios.",
-  "dir": "devops/kanban-worker"
- },
- {
-  "name": "windows-app-launch-debugging",
-  "category": "devops",
-  "description": "Use when a Windows app won't open or crashes on launch.",
-  "dir": "devops/windows-app-launch-debugging"
- },
- {
-  "name": "windows-app-troubleshooting",
-  "category": "devops",
-  "description": "Use when a Windows app won't launch or needs OS/VM fixes.",
-  "dir": "devops/windows-app-troubleshooting"
- },
- {
-  "name": "windows-git-bash-interop",
-  "category": "devops",
-  "description": "MSYS path traps when git-bash calls Windows python/node.",
-  "dir": "devops/windows-git-bash-interop"
- },
- {
-  "name": "windows-gitbash-interop",
-  "category": "devops",
-  "description": "Windows git-bash — cygpath, fake lint, GUI pipes.",
-  "dir": "devops/windows-gitbash-interop"
- },
- {
-  "name": "windows-gitbash-terminal",
-  "category": "devops",
-  "description": "Use when git-bash calls Windows python/node from this host.",
-  "dir": "devops/windows-gitbash-terminal"
- },
- {
-  "name": "durable-objects",
-  "category": "durable-objects",
-  "description": "Create and review Cloudflare Durable Objects. Use when building stateful coordination (chat rooms, multiplayer games, booking systems), implementing RPC methods, SQLite storage, alarms, WebSockets, or reviewing DO code for best practices. Covers Workers integration, wrangler config, and testing with Vitest. Biases towards retrieval from Cloudflare docs over pre-trained knowledge.",
-  "dir": "durable-objects"
- },
- {
-  "name": "himalaya",
-  "category": "email",
-  "description": "Himalaya CLI: IMAP/SMTP email from terminal.",
-  "dir": "email/himalaya"
- },
- {
-  "name": "faceless-explainer",
-  "category": "faceless-explainer",
-  "description": "Turn arbitrary text — an article, notes, a topic, a brief — into a faceless explainer video: there is no site or footage to capture, so the visuals are invented per scene (typography, abstract graphics, diagrams, data-viz). Use for topic explainers, concept breakdowns, how-tos, listicles. Not a video built from a website (/product-launch-video — promo or tour). Unclear → /hyperframes.",
-  "dir": "faceless-explainer"
- },
- {
-  "name": "codebase-inspection",
-  "category": "github",
-  "description": "Inspect codebases w/ pygount: LOC, languages, ratios.",
-  "dir": "github/codebase-inspection"
- },
- {
-  "name": "github-auth",
-  "category": "github",
-  "description": "GitHub auth setup: HTTPS tokens, SSH keys, gh CLI login.",
-  "dir": "github/github-auth"
- },
- {
-  "name": "github-code-review",
-  "category": "github",
-  "description": "Review PRs: diffs, inline comments via gh or REST.",
-  "dir": "github/github-code-review"
- },
- {
-  "name": "github-issues",
-  "category": "github",
-  "description": "Create, triage, label, assign GitHub issues via gh or REST.",
-  "dir": "github/github-issues"
- },
- {
-  "name": "github-pr-workflow",
-  "category": "github",
-  "description": "GitHub PR lifecycle: branch, commit, open, CI, merge.",
-  "dir": "github/github-pr-workflow"
- },
- {
-  "name": "github-repo-management",
-  "category": "github",
-  "description": "Clone/create/fork repos; manage remotes, releases.",
-  "dir": "github/github-repo-management"
- },
- {
-  "name": "hyperframes",
-  "category": "hyperframes",
-  "description": "Mandatory entry point: read this first for any request to make, create, edit, animate, or render a video, animation, or motion graphic, including a promo, explainer, captioned clip, title card, overlay, slideshow or interactive deck, Remotion port, or any HyperFrames HTML composition. Also use it to inspect, diagnose, validate, preview, publish, or batch-render an existing HyperFrames project. Inputs may be a website URL, GitHub PR, Figma design or URL, text or brief, existing footage, or music. It resumes project state, captures intent when applicable, selects and installs the owning workflow, and routes domain capabilities. HyperFrames is the default output framework unless the user explicitly chooses another framework for the deliverable or asks only to record a browser session.",
-  "dir": "hyperframes"
- },
- {
-  "name": "hyperframes-animation",
-  "category": "hyperframes-animation",
-  "description": "All animation knowledge for HyperFrames — atomic motion rules, multi-phase scene blueprints, scene transitions, broader motion-design techniques, AND the seven runtime adapters (GSAP default, plus Lottie, Three.js, Anime.js, CSS keyframes, Web Animations API, TypeGPU). Use for any motion or animation task: pick 2-4 rules and compose, or load a blueprint, or look up runtime-specific API (e.g. GSAP eases / Lottie player / Three.js mixer). Also covers auditing an existing composition's choreography (animation map) and 24 named text-animation effects. HyperFrames-native: single paused timeline, seek-safe, deterministic.",
-  "dir": "hyperframes-animation"
- },
- {
-  "name": "hyperframes-cli",
-  "category": "hyperframes-cli",
-  "description": "Use the HyperFrames CLI development loop: init, add, catalog, capture, lint, check, snapshot, compare, grade-compare, preview, play, present, beats, keyframes, single or batch render, publish, cloud, cloudrun, feedback, lambda, doctor, browser, info, upgrade, skills, compositions, docs, benchmark, telemetry, transcribe, auth, tts, and remove-background. Also use when diagnosing build or render failures. validate, inspect, and layout are deprecated aliases; use check. Covers local, HeyGen-hosted cloud, AWS Lambda, and Google Cloud Run rendering.",
-  "dir": "hyperframes-cli"
- },
- {
-  "name": "hyperframes-core",
-  "category": "hyperframes-core",
-  "description": "The HyperFrames composition contract — build one renderable project. Use for composition structure, the `data-*` timing attributes, `class=\"clip\"`, tracks, sub-compositions, variables, framework-owned media playback, deterministic-render rules, and validation. Also covers Tailwind projects and the STORYBOARD.md / SCRIPT.md plan formats. Read before writing composition HTML.",
-  "dir": "hyperframes-core"
- },
- {
-  "name": "hyperframes-creative",
-  "category": "hyperframes-creative",
-  "description": "Non-animation creative direction for HyperFrames videos. Use for design spec (frame.md / design.md) handling, palettes, typography, narration, beat planning, audio-reactive visuals, composition patterns, and brand / style decisions. For atomic motion patterns and scene blueprints, use `hyperframes-animation`.",
-  "dir": "hyperframes-creative"
- },
- {
-  "name": "hyperframes-keyframes",
-  "category": "hyperframes-keyframes",
-  "description": "Use when a HyperFrames composition needs seek-safe 2D/3D keyframes, GSAP timelines, CSS keyframes, Anime.js, WAAPI, FLIP, paths, masks, SVG morph/draw, text trails, 3D depth, or `hyperframes keyframes` diagnostics. Don't use for broad scene strategy, brand design, media sourcing, captions, or general video planning.",
-  "dir": "hyperframes-keyframes"
- },
- {
-  "name": "hyperframes-registry",
-  "category": "hyperframes-registry",
-  "description": "Install, discover, and wire registry blocks and components into HyperFrames compositions. Use when running hyperframes add or hyperframes catalog, installing one item or every block matching a tag, wiring an installed item into index.html, or working with hyperframes.json. Covers discovery, install locations, block sub-composition wiring, component snippet merging, and authoring a new block or component to contribute upstream (idea → scaffold → validate → PR).",
-  "dir": "hyperframes-registry"
- },
- {
-  "name": "auto-video-clipping",
+  "name": "writing-skills",
+  "category": "agent-tooling",
+  "description": "Use when creating new skills, editing existing skills, or verifying skills work before deployment",
+  "score": 10.2,
+  "rank": 1,
+  "source": "obra/superpowers",
+  "license": "MIT (repo)"
+ },
+ {
+  "name": "applicationinsights-web-ts",
+  "category": "data",
+  "description": "Instrument browser/web apps with the Application Insights JavaScript SDK (@microsoft/applicationinsights-web). Use for Real User Monitoring (RUM) — page views, clicks, AJAX/fetch dependencies, exceptions, custom events, and browser-side GenAI agent traces correlated to backend OpenTelemetry traces. Covers SDK Loader Script and npm setup, framework extensions (React, React Native, Angular), Click Analytics, telemetry initializers, and OTel GenAI semantic conventions for agent/tool/model spans emitted from the browser.",
+  "score": 10.2,
+  "rank": 2,
+  "source": "microsoft/skills",
+  "license": "MIT"
+ },
+ {
+  "name": "agent-acceptance-gate",
+  "category": "agent-tooling",
+  "description": "Use when a multi-agent round needs a pre-merge gate, pre-commit check, verification before push, or a PASS/FAIL decision after reconciliation.",
+  "score": 10.2,
+  "rank": 3,
+  "source": "awesome-claude-code",
+  "license": "MIT License  Copyright (c) 2026 Wen-Yu Chiou  Permission is hereby granted, free"
+ },
+ {
+  "name": "physical-ai-defect-image-generation",
   "category": "media",
-  "description": "Use for auto-clipping long videos into Shorts.",
-  "dir": "media/auto-video-clipping"
+  "description": "Use when the user wants to orchestrate defect image generation with NVIDIA Cosmos AnomalyGen (Cosmos-Predict2-derived) on OSMO for PCBA, metal surface, and glass inspection. The Day 0 path handles cold-start with USD-to-ROI, image-edit augmentation, and AnomalyGen to create initial PCBA datasets. The Day 1 path performs inference and labeling on real images. This skill helps with first-time asset setup, creation of finetuning checkpoints, and configuring deployment.",
+  "score": 10.2,
+  "rank": 4,
+  "source": "NVIDIA/skills",
+  "license": "CC-BY-4.0 AND Apache-2.0"
  },
  {
-  "name": "clipping-campaigns",
-  "category": "media",
-  "description": "Use for paid clipping campaigns or the auto-clip pipeline.",
-  "dir": "media/clipping-campaigns"
+  "name": "algorithmic-art",
+  "category": "creative",
+  "description": "Creating algorithmic art using p5.js with seeded randomness and interactive parameter exploration. Use this when users request creating art using code, generative art, algorithmic art, flow fields, or particle systems. Create original algorithmic art rather than copying existing artists' work to avoid copyright violations.",
+  "score": 10.2,
+  "rank": 5,
+  "source": "anthropics/skills",
+  "license": "Complete terms in LICENSE.txt"
  },
  {
-  "name": "free-media-sourcing",
-  "category": "media",
-  "description": "Use when sourcing free media and verifying URLs + licenses.",
-  "dir": "media/free-media-sourcing"
+  "name": "agent-output-reconciler",
+  "category": "agent-tooling",
+  "description": "Use when multiple agents have completed a round and the user asks to reconcile outputs, compare Codex and Gemini, synthesize run results, identify conflicts, or decide what should be retried.",
+  "score": 10.2,
+  "rank": 6,
+  "source": "awesome-claude-code",
+  "license": "MIT License  Copyright (c) 2026 Wen-Yu Chiou  Permission is hereby granted, free"
  },
  {
-  "name": "gif-search",
-  "category": "media",
-  "description": "Search/download GIFs from Tenor via curl + jq.",
-  "dir": "media/gif-search"
- },
- {
-  "name": "heartmula",
-  "category": "media",
-  "description": "HeartMuLa: Suno-like song generation from lyrics + tags.",
-  "dir": "media/heartmula"
- },
- {
-  "name": "instagram-reel-analysis",
-  "category": "media",
-  "description": "Check if an Instagram reel's claim is real or possible.",
-  "dir": "media/instagram-reel-analysis"
- },
- {
-  "name": "local-ai-video-generation",
-  "category": "media",
-  "description": "Pick local AI video models (Wan, Hunyuan, LTX) in ComfyUI.",
-  "dir": "media/local-ai-video-generation"
- },
- {
-  "name": "shorts-clipping",
-  "category": "media",
-  "description": "Use for auto video clipping or clipping-income research.",
-  "dir": "media/shorts-clipping"
- },
- {
-  "name": "songsee",
-  "category": "media",
-  "description": "Audio spectrograms/features (mel, chroma, MFCC) via CLI.",
-  "dir": "media/songsee"
- },
- {
-  "name": "video-content-analysis",
-  "category": "media",
-  "description": "Determine what a video shows without watching (reels, X).",
-  "dir": "media/video-content-analysis"
- },
- {
-  "name": "video-documentary-production",
-  "category": "media",
-  "description": "Use when building long-form narrated videos (10-40 min).",
-  "dir": "media/video-documentary-production"
- },
- {
-  "name": "youtube-content",
-  "category": "media",
-  "description": "YouTube transcripts to summaries, threads, blogs.",
-  "dir": "media/youtube-content"
- },
- {
-  "name": "media-use",
-  "category": "media-use",
-  "description": "Agent Media OS, the single skill for every media need in a HyperFrames project. Resolve BGM, SFX, image, icon, brand logo, voice, color grade, or LUT into a frozen local file or paste-ready block + ledger record (one verb, `resolve`); generate via TTS / music / image models when the catalog misses; produce voiceover, transcription, captions, and background removal through one shared audio engine; operate on media (cut / reframe / transform); and reuse assets across projects. Also use for vague feedback that real footage looks dark, flat, boring, should feel retro/camcorder/print/ASCII, needs privacy, or needs a media reveal.",
-  "dir": "media-use"
- },
- {
-  "name": "audiocraft-audio-generation",
-  "category": "mlops",
-  "description": "AudioCraft: MusicGen text-to-music, AudioGen text-to-sound.",
-  "dir": "mlops/models/audiocraft"
- },
- {
-  "name": "evaluating-llms-harness",
-  "category": "mlops",
-  "description": "lm-eval-harness: benchmark LLMs (MMLU, GSM8K, etc.).",
-  "dir": "mlops/evaluation/evaluating-llms-harness"
- },
- {
-  "name": "evaluating-llms-harness",
-  "category": "mlops",
-  "description": "lm-eval-harness: benchmark LLMs (MMLU, GSM8K, etc.).",
-  "dir": "mlops/evaluation/lm-evaluation-harness"
- },
- {
-  "name": "huggingface-hub",
-  "category": "mlops",
-  "description": "HuggingFace hf CLI: search/download/upload models, datasets.",
-  "dir": "mlops/huggingface-hub"
- },
- {
-  "name": "llama-cpp",
-  "category": "mlops",
-  "description": "llama.cpp local GGUF inference + HF Hub model discovery.",
-  "dir": "mlops/inference/llama-cpp"
- },
- {
-  "name": "llm-api-key-pools",
-  "category": "mlops",
-  "description": "Pool free-tier LLM API keys into a model workforce.",
-  "dir": "mlops/llm-api-key-pools"
- },
- {
-  "name": "llm-api-pooling",
-  "category": "mlops",
-  "description": "Use when pooling multiple LLM API keys into a workforce.",
-  "dir": "mlops/llm-api-pooling"
- },
- {
-  "name": "model-workforce",
-  "category": "mlops",
-  "description": "Pool and benchmark multiple LLM API keys into a workforce.",
-  "dir": "mlops/model-workforce"
- },
- {
-  "name": "segment-anything-model",
-  "category": "mlops",
-  "description": "SAM: zero-shot image segmentation via points, boxes, masks.",
-  "dir": "mlops/models/segment-anything"
- },
- {
-  "name": "serving-llms-vllm",
-  "category": "mlops",
-  "description": "vLLM: high-throughput LLM serving, OpenAI API, quantization.",
-  "dir": "mlops/inference/serving-llms-vllm"
- },
- {
-  "name": "serving-llms-vllm",
-  "category": "mlops",
-  "description": "vLLM: high-throughput LLM serving, OpenAI API, quantization.",
-  "dir": "mlops/inference/vllm"
- },
- {
-  "name": "weights-and-biases",
-  "category": "mlops",
-  "description": "W&B: log ML experiments, sweeps, model registry, dashboards.",
-  "dir": "mlops/evaluation/weights-and-biases"
- },
- {
-  "name": "nvidia-nim",
-  "category": "mlops-inference",
-  "description": "NVIDIA NIM inference - free keys, per-account quirks.",
-  "dir": "mlops-inference/nvidia-nim"
- },
- {
-  "name": "android-ai-device",
-  "category": "mobile",
-  "description": "Use when making an Android fully AI or linking it via adb.",
-  "dir": "mobile/android-ai-device"
- },
- {
-  "name": "motion-graphics",
-  "category": "motion-graphics",
-  "description": "A short, design-led motion graphic where motion is the message — kinetic typography, stat count-up, chart/data-viz hit, logo sting / brand lockup, lower-third / callout / social overlay, animated map (highlight regions, connect places, zoom to a location), animated tweet / news-article / headline, webpage / UI animation (scroll, cursor, callouts), or fusing a real image's geometry into a chart. Usually under 10s (up to ~30s), no narration or live-action subject; renders to MP4 or transparent overlay. Longer / narrated / multi-scene → /general-video. Unclear → /hyperframes.",
-  "dir": "motion-graphics"
- },
- {
-  "name": "obsidian",
-  "category": "note-taking",
-  "description": "Read, search, create, and edit notes in the Obsidian vault.",
-  "dir": "note-taking/obsidian"
- },
- {
-  "name": "airtable",
+  "name": "wiki-onboarding",
   "category": "productivity",
-  "description": "Airtable REST API via curl. Records CRUD, filters, upserts.",
-  "dir": "productivity/airtable"
+  "description": "Generates four audience-tailored onboarding guides in an onboarding/ folder — Contributor, Staff Engineer, Executive, and Product Manager. Use when the user wants onboarding documentation for a codebase.",
+  "score": 10.2,
+  "rank": 7,
+  "source": "microsoft/skills",
+  "license": "MIT"
+ },
+ {
+  "name": "agent-framework-azure-ai-py",
+  "category": "agent-tooling",
+  "description": "Build Azure AI Foundry agents using the Microsoft Agent Framework Python SDK (agent-framework-azure-ai). Use when creating persistent agents with AzureAIAgentsProvider, using hosted tools (code interpreter, file search, web search), integrating MCP servers, managing conversation threads, or implementing streaming responses. Covers function tools, structured outputs, and multi-tool agents.",
+  "score": 10.2,
+  "rank": 8,
+  "source": "microsoft/skills",
+  "license": "MIT"
+ },
+ {
+  "name": "data-manager-api-audience-ingestion",
+  "category": "data",
+  "description": "Guides developers through managing (adding, removing, and clearing) audience members for Google products using the Data Manager API and its associated client libraries. Use this skill when the user wants to upload audience members, remove specific users, or clear/replace an entire audience for Customer Match, mobile device ID audiences, or any other audience use case supported by the Data Manager API. Don't use for uploading events or conversions (use the data-manager-api-event-ingestion skill).",
+  "score": 10.2,
+  "rank": 9,
+  "source": "google/skills",
+  "license": "Apache-2.0"
+ },
+ {
+  "name": "angular-developer",
+  "category": "coding",
+  "description": "Generates Angular code and provides architectural guidance. Trigger when creating projects, components, services, or HTTP communication, or for best practices on reactivity (signals, linkedSignal, resource, httpResource), forms, dependency injection, routing, SSR, accessibility (ARIA), animations, styling (component styles, Tailwind CSS), testing, or CLI tooling.",
+  "score": 10.2,
+  "rank": 10,
+  "source": "angular/skills",
+  "license": "MIT"
+ },
+ {
+  "name": "gemini-api",
+  "category": "coding",
+  "description": "Use when the user asks about using Gemini in an enterprise environment or explicitly mentions Vertex AI, Google Cloud, or Agent Platform. Guides the usage of the Gemini API on Agent Platform with the Google Gen AI SDK. Covers SDK usage (Python, JS/TS, Go, Java, C#), capabilities like multimodal inputs, tools, media generation, caching, batch prediction, and Live API.",
+  "score": 10.2,
+  "rank": 11,
+  "source": "google/skills",
+  "license": "Apache-2.0"
+ },
+ {
+  "name": "agent-shared-memory",
+  "category": "agent-tooling",
+  "description": "Use when the user asks to update shared memory, initialize multi-agent memory, summarize decisions so far, identify open questions, or prepare a fresh session primer.",
+  "score": 10.2,
+  "rank": 12,
+  "source": "awesome-claude-code",
+  "license": "MIT License  Copyright (c) 2026 Wen-Yu Chiou  Permission is hereby granted, free"
+ },
+ {
+  "name": "agent-debate",
+  "category": "agent-tooling",
+  "description": "Use when a consequential decision needs adversarial review, opposing agent arguments, a second opinion via debate, or explicit trade-off analysis before implementation.",
+  "score": 10.2,
+  "rank": 13,
+  "source": "awesome-claude-code",
+  "license": "MIT License  Copyright (c) 2026 Wen-Yu Chiou  Permission is hereby granted, free"
+ },
+ {
+  "name": "google-analytics-data-api-basics",
+  "category": "data",
+  "description": "Manages Google Analytics reporting data, enables the Analytics Data API via the Cloud CLI, and creates reports using the Google Analytics Data API (v1beta). Use when you need to interact with Google Analytics properties, run customized analytics reports, query metrics (like activeUsers, screenPageViews) and dimensions (like city, date), check metrics and dimensions compatibility, or verify API enablement. Don't use for Google Analytics Admin API operations (e.g., creating properties, managing users) or for front-end tracking installation.",
+  "score": 10.2,
+  "rank": 14,
+  "source": "google/skills",
+  "license": "Apache-2.0"
+ },
+ {
+  "name": "systematic-debugging",
+  "category": "coding",
+  "description": "Use when encountering any bug, test failure, or unexpected behavior, before proposing fixes",
+  "score": 10.2,
+  "rank": 15,
+  "source": "obra/superpowers",
+  "license": "MIT (repo)"
+ },
+ {
+  "name": "skillopt-sleep",
+  "category": "agent-tooling",
+  "description": "Use when the user wants Cursor to learn from recent local sessions, asks for an offline sleep or dream cycle, wants to consolidate recurring work into a Cursor skill, or requests SkillOpt-Sleep status, harvest, dry-run, run, scheduling, review, or adoption. Drives the validation-gated skillopt_sleep engine with Cursor transcripts and the optional Cursor Agent CLI backend.",
+  "score": 10.2,
+  "rank": 16,
+  "source": "microsoft/SkillOpt",
+  "license": "MIT License |  | Copyright (c) 2026 Microsoft Corporation |  | Permission is hereby granted, free of charge, to any person obtaining a copy | of this software and associated documentation files (the \"Software\"), to deal | in the Software without restriction, including without limitation the rights | to use, copy,"
+ },
+ {
+  "name": "test-driven-development",
+  "category": "coding",
+  "description": "Use when implementing any feature or bugfix, before writing implementation code",
+  "score": 10.2,
+  "rank": 17,
+  "source": "obra/superpowers",
+  "license": "MIT (repo)"
+ },
+ {
+  "name": "agent-plan-act-reflect",
+  "category": "agent-tooling",
+  "description": "Use when a task needs single-agent self-correction across multiple iterations — write plan, execute, critique own output, revise plan, re-execute, until convergence or budget exhausted. Different from `agent-debate` (which is 2 agents arguing pro vs con); this is 1 agent looping over its own work.",
+  "score": 10.2,
+  "rank": 18,
+  "source": "awesome-claude-code",
+  "license": "MIT License  Copyright (c) 2026 Wen-Yu Chiou  Permission is hereby granted, free"
+ },
+ {
+  "name": "teams-app-developer",
+  "category": "cloud",
+  "description": "Builds, tests, and deploys Microsoft 365 apps and agents for Teams and Copilot. Includes sub-skills for project creation, local testing, cloud deployment, troubleshooting, and Slack-to-Teams migration. USE FOR: Teams agent, bot, tab, message extension, Declarative Agents, Custom Engine Agents, local testing, Agents Playground, Azure resource provision, remote deployment, Slack to Teams migration, cross-platform bot development, Block Kit to Adaptive Cards conversion. DO NOT USE FOR: general web development, non-bot/non-Teams projects.",
+  "score": 10.0,
+  "rank": 19,
+  "source": "microsoft/skills",
+  "license": "MIT"
+ },
+ {
+  "name": "holohub-app-lifecycle",
+  "category": "coding",
+  "description": "Use for non-failing HoloHub app work with ./holohub: scaffold, build, run, test, visual evidence, lint, and flow benchmarking.",
+  "score": 10.0,
+  "rank": 20,
+  "source": "NVIDIA/skills",
+  "license": "Apache-2.0"
+ },
+ {
+  "name": "agent-platform-prompt-management",
+  "category": "agent-tooling",
+  "description": "Manages and orchestrates prompts in Agent Platform. Use when you need to create, list, retrieve, version, or delete managed prompts in Agent Platform. Don't use for model training, model deployment to endpoints, or managing non-Agent Platform prompts.",
+  "score": 10.0,
+  "rank": 21,
+  "source": "google/skills",
+  "license": "Apache-2.0"
+ },
+ {
+  "name": "finishing-a-development-branch",
+  "category": "coding",
+  "description": "Use when implementation is complete, all tests pass, and you need to decide how to integrate the work",
+  "score": 10.0,
+  "rank": 22,
+  "source": "obra/superpowers",
+  "license": "MIT (repo)"
+ },
+ {
+  "name": "writing-plans",
+  "category": "coding",
+  "description": "Use when you have a spec or requirements for a multi-step task, before touching code",
+  "score": 10.0,
+  "rank": 23,
+  "source": "obra/superpowers",
+  "license": "MIT (repo)"
+ },
+ {
+  "name": "skill-card-generator",
+  "category": "agent-tooling",
+  "description": "Use only to generate or update a governance skill card for a specified existing agent skill directory. Do not use for explaining, listing, comparing, or discussing skill capabilities.",
+  "score": 10.0,
+  "rank": 24,
+  "source": "NVIDIA/skills",
+  "license": "CC-BY-4.0 AND Apache-2.0"
+ },
+ {
+  "name": "agent-platform-endpoint-management",
+  "category": "agent-tooling",
+  "description": "Manages Agent Platform serving endpoints. Use when you need to create, list,",
+  "score": 10.0,
+  "rank": 25,
+  "source": "google/skills",
+  "license": "Apache-2.0"
+ },
+ {
+  "name": "receiving-code-review",
+  "category": "coding",
+  "description": "Use when receiving code review feedback, before implementing suggestions, especially if feedback seems unclear or technically questionable - requires technical rigor and verification, not performative agreement or blind implementation",
+  "score": 10.0,
+  "rank": 26,
+  "source": "obra/superpowers",
+  "license": "MIT (repo)"
+ },
+ {
+  "name": "agent-context-budget",
+  "category": "agent-tooling",
+  "description": "Use when multi-agent work risks context overflow, memory growth, noisy logs, oversized handoffs, cross-session continuation, or parallel Codex and Gemini execution.",
+  "score": 10.0,
+  "rank": 27,
+  "source": "awesome-claude-code",
+  "license": "MIT License  Copyright (c) 2026 Wen-Yu Chiou  Permission is hereby granted, free"
+ },
+ {
+  "name": "\"nemoclaw-user-guide\"",
+  "category": "agent-tooling",
+  "description": "\"Guides human users' AI agents to the NemoClaw docs MCP server and canonical Fern documentation in Markdown form. Use when users ask how to install, configure, operate, troubleshoot, secure, or learn NemoClaw with an AI coding assistant. Trigger keywords - nemoclaw docs, use nemoclaw with ai agent, nemoclaw mcp docs, nemoclaw install help, nemoclaw quickstart, nemoclaw markdown docs, llms.txt, agent skills.\"",
+  "score": 10.0,
+  "rank": 28,
+  "source": "NVIDIA/skills",
+  "license": "\"Apache-2.0\""
+ },
+ {
+  "name": "wiki-architect",
+  "category": "productivity",
+  "description": "Analyzes code repositories and generates hierarchical documentation structures with onboarding guides. Use when the user wants to create a wiki, generate documentation, map a codebase structure, or understand a project's architecture at a high level.",
+  "score": 10.0,
+  "rank": 29,
+  "source": "microsoft/skills",
+  "license": "MIT"
+ },
+ {
+  "name": "pptx",
+  "category": "productivity",
+  "description": "Use this skill any time a .pptx or .potx file is involved in any way — as input, output, or both. This includes: creating slide decks, pitch decks, or presentations; reading, parsing, or extracting text from any .pptx or .potx file (even if the extracted content will be used elsewhere, like in an email or summary); editing, modifying, or updating existing presentations; combining or splitting slide files; working with templates (.potx), layouts, speaker notes, or comments. Trigger whenever the u",
+  "score": 9.9,
+  "rank": 30,
+  "source": "anthropics/skills",
+  "license": "Proprietary. LICENSE.txt has complete terms"
+ },
+ {
+  "name": "customize",
+  "category": "cloud",
+  "description": "Interactive guided deployment flow for Azure OpenAI models with full customization control. Step-by-step selection of model version, SKU (GlobalStandard/Standard/ProvisionedManaged), capacity, RAI policy (content filter), and advanced options (dynamic quota, priority processing, spillover). USE FOR: custom deployment, customize model deployment, choose version, select SKU, set capacity, configure content filter, RAI policy, deployment options, detailed deployment, advanced deployment, PTU deployment, provisioned throughput. DO NOT USE FOR: quick deployment to optimal region (use preset).",
+  "score": 9.9,
+  "rank": 31,
+  "source": "microsoft/skills",
+  "license": "MIT"
+ },
+ {
+  "name": "xlsx",
+  "category": "data",
+  "description": "Use this skill any time a spreadsheet file is the primary input or output. This means any task where the user wants to: open, read, edit, or fix an existing .xlsx, .xlsm, .xltx, .csv, or .tsv file (e.g., adding columns, computing formulas, formatting, charting, cleaning messy data); create a new spreadsheet from scratch or from other data sources; or convert between tabular file formats. Trigger especially when the user references a spreadsheet file by name or path — even casually (like \\\"the xl",
+  "score": 9.9,
+  "rank": 32,
+  "source": "anthropics/skills",
+  "license": "Proprietary. LICENSE.txt has complete terms"
+ },
+ {
+  "name": "subagent-driven-development",
+  "category": "agent-tooling",
+  "description": "Use when executing implementation plans with independent tasks in the current session",
+  "score": 9.7,
+  "rank": 33,
+  "source": "obra/superpowers",
+  "license": "MIT (repo)"
+ },
+ {
+  "name": "nemotron-policy-generator",
+  "category": "misc",
+  "description": "Generates BYO custom safety policies for NVIDIA Nemotron content-safety guardrails — Nemotron-Content-Safety-Reasoning-4B (text) and multimodal Nemotron-3-Content-Safety. Produces a Markdown policy, JSON taxonomy, and drop-in inference prompts. Maps rough words or an existing policy to V2 categories, adding custom categories or topic-following rules.",
+  "score": 9.7,
+  "rank": 34,
+  "source": "NVIDIA/skills",
+  "license": "Apache-2.0 AND CC-BY-4.0"
+ },
+ {
+  "name": "digital-health-clinical-asr-eval",
+  "category": "misc",
+  "description": "Stage 3 of Clinical ASR Flywheel. Score a NeMo manifest, produce the five-section KER leaderboard (by-ipa_source diagnostic). Not for ASR auth (/riva-asr).",
+  "score": 9.7,
+  "rank": 35,
+  "source": "NVIDIA/skills",
+  "license": "Apache-2.0"
+ },
+ {
+  "name": "aiq-research",
+  "category": "research",
+  "description": "Use when asked to run deep research or AI-Q research through a reachable NVIDIA AI-Q Blueprint backend.",
+  "score": 9.7,
+  "rank": 36,
+  "source": "NVIDIA/skills",
+  "license": "Apache-2.0"
+ },
+ {
+  "name": "agent-platform-migrate-from-ai-studio",
+  "category": "agent-tooling",
+  "description": "Guides agents and users through migrating from Gemini API in Google AI Studio to Gemini Enterprise Agent Platform (formerly Vertex AI). Use this skill when moving applications to Google Cloud, to leverage Cloud credits, or to unify inferencing with other Cloud infrastructure (IAM, billing, telemetry).",
+  "score": 9.7,
+  "rank": 37,
+  "source": "google/skills",
+  "license": "Apache-2.0"
+ },
+ {
+  "name": "omniverse-usd-performance-tuning",
+  "category": "ops",
+  "description": "Top-level workflow skill for USD performance diagnosis and optimization. Handles slow loading, high memory, low FPS, and broad scene-optimization requests; delegates auth/runtime setup to Phase 0 owners.",
+  "score": 9.7,
+  "rank": 38,
+  "source": "NVIDIA/skills",
+  "license": "Apache-2.0"
+ },
+ {
+  "name": "claude-code-docs:agent-sdk-skills",
+  "category": "agent-tooling",
+  "description": "Extend Claude with specialized capabilities using Agent Skills in the Claude Agent SDK",
+  "score": 9.7,
+  "rank": 39,
+  "source": "claude-code-docs",
+  "license": "© Anthropic (docs, informational)"
+ },
+ {
+  "name": "detection-engineering-coverage-evaluation",
+  "category": "coding",
+  "description": "Automates the end-to-end detection engineering workflow in Google SecOps using MCP tools.",
+  "score": 9.7,
+  "rank": 40,
+  "source": "google/skills",
+  "license": "Apache-2.0"
+ },
+ {
+  "name": "declarative-agent-developer",
+  "category": "agent-tooling",
+  "description": "Create, build, deploy, and localize declarative agents for M365 Copilot and Teams.",
+  "score": 9.7,
+  "rank": 41,
+  "source": "microsoft/skills",
+  "license": "MIT"
+ },
+ {
+  "name": "google-ads-api-account-diagnostics",
+  "category": "coding",
+  "description": "Diagnoses Google Ads account performance issues such as conversion loss (value or volume), low lead flow/volume, and lost impression share (opportunities) due to ad rank, bids, or budgets. Use when troubleshooting sudden performance drops, analyzing campaign impression share metrics, investigating low lead flow, or searching for bidding and budget constraints. Don't use for setting up new campaigns, uploading conversion events directly, or general Google Mobile Ads SDK integration issues (use gma-android-integrate instead).",
+  "score": 9.7,
+  "rank": 42,
+  "source": "google/skills",
+  "license": "Apache-2.0"
+ },
+ {
+  "name": "gemini-live-api",
+  "category": "coding",
+  "description": "Generates a Gemini LiveAPI client service class in the user's chosen programming",
+  "score": 9.7,
+  "rank": 43,
+  "source": "google/skills",
+  "license": "Apache-2.0"
+ },
+ {
+  "name": "accelerated-computing-cudf",
+  "category": "data",
+  "description": "Official NVIDIA-authored guidance for NVIDIA cuDF GPU DataFrames, pandas acceleration, dask-cuDF, ETL, joins, groupby, CSV/Parquet I/O, nullable semantics, and multi-GPU DataFrame workloads.",
+  "score": 9.7,
+  "rank": 44,
+  "source": "NVIDIA/skills",
+  "license": "CC-BY-4.0 AND Apache-2.0"
+ },
+ {
+  "name": "wiki-ado-convert",
+  "category": "productivity",
+  "description": "Converts VitePress/GFM wiki markdown to Azure DevOps Wiki-compatible format. Generates a Node.js build script that transforms Mermaid syntax, strips front matter, fixes links, and outputs ADO-compatible copies to dist/ado-wiki/.",
+  "score": 9.7,
+  "rank": 45,
+  "source": "microsoft/skills",
+  "license": "MIT"
+ },
+ {
+  "name": "nemotron-asr-finetune",
+  "category": "media",
+  "description": "Orchestration skill for NVIDIA Nemotron Speech (Riva) / NeMo ASR domain and language adaptation. Given a goal like \"improve/fine-tune ASR for my domain or language\", it scopes the task, picks the cheapest sufficient path (word boosting → n-gram LM → fine-tuning), delegates each stage to the right sub-skill (data generation, training, evaluation, deployment), and answers cost/time/data questions along the way.",
+  "score": 9.7,
+  "rank": 46,
+  "source": "NVIDIA/skills",
+  "license": "Apache-2.0"
+ },
+ {
+  "name": "telegram-crabbox-e2e-proof",
+  "category": "agent-tooling",
+  "description": "Use when reviewing, reproducing, or proving OpenClaw Telegram behavior with a real Telegram user on Crabbox, including PR review workflows that need an agent-controlled Telegram Desktop recording, TDLib user-driver commands, Convex-leased credentials, WebVNC observation, and motion-trimmed artifacts.",
+  "score": 9.7,
+  "rank": 47,
+  "source": "openclaw",
+  "license": "MIT License  Copyright (c) 2026 OpenClaw Foundation  Permission is hereby grante"
  },
  {
   "name": "docx",
   "category": "productivity",
-  "description": "Create, read, edit Word .docx documents and templates.",
-  "dir": "productivity/docx"
+  "description": "Use this skill whenever the user wants to create, read, edit, or manipulate Word documents (.docx files) or Word templates (.dotx files). Triggers include: any mention of 'Word doc', 'word document', '.docx', '.dotx', or requests to produce professional documents with formatting like tables of contents, headings, page numbers, or letterheads. Also use when extracting or reorganizing content from .docx or .dotx files, inserting or replacing images in documents, performing find-and-replace in Word",
+  "score": 9.7,
+  "rank": 48,
+  "source": "anthropics/skills",
+  "license": "Proprietary. LICENSE.txt has complete terms"
  },
  {
-  "name": "google-workspace",
-  "category": "productivity",
-  "description": "Gmail, Calendar, Drive, Docs, Sheets via gws CLI or Python.",
-  "dir": "productivity/google-workspace"
+  "name": "finetuning",
+  "category": "data",
+  "description": "Fine-tune models on Microsoft Foundry using SFT (supervised), DPO (preference), or RFT (reinforcement with graders). Covers dataset preparation, training job submission, deployment, and evaluation. USE FOR: fine-tune, SFT, DPO, RFT, training data, grader, distillation, fine-tuned model, training job, large file upload, calibrate grader, deploy fine-tuned model, evaluate fine-tuned model. DO NOT USE FOR: general model deployment without fine-tuning (use deploy-model), agent creation (use agents), prompt optimization without training (use prompt-optimizer).",
+  "score": 9.7,
+  "rank": 49,
+  "source": "microsoft/skills",
+  "license": "MIT"
  },
  {
-  "name": "maps",
-  "category": "productivity",
-  "description": "Geocode, POIs, routes, timezones via OpenStreetMap/OSRM.",
-  "dir": "productivity/maps"
+  "name": "doca-dpa",
+  "category": "cloud",
+  "description": "Use this skill when the user is doing hands-on DOCA DPA host-side",
+  "score": 9.6,
+  "rank": 50,
+  "source": "NVIDIA/skills",
+  "license": "Apache-2.0"
  },
  {
-  "name": "nano-pdf",
-  "category": "productivity",
-  "description": "Edit PDF text/typos/titles via nano-pdf CLI (NL prompts).",
-  "dir": "productivity/nano-pdf"
+  "name": "jetson-build-source",
+  "category": "cloud",
+  "description": "Use when you need to rebuild the BSP overlay — DT, OOT modules,",
+  "score": 9.6,
+  "rank": 51,
+  "source": "NVIDIA/skills",
+  "license": "Apache-2.0"
  },
  {
-  "name": "notion",
-  "category": "productivity",
-  "description": "Notion API + ntn CLI: pages, databases, markdown, Workers.",
-  "dir": "productivity/notion"
+  "name": "doca-verbs",
+  "category": "cloud",
+  "description": "Use this skill when the user is dropping below the higher-level DOCA",
+  "score": 9.6,
+  "rank": 52,
+  "source": "NVIDIA/skills",
+  "license": "Apache-2.0"
  },
  {
-  "name": "ocr-and-documents",
-  "category": "productivity",
-  "description": "Extract text from PDFs/scans (pymupdf, marker-pdf).",
-  "dir": "productivity/ocr-and-documents"
+  "name": "doca-pcc-ztr-rttcc-algo",
+  "category": "cloud",
+  "description": "Use this skill when the user is doing hands-on deployment, tuning,",
+  "score": 9.6,
+  "rank": 53,
+  "source": "NVIDIA/skills",
+  "license": "Apache-2.0"
+ },
+ {
+  "name": "google-cloud-recipe-foundation-builder",
+  "category": "data",
+  "description": "Deploys a baseline landing zone foundation for a Google Cloud Organization, establishing security guardrails using Organization Policies, resource hierarchy folders and projects, billing association, and centralized logging and monitoring. Deploys Google Cloud's recommended security controls and architecture. Use when setting up a new Google Cloud Organization or establishing a secure, enterprise-grade landing zone foundation.",
+  "score": 9.6,
+  "rank": 54,
+  "source": "google/skills",
+  "license": "Apache-2.0"
+ },
+ {
+  "name": "tilegym-cutile-autotuning",
+  "category": "data",
+  "description": "Use when adding, modifying, optimizing, or debugging CuTile autotuning code. Trigger signals: `exhaustive_search` / `replace_hints` / `hints_fn` / `cuda.tile.tune` in code, `autotune` in filenames, or correctness/performance issues in autotuned CuTile kernels. Covers: tune-once/cache/launch pattern, per-architecture configs (sm80–sm120), parameter space design (tile sizes, occupancy, num_ctas), and 7 common pitfalls with solutions.",
+  "score": 9.6,
+  "rank": 55,
+  "source": "NVIDIA/skills",
+  "license": "CC-BY-4.0 AND Apache-2.0"
+ },
+ {
+  "name": "doca-rmax",
+  "category": "cloud",
+  "description": "Use this skill when the user is doing hands-on DOCA Rivermax work on",
+  "score": 9.6,
+  "rank": 56,
+  "source": "NVIDIA/skills",
+  "license": "Apache-2.0"
+ },
+ {
+  "name": "cupynumeric-migration-readiness",
+  "category": "data",
+  "description": "Pre-migration readiness assessor for porting NumPy to cuPyNumeric. Use BEFORE substantial porting work begins when the user asks whether code will scale on GPU, whether they should migrate to cuPyNumeric, which NumPy patterns transfer cleanly, what must be refactored before porting, or mentions pre-port assessment, scaling analysis, or refactor planning. Inspect the user's source code, look up NumPy usage, cross-reference the cuPyNumeric API support manifest, and distinguish distributed-scaling-friendly patterns from blockers such as unsupported APIs, scalar synchronization, host round-trips, Python/object-heavy control flow, shape/data-dependent branching, and in-place mutation hazards. Produce a verdict of READY, LIGHT REFACTOR, SIGNIFICANT REFACTOR, or NOT RECOMMENDED, with concrete refactor pointers.",
+  "score": 9.6,
+  "rank": 57,
+  "source": "NVIDIA/skills",
+  "license": "CC-BY-4.0 OR Apache-2.0"
+ },
+ {
+  "name": "doca-gpunetio-ib-write-bw",
+  "category": "cloud",
+  "description": "Use this skill when the user is building, running, or interpreting",
+  "score": 9.6,
+  "rank": 58,
+  "source": "NVIDIA/skills",
+  "license": "Apache-2.0"
+ },
+ {
+  "name": "doca-erasure-coding",
+  "category": "cloud",
+  "description": "Use this skill when the user is doing hands-on DOCA Erasure Coding programming on a BlueField DPU, ConnectX NIC, or host — bringing up a doca_ec context, picking among the create / recover / update tasks, choosing matrix type / N / K / block size, querying doca_ec_cap_* before sizing, setting doca_mmap src/dst permissions, or debugging DOCA_ERROR_* returns from doca_ec_task_*. Trigger even when the user does not name \"DOCA Erasure Coding\" or \"Reed-Solomon\" — typical implicit phrasings include \"one data block changed, how do I refresh parity without re-encoding\", \"a disk failed and 2 parity blocks are gone, can I rebuild\", \"RAID-6 resilience across 12 disks\", \"my doca_ec_task_create returns NOT_PERMITTED\", or \"is this N+K layout still recoverable\". Refuse and route elsewhere for non-Reed-Solomon codes (fountain / LDPC / raptor), pure-replication designs, network FEC, or other DOCA accelerator libraries (SHA / Compress / AES-GCM / DMA) — those belong to other skills.",
+  "score": 9.6,
+  "rank": 59,
+  "source": "NVIDIA/skills",
+  "license": "Apache-2.0"
+ },
+ {
+  "name": "doca-aes-gcm",
+  "category": "cloud",
+  "description": "Use this skill when the user is doing hands-on DOCA AES-GCM",
+  "score": 9.6,
+  "rank": 60,
+  "source": "NVIDIA/skills",
+  "license": "Apache-2.0"
+ },
+ {
+  "name": "azure-resource-manager-postgresql-dotnet",
+  "category": "cloud",
+  "description": "Azure PostgreSQL Flexible Server SDK for .NET. Database management for PostgreSQL Flexible Server deployments. Use for creating servers, databases, firewall rules, configurations, backups, and high availability. Triggers: \"PostgreSQL\", \"PostgreSqlFlexibleServer\", \"PostgreSQL Flexible Server\", \"Azure Database for PostgreSQL\", \"PostgreSQL database management\", \"PostgreSQL firewall\", \"PostgreSQL backup\", \"Postgres\".",
+  "score": 9.6,
+  "rank": 61,
+  "source": "microsoft/skills",
+  "license": "MIT"
+ },
+ {
+  "name": "doca-mgmt",
+  "category": "cloud",
+  "description": "Use this skill when the user is doing hands-on DOCA Management",
+  "score": 9.6,
+  "rank": 62,
+  "source": "NVIDIA/skills",
+  "license": "Apache-2.0"
+ },
+ {
+  "name": "doca-sta",
+  "category": "cloud",
+  "description": "Use this skill when the user is doing hands-on NVMe-over-Fabrics",
+  "score": 9.6,
+  "rank": 63,
+  "source": "NVIDIA/skills",
+  "license": "Apache-2.0"
+ },
+ {
+  "name": "amc-setup-calibration-stack",
+  "category": "cloud",
+  "description": "Launch AutoMagicCalib microservice and web UI from NGC release images via Docker Compose. Use when user says 'deploy auto calibration', 'launch auto calibration', 'launch AMC', 'start MS+UI', or 'set up auto-magic-calib'. Requires NGC API key.",
+  "score": 9.6,
+  "rank": 64,
+  "source": "NVIDIA/skills",
+  "license": "Apache-2.0"
+ },
+ {
+  "name": "dali-dynamic-mode",
+  "category": "coding",
+  "description": "DALI imperative dynamic mode (`nvidia.dali.experimental.dynamic`, ndd): use when working on ndd code or migrating pipelines; skip pipeline-only tasks.",
+  "score": 9.6,
+  "rank": 65,
+  "source": "NVIDIA/skills",
+  "license": "Apache-2.0"
+ },
+ {
+  "name": "azure-eventgrid-dotnet",
+  "category": "cloud",
+  "description": "Azure Event Grid SDK for .NET. Client library for publishing and consuming events with Azure Event Grid. Use for event-driven architectures, pub/sub messaging, CloudEvents, and EventGridEvents. Triggers: \"Event Grid\", \"EventGridPublisherClient\", \"CloudEvent\", \"EventGridEvent\", \"publish events .NET\", \"event-driven\", \"pub/sub\".",
+  "score": 9.6,
+  "rank": 66,
+  "source": "microsoft/skills",
+  "license": "MIT"
+ },
+ {
+  "name": "azure-ai-voicelive-ts",
+  "category": "cloud",
+  "description": "Azure AI Voice Live SDK for JavaScript/TypeScript. Build real-time voice AI applications with bidirectional WebSocket communication. Use for voice assistants, conversational AI, real-time speech-to-speech, and voice-enabled chatbots in Node.js or browser environments. Triggers: \"voice live\", \"real-time voice\", \"VoiceLiveClient\", \"VoiceLiveSession\", \"voice assistant TypeScript\", \"bidirectional audio\", \"speech-to-speech JavaScript\".",
+  "score": 9.6,
+  "rank": 67,
+  "source": "microsoft/skills",
+  "license": "MIT"
+ },
+ {
+  "name": "physicsnemo-shard-tensor",
+  "category": "data",
+  "description": "Official NVIDIA-authored guidance for PhysicsNeMo ShardTensor domain parallelism — integrate domain parallelism into training/inference scripts (new or existing) with DDP or FSDP2, write and register shard patches to enable new layers/ops, and bootstrap multi-GPU correctness tests. Use when working with ShardTensor, scatter_tensor, domain parallelism, sequence/spatial sharding, ring attention, DeviceMesh + DDP/FSDP2 hybrid parallelism, or physicsnemo.domain_parallel. Do NOT use for generic PyTorch DDP/FSDP setup without domain parallelism, picking a PhysicsNeMo model or example (use physicsnemo-discover), or non-distributed training questions.",
+  "score": 9.6,
+  "rank": 68,
+  "source": "NVIDIA/skills",
+  "license": "Apache-2.0"
+ },
+ {
+  "name": "doca-upgrade",
+  "category": "cloud",
+  "description": "Use this skill when the user is contemplating a DOCA upgrade or",
+  "score": 9.6,
+  "rank": 69,
+  "source": "NVIDIA/skills",
+  "license": "Apache-2.0"
+ },
+ {
+  "name": "azure-resource-manager-durabletask-dotnet",
+  "category": "cloud",
+  "description": "Azure Resource Manager SDK for Durable Task Scheduler in .NET. Use for MANAGEMENT PLANE operations: creating/managing Durable Task Schedulers, Task Hubs, and retention policies via Azure Resource Manager. Triggers: \"Durable Task Scheduler\", \"create scheduler\", \"task hub\", \"DurableTaskSchedulerResource\", \"provision Durable Task\", \"orchestration scheduler\".",
+  "score": 9.6,
+  "rank": 70,
+  "source": "microsoft/skills",
+  "license": "MIT"
+ },
+ {
+  "name": "doca-public-knowledge-map",
+  "category": "data",
+  "description": "Use this skill when the user needs to locate authoritative",
+  "score": 9.6,
+  "rank": 71,
+  "source": "NVIDIA/skills",
+  "license": "Apache-2.0 AND CC-BY-4.0"
+ },
+ {
+  "name": "azure-prepare",
+  "category": "cloud",
+  "description": "Prepare azd-based Azure projects for deployment: generates azure.yaml, infrastructure (Bicep/Terraform), and Dockerfiles for the Azure Developer CLI (azd) workflow. USE ONLY when the user explicitly wants to use azd as the deployment tool, or the project already has an azure.yaml file. DO NOT USE FOR: non-azd deployments, Python App Service code-only deploys (use python-appservice-deploy), or cross-cloud migration (use azure-cloud-migrate). WHEN: prepare app for azd, create azure.yaml, set up azd infrastructure, modernize app for Azure with azd, deploy with azd, function app, timer trigger, service bus trigger, event-driven function, managed identity, generate Bicep, generate Terraform, create and deploy to Azure.",
+  "score": 9.6,
+  "rank": 72,
+  "source": "microsoft/skills",
+  "license": "MIT"
+ },
+ {
+  "name": "azure-speech-to-text-rest-py",
+  "category": "media",
+  "description": "Azure Speech to Text REST API for short audio (Python). Use for simple speech recognition of audio files up to 60 seconds without the Speech SDK.",
+  "score": 9.6,
+  "rank": 73,
+  "source": "microsoft/skills",
+  "license": "MIT"
+ },
+ {
+  "name": "managed-airflow-migrations",
+  "category": "cloud",
+  "description": "Provides guidance for migrating Apache Airflow DAGs in Managed Service for Apache Airflow (MSAA; formerly Cloud Composer). Covers migration to Airflow 2.11.1 (MSAA Gen 2 and 3) and Airflow 3 (MSAA Gen 3), including environment inspection, GCS download/upload and scanning patterns for breaking changes. Use when migrating the DAG code to newer Airflow version. Don't use when checking DAG run failures unrelated to code migration.",
+  "score": 9.6,
+  "rank": 74,
+  "source": "google/skills",
+  "license": "Apache-2.0"
+ },
+ {
+  "name": "azure-mgmt-mongodbatlas-dotnet",
+  "category": "cloud",
+  "description": "Manage MongoDB Atlas Organizations as Azure ARM resources using Azure.ResourceManager.MongoDBAtlas SDK. Use when creating, updating, listing, or deleting MongoDB Atlas organizations through Azure Marketplace integration. This SDK manages the Azure-side organization resource, not Atlas clusters/databases directly.",
+  "score": 9.6,
+  "rank": 75,
+  "source": "microsoft/skills",
+  "license": "MIT"
+ },
+ {
+  "name": "azure-ai-agents-persistent-dotnet",
+  "category": "cloud",
+  "description": "Azure AI Agents Persistent SDK for .NET. Low-level SDK for creating and managing AI agents with threads, messages, runs, and tools. Use for agent CRUD, conversation threads, streaming responses, function calling, file search, and code interpreter. Triggers: \"PersistentAgentsClient\", \"persistent agents\", \"agent threads\", \"agent runs\", \"streaming agents\", \"function calling agents .NET\".",
+  "score": 9.6,
+  "rank": 76,
+  "source": "microsoft/skills",
+  "license": "MIT"
+ },
+ {
+  "name": "hsb-ip-def",
+  "category": "coding",
+  "description": "Generate, validate, compare, or explain HSB HOLOLINK_def.svh macros. Do not use for FPGA_top.sv wrappers or packetizer-only derivation. Generation runs bundled Python scripts locally through shell commands and writes validated .svh output files after user-confirmed paths.",
+  "score": 9.6,
+  "rank": 77,
+  "source": "NVIDIA/skills",
+  "license": "Apache-2.0"
+ },
+ {
+  "name": "gke-cluster-autoscaler",
+  "category": "cloud",
+  "description": "Trigger on mention of GKE cluster autoscaler,  node autoscaling, node pool auto-creation / node auto-provisioning. Provides guidance on enabling and optimizing cluster autoscaler, best practices, and troubleshooting issues such as nodes not scaling up or down, zonal stockouts, or capacity buffers. Do not use for ComputeClass-specific YAML generation or priority configuration (defer to gke-compute-classes skill).",
+  "score": 9.6,
+  "rank": 78,
+  "source": "google/skills",
+  "license": "Apache-2.0"
+ },
+ {
+  "name": "azure-ai-projects-py",
+  "category": "cloud",
+  "description": "Build AI applications using the Azure AI Projects Python SDK (azure-ai-projects). Use when working with Foundry project clients, creating versioned agents with PromptAgentDefinition, running evaluations, managing connections/deployments/datasets/indexes, or using OpenAI-compatible clients. This is the high-level Foundry SDK - for low-level agent operations, use azure-ai-agents-python skill.",
+  "score": 9.6,
+  "rank": 79,
+  "source": "microsoft/skills",
+  "license": "MIT"
+ },
+ {
+  "name": "doca-devemu",
+  "category": "cloud",
+  "description": "Use this skill when the user is doing hands-on DOCA Device",
+  "score": 9.6,
+  "rank": 80,
+  "source": "NVIDIA/skills",
+  "license": "Apache-2.0"
+ },
+ {
+  "name": "azure-ai-contentunderstanding-py",
+  "category": "cloud",
+  "description": "Azure AI Content Understanding SDK for Python. Use for multimodal content extraction from documents, images, audio, and video.",
+  "score": 9.6,
+  "rank": 81,
+  "source": "microsoft/skills",
+  "license": "MIT"
+ },
+ {
+  "name": "azure-ai-translation-document-py",
+  "category": "cloud",
+  "description": "Azure AI Document Translation SDK for batch translation of documents with format preservation. Use for translating Word, PDF, Excel, PowerPoint, and other document formats at scale.",
+  "score": 9.6,
+  "rank": 82,
+  "source": "microsoft/skills",
+  "license": "MIT"
+ },
+ {
+  "name": "azure-resource-manager-sql-dotnet",
+  "category": "data",
+  "description": "Azure Resource Manager SDK for Azure SQL in .NET. Use for MANAGEMENT PLANE operations: creating/managing SQL servers, databases, elastic pools, firewall rules, and failover groups via Azure Resource Manager. NOT for data plane operations (executing queries) - use Microsoft.Data.SqlClient for that. Triggers: \"SQL server\", \"create SQL database\", \"manage SQL resources\", \"ARM SQL\", \"SqlServerResource\", \"provision Azure SQL\", \"elastic pool\", \"firewall rule\".",
+  "score": 9.6,
+  "rank": 83,
+  "source": "microsoft/skills",
+  "license": "MIT"
+ },
+ {
+  "name": "azure-mgmt-botservice-dotnet",
+  "category": "cloud",
+  "description": "Azure Resource Manager SDK for Bot Service in .NET. Management plane operations for creating and managing Azure Bot resources, channels (Teams, DirectLine, Slack), and connection settings. Triggers: \"Bot Service\", \"BotResource\", \"Azure Bot\", \"DirectLine channel\", \"Teams channel\", \"bot management .NET\", \"create bot\".",
+  "score": 9.6,
+  "rank": 84,
+  "source": "microsoft/skills",
+  "license": "MIT"
+ },
+ {
+  "name": "azure-mgmt-apimanagement-dotnet",
+  "category": "cloud",
+  "description": "Azure Resource Manager SDK for API Management in .NET. Use for MANAGEMENT PLANE operations: creating/managing APIM services, APIs, products, subscriptions, policies, users, groups, gateways, and backends via Azure Resource Manager. Triggers: \"API Management\", \"APIM service\", \"create APIM\", \"manage APIs\", \"ApiManagementServiceResource\", \"API policies\", \"APIM products\", \"APIM subscriptions\".",
+  "score": 9.6,
+  "rank": 85,
+  "source": "microsoft/skills",
+  "license": "MIT"
+ },
+ {
+  "name": "azure-data-tables-java",
+  "category": "data",
+  "description": "Build table storage applications with Azure Tables SDK for Java. Use when working with Azure Table Storage or Cosmos DB Table API for NoSQL key-value data, schemaless storage, or structured data at scale.",
+  "score": 9.6,
+  "rank": 86,
+  "source": "microsoft/skills",
+  "license": "MIT"
+ },
+ {
+  "name": "azure-ai-document-intelligence-ts",
+  "category": "cloud",
+  "description": "Extract text, tables, and structured data from documents using Azure Document Intelligence (@azure-rest/ai-document-intelligence). Use when processing invoices, receipts, IDs, forms, or building custom document models.",
+  "score": 9.6,
+  "rank": 87,
+  "source": "microsoft/skills",
+  "license": "MIT"
+ },
+ {
+  "name": "doca-caps",
+  "category": "cloud",
+  "description": "Use this skill when the user wants to invoke the read-only",
+  "score": 9.6,
+  "rank": 88,
+  "source": "NVIDIA/skills",
+  "license": "Apache-2.0"
+ },
+ {
+  "name": "azure-communication-chat-java",
+  "category": "cloud",
+  "description": "Build real-time chat applications with Azure Communication Services Chat Java SDK. Use when implementing chat threads, messaging, participants, read receipts, typing notifications, or real-time chat features.",
+  "score": 9.6,
+  "rank": 89,
+  "source": "microsoft/skills",
+  "license": "MIT"
+ },
+ {
+  "name": "azure-ai-vision-imageanalysis-java",
+  "category": "cloud",
+  "description": "Build image analysis applications with Azure AI Vision SDK for Java. Use when implementing image captioning, OCR text extraction, object detection, tagging, or smart cropping.",
+  "score": 9.6,
+  "rank": 90,
+  "source": "microsoft/skills",
+  "license": "MIT"
+ },
+ {
+  "name": "azure-ai-contentsafety-java",
+  "category": "cloud",
+  "description": "Build content moderation applications with Azure AI Content Safety SDK for Java. Use when implementing text/image analysis, blocklist management, or harm detection for hate, violence, sexual content, and self-harm.",
+  "score": 9.6,
+  "rank": 91,
+  "source": "microsoft/skills",
+  "license": "MIT"
+ },
+ {
+  "name": "nemo-evaluator-plugin",
+  "category": "agent-tooling",
+  "description": "Evaluate models, datasets, and agents with the NeMo Evaluator plugin. Use for metric selection, SDK checks, platform jobs, and result retrieval.",
+  "score": 9.6,
+  "rank": 92,
+  "source": "NVIDIA/skills",
+  "license": "Apache-2.0"
+ },
+ {
+  "name": "tilegym-adding-cutile-kernel",
+  "category": "coding",
+  "description": "Add a new cuTile GPU kernel operator to TileGym. Covers dispatch registration in ops.py, cuTile backend implementation, __init__.py exports, test creation, and benchmark in tests/benchmark. Use when adding, creating, or implementing a new cuTile operator/kernel in TileGym, or when asking how to register a new cuTile op.",
+  "score": 9.6,
+  "rank": 93,
+  "source": "NVIDIA/skills",
+  "license": "CC-BY-4.0 AND Apache-2.0"
+ },
+ {
+  "name": "azure-storage-file-datalake-py",
+  "category": "data",
+  "description": "Azure Data Lake Storage Gen2 SDK for Python. Use for hierarchical file systems, big data analytics, and file/directory operations.",
+  "score": 9.6,
+  "rank": 94,
+  "source": "microsoft/skills",
+  "license": "MIT"
+ },
+ {
+  "name": "nvidia-skill-finder",
+  "category": "agent-tooling",
+  "description": "Use for NVIDIA-related requests where an NVIDIA skill might help, even if the user did not ask for a skill. Trigger on NVIDIA products, hardware, software, SDKs, GPUs, Jetson/JetPack/L4T/BSP/SDK Manager/driver/flashing/setup, CUDA, NIM, NeMo, Omniverse/OpenUSD/SimReady, RAPIDS/cuDF, cuPyNumeric, cuOpt, Dynamo, Holoscan, TensorRT, DeepStream, VSS, TAO, NGC/NVCF. Do not use for generic non-NVIDIA route, optimize, deploy, AI, video, data, or infrastructure tasks.",
+  "score": 9.6,
+  "rank": 95,
+  "source": "NVIDIA/skills",
+  "license": "CC-BY-4.0 AND Apache-2.0"
+ },
+ {
+  "name": "azure-monitor-ingestion-py",
+  "category": "data",
+  "description": "Azure Monitor Ingestion SDK for Python. Use for sending custom logs to Log Analytics workspace via Logs Ingestion API.",
+  "score": 9.6,
+  "rank": 96,
+  "source": "microsoft/skills",
+  "license": "MIT"
+ },
+ {
+  "name": "azure-eventhub-ts",
+  "category": "data",
+  "description": "Build event streaming applications using Azure Event Hubs SDK for JavaScript (@azure/event-hubs). Use when implementing high-throughput event ingestion, real-time analytics, IoT telemetry, or event-driven architectures with partitioned consumers.",
+  "score": 9.6,
+  "rank": 97,
+  "source": "microsoft/skills",
+  "license": "MIT"
+ },
+ {
+  "name": "using-superpowers",
+  "category": "agent-tooling",
+  "description": "Use when starting any conversation - establishes how to find and use skills, requiring skill invocation before ANY response including clarifying questions",
+  "score": 9.6,
+  "rank": 98,
+  "source": "obra/superpowers",
+  "license": "MIT (repo)"
+ },
+ {
+  "name": "infra-deployment-debugging",
+  "category": "cloud",
+  "description": "Troubleshoots infrastructure deployment failures. Use when analyzing deployment failures of ADC applications or direct/raw Terraform deployment errors. Don't use for design, local validation, plan assessment, or non-deployment troubleshooting.",
+  "score": 9.6,
+  "rank": 99,
+  "source": "google/skills",
+  "license": "Apache-2.0"
+ },
+ {
+  "name": "karpathy-guidelines",
+  "category": "research",
+  "description": "Behavioral guidelines to reduce common LLM coding mistakes. Use when writing, reviewing, or refactoring code to avoid overcomplication, make surgical changes, surface assumptions, and define verifiable success criteria.",
+  "score": 9.6,
+  "rank": 100,
+  "source": "awesome-claude-code",
+  "license": "MIT"
+ },
+ {
+  "name": "executing-plans",
+  "category": "coding",
+  "description": "Use when you have a written implementation plan to execute in a separate session with review checkpoints",
+  "score": 9.6,
+  "rank": 101,
+  "source": "obra/superpowers",
+  "license": "MIT (repo)"
+ },
+ {
+  "name": "slack-gif-creator",
+  "category": "media",
+  "description": "Knowledge and utilities for creating animated GIFs optimized for Slack. Provides constraints, validation tools, and animation concepts. Use when users request animated GIFs for Slack like \"make me a GIF of X doing Y for Slack.",
+  "score": 9.5,
+  "rank": 102,
+  "source": "anthropics/skills",
+  "license": "Complete terms in LICENSE.txt"
+ },
+ {
+  "name": "mcore-run-on-slurm",
+  "category": "data",
+  "description": "How to launch distributed Megatron-LM training jobs on a SLURM cluster. Covers a minimal sbatch skeleton, environment-variable setup for torch.distributed.run, CUDA_DEVICE_MAX_CONNECTIONS rules across hardware and parallelism modes, container conventions, monitoring, and per-rank failure diagnosis.",
+  "score": 9.5,
+  "rank": 103,
+  "source": "NVIDIA/skills",
+  "license": "Apache-2.0"
+ },
+ {
+  "name": "datalineage-summary",
+  "category": "cloud",
+  "description": "Summarizes Google Cloud Data Lineage graphs to help users debug data quality issues and understand data provenance for BQ/GCS.",
+  "score": 9.5,
+  "rank": 104,
+  "source": "google/skills",
+  "license": "Apache-2.0"
+ },
+ {
+  "name": "using-git-worktrees",
+  "category": "coding",
+  "description": "Use when starting feature work that needs isolation from current workspace or before executing implementation plans - ensures an isolated workspace exists via native tools or git worktree fallback",
+  "score": 9.5,
+  "rank": 105,
+  "source": "obra/superpowers",
+  "license": "MIT (repo)"
+ },
+ {
+  "name": "mcore-create-issue",
+  "category": "misc",
+  "description": "Investigate a failing GitHub Actions run or job and create a GitHub issue for the failure.",
+  "score": 9.5,
+  "rank": 106,
+  "source": "NVIDIA/skills",
+  "license": "Apache-2.0"
+ },
+ {
+  "name": "thinking-model-router",
+  "category": "research",
+  "description": "When unsure which thinking skill fits, map domain and problem type, then return NONE or one primary skill by default (at most three complementary).",
+  "score": 9.5,
+  "rank": 107,
+  "source": "awesome-claude-code",
+  "license": "MIT License  Copyright (c) 2025 TJ Boudreaux  Permission is hereby granted, free"
+ },
+ {
+  "name": "dispatching-parallel-agents",
+  "category": "agent-tooling",
+  "description": "Use when facing 2+ independent tasks that can be worked on without shared state or sequential dependencies",
+  "score": 9.5,
+  "rank": 108,
+  "source": "obra/superpowers",
+  "license": "MIT (repo)"
+ },
+ {
+  "name": "accessibility-skill",
+  "category": "coding",
+  "description": "Adds automated accessibility (a11y) testing to test suites on TestMu AI cloud by enabling WCAG scans through driver capabilities. Framework-agnostic, works with Selenium, Playwright, and Cypress. Use when user mentions \"accessibility\", \"a11y\", \"WCAG\", \"accessibility scan\", \"accessibility testing\". Triggers on: \"accessibility testing\", \"a11y scan\", \"WCAG compliance\", \"accessibility audit LambdaTest\", \"is my page accessible\".",
+  "score": 9.5,
+  "rank": 109,
+  "source": "LambdaTest/agent-skills",
+  "license": "MIT"
+ },
+ {
+  "name": "thinking-systems",
+  "category": "research",
+  "description": "When behavior is emergent across components—fixes elsewhere break, loops/delays dominate—map boundary, stocks/flows, feedback, archetypes, then rank leverage.",
+  "score": 9.5,
+  "rank": 110,
+  "source": "awesome-claude-code",
+  "license": "MIT License  Copyright (c) 2025 TJ Boudreaux  Permission is hereby granted, free"
+ },
+ {
+  "name": "angular-new-app",
+  "category": "coding",
+  "description": "Creates a new Angular app using the Angular CLI. This skill should be used whenever a user wants to create a new Angular application and contains important guidelines for how to effectively create a modern Angular application.",
+  "score": 9.5,
+  "rank": 111,
+  "source": "angular/skills",
+  "license": "MIT"
+ },
+ {
+  "name": "thinking-scientific-method",
+  "category": "research",
+  "description": "When a symptom has several plausible causes, rank falsifiable hypotheses and run the cheapest discriminating observation first; prefer least-assumptive survivors only after evidence fit.",
+  "score": 9.5,
+  "rank": 112,
+  "source": "awesome-claude-code",
+  "license": "MIT License  Copyright (c) 2025 TJ Boudreaux  Permission is hereby granted, free"
+ },
+ {
+  "name": "control-ui-e2e",
+  "category": "agent-tooling",
+  "description": "Use when testing, fixing, or extending the OpenClaw Control UI GUI with Vitest + Playwright end-to-end checks, mocked Gateway WebSocket flows, mocked dashboard runs, screenshots/videos, or agent-verifiable browser proof.",
+  "score": 9.5,
+  "rank": 113,
+  "source": "openclaw",
+  "license": "MIT License  Copyright (c) 2026 OpenClaw Foundation  Permission is hereby grante"
+ },
+ {
+  "name": "airunway-aks-setup",
+  "category": "cloud",
+  "description": "Set up AI Runway on AKS — from bare cluster to running model. Covers cluster verification, controller install, GPU assessment, provider setup, and first deployment. WHEN: \\\"setup AI Runway\\\", \\\"onboard AKS cluster\\\", \\\"install AI Runway\\\", \\\"airunway setup\\\", \\\"deploy model to AKS\\\", \\\"GPU inference on AKS\\\", \\\"KAITO setup on AKS\\\", \\\"run LLM on AKS\\\", \\\"vLLM on AKS\\\", \\\"set up model serving on AKS\\\", \\\"AI Runway controller\\\".",
+  "score": 9.5,
+  "rank": 114,
+  "source": "microsoft/skills",
+  "license": "MIT"
+ },
+ {
+  "name": "clawsweeper",
+  "category": "cloud",
+  "description": "Use for all ClawSweeper work: OpenClaw issue/PR sweep reports, repair jobs, cloud fix PRs, @clawsweeper maintainer mention commands, trusted ClawSweeper-reviewed autofix/automerge, GitHub Actions monitoring, permissions, gates, and manual backfills.",
+  "score": 9.4,
+  "rank": 115,
+  "source": "openclaw",
+  "license": "MIT License  Copyright (c) 2026 OpenClaw Foundation  Permission is hereby grante"
+ },
+ {
+  "name": "brainstorming",
+  "category": "creative",
+  "description": "You MUST use this before any creative work - creating features, building components, adding functionality, or modifying behavior. Explores user intent, requirements and design before implementation.",
+  "score": 9.4,
+  "rank": 116,
+  "source": "obra/superpowers",
+  "license": "MIT (repo)"
  },
  {
   "name": "pdf",
   "category": "productivity",
-  "description": "Create, merge, split, fill, and secure PDF files.",
-  "dir": "productivity/pdf"
+  "description": "Use this skill whenever the user wants to do anything with PDF files. This includes reading or extracting text/tables from PDFs, combining or merging multiple PDFs into one, splitting PDFs apart, rotating pages, adding watermarks, creating new PDFs, filling PDF forms, encrypting/decrypting PDFs, extracting images, and OCR on scanned PDFs to make them searchable. If the user mentions a .pdf file or asks to produce one, use this skill.",
+  "score": 9.4,
+  "rank": 117,
+  "source": "anthropics/skills",
+  "license": "Proprietary. LICENSE.txt has complete terms"
  },
  {
-  "name": "powerpoint",
+  "name": "tilegym-improve-cutile-kernel-perf",
+  "category": "coding",
+  "description": "Iteratively optimize cuTile kernel performance through systematic profiling, bottleneck analysis, IR comparison, and targeted tuning. Covers tile sizes, occupancy, autotune configs, TMA, latency hints, persistent scheduling, num_ctas, flush_to_zero, and IR-level debugging. Use when asked to \"optimize cutile kernel\", \"improve kernel perf\", \"tune cutile performance\", \"make kernel faster\", or iteratively benchmark and refine a cuTile GPU kernel in the TileGym project.",
+  "score": 9.4,
+  "rank": 118,
+  "source": "NVIDIA/skills",
+  "license": "CC-BY-4.0 AND Apache-2.0"
+ },
+ {
+  "name": "i4h-workflow-create",
+  "category": "agent-tooling",
+  "description": "Create a new agentic env by forking an existing env. Use for new env/task scaffolding, not scene edits or baking.",
+  "score": 9.4,
+  "rank": 119,
+  "source": "NVIDIA/skills",
+  "license": "Apache-2.0"
+ },
+ {
+  "name": "firebase-basics",
+  "category": "cloud",
+  "description": "Provides foundational Firebase CLI setup, CLI installation, version checks (`firebase-tools@latest --version`), CLI login (including --no-localhost), project creation, project selection (`firebase use`), and app config file downloads (`google-services.json`, `GoogleService-Info.plist`). Use ONLY for CLI login, project creation/switching, or downloading app config files. Don't use for Firebase Hosting deploy, Firestore, Auth, App Hosting, Data Connect, Crashlytics, or Remote Config.",
+  "score": 9.4,
+  "rank": 120,
+  "source": "google/skills",
+  "license": "Apache-2.0"
+ },
+ {
+  "name": "azure-servicebus-ts",
+  "category": "cloud",
+  "description": "Build messaging applications using Azure Service Bus SDK for JavaScript (@azure/service-bus). Use when implementing queues, topics/subscriptions, message sessions, dead-letter handling, or enterprise messaging patterns.",
+  "score": 9.4,
+  "rank": 121,
+  "source": "microsoft/skills",
+  "license": "MIT"
+ },
+ {
+  "name": "m365-agents-ts",
+  "category": "cloud",
+  "description": "Microsoft 365 Agents SDK for TypeScript/Node.js. Build multichannel agents for Teams/M365/Copilot Studio with AgentApplication routing, Express hosting, streaming responses, and Copilot Studio client integration. Triggers: \"Microsoft 365 Agents SDK\", \"@microsoft/agents-hosting\", \"AgentApplication\", \"startServer\", \"streamingResponse\", \"Copilot Studio client\", \"@microsoft/agents-copilotstudio-client\".",
+  "score": 9.4,
+  "rank": 122,
+  "source": "microsoft/skills",
+  "license": "MIT"
+ },
+ {
+  "name": "i4h-workflow-dataset-mimic",
+  "category": "data",
+  "description": "Expand an HDF5 recording by cloning trajectories with action/state noise. Use when asked to mimic, expand, or augment a dataset; not for recording new demos (use [[i4h-workflow-dataset-teleop]]).",
+  "score": 9.4,
+  "rank": 123,
+  "source": "NVIDIA/skills",
+  "license": "Apache-2.0"
+ },
+ {
+  "name": "azure-deploy",
+  "category": "cloud",
+  "description": "Execute Azure deployments for ALREADY-PREPARED applications that have existing .azure/deployment-plan.md and infrastructure files. DO NOT use this skill when the user asks to CREATE a new application — use azure-prepare instead. This skill runs azd up, azd deploy, terraform apply, and az deployment commands with built-in error recovery. Requires .azure/deployment-plan.md from azure-prepare and validated status from azure-validate. WHEN: \\\"run azd up\\\", \\\"run azd deploy\\\", \\\"execute deployment\\\", \\\"push to production\\\", \\\"push to cloud\\\", \\\"go live\\\", \\\"ship it\\\", \\\"bicep deploy\\\", \\\"terraform apply\\\", \\\"publish to Azure\\\", \\\"launch on Azure\\\". DO NOT USE WHEN: \\\"create and deploy\\\", \\\"build and deploy\\\", \\\"create a new app\\\", \\\"set up infrastructure\\\", \\\"create and deploy to Azure using Terraform\\\" — use azure-prepare for these.",
+  "score": 9.4,
+  "rank": 124,
+  "source": "microsoft/skills",
+  "license": "MIT"
+ },
+ {
+  "name": "azure-app-onboard",
+  "category": "cloud",
+  "description": "End-to-end orchestrator: from a business idea, app idea, or existing app to running Azure deployment with cost estimates and pre-deploy approval. Analyzes your app, auto-detects the right Azure services, scaffolds infrastructure code, and deploys — tailored to your app, not a template. Handles moving existing apps to Azure without rewriting or with minimal changes. WHEN: bring your app to Azure, plan my app, cost to run, is my code ready to deploy, deploy my app to the cloud, deploy all my services, what Azure services do I need, plan my Azure deployment, deploy my new app to Azure, one-click deploy, I have an app and want it on Azure, migrate my app to Azure, help me get started, build an app, no code yet, starter project. DO NOT USE FOR: use azd for deployment(use azure-deploy), optimizing existing costs (use azure-cost), code readiness checks only (use azure-app-onboard-prereq).",
+  "score": 9.4,
+  "rank": 125,
+  "source": "microsoft/skills",
+  "license": "MIT"
+ },
+ {
+  "name": "gke-golden-path",
+  "category": "cloud",
+  "description": "Provides GKE golden path configuration defaults, production readiness checklists, and cluster default patterns. Use when designing GKE clusters, verifying GKE production readiness, or checking configurations against GKE defaults. Don't use for setting up workload autoscaling specifically (use gke-workload-scaling instead).",
+  "score": 9.4,
+  "rank": 126,
+  "source": "google/skills",
+  "license": "Apache-2.0"
+ },
+ {
+  "name": "i4h-workflow-e2e",
+  "category": "agent-tooling",
+  "description": "Run the full end-to-end agentic pipeline (record → mimic → annotate → replay → convert → visualize → finetune → validate). Use when asked to run the whole pipeline or do an e2e, smoke, or demo run.",
+  "score": 9.4,
+  "rank": 127,
+  "source": "NVIDIA/skills",
+  "license": "Apache-2.0"
+ },
+ {
+  "name": "azure-resource-lookup",
+  "category": "cloud",
+  "description": "List, find, and show Azure resources across subscriptions or resource groups. Handles prompts like \\\"list the websites in my subscription\\\", \\\"list my web apps\\\", \\\"show my app services\\\", \\\"list virtual machines\\\", \\\"list my VMs\\\", \\\"show storage accounts\\\", \\\"find container apps\\\", and \\\"what resources do I have\\\". USE FOR: list websites, list web apps, list app services, show websites in subscription, resource inventory, find resources by tag, tag analysis, orphaned resource discovery (not for cost analysis), unattached disks, count resources by type, cross-subscription lookup, and Azure Resource Graph queries. DO NOT USE FOR: deploying/changing resources (use azure-deploy), cost optimization (use azure-cost), or non-Azure clouds.",
+  "score": 9.4,
+  "rank": 128,
+  "source": "microsoft/skills",
+  "license": "MIT"
+ },
+ {
+  "name": "nemo-rl-brev-etiquette",
+  "category": "data",
+  "description": "Brev instance operating guidance for NeMo-RL agents working in /home/ubuntu/RL with limited workspace disk, a larger /ephemeral volume, and optional /home/ubuntu/RL/.env secrets. Use when running nemo-rl-auto-research campaigns, experiments, training jobs, model or dataset downloads, shared cache-heavy commands, log-producing runs, checkpoint generation, W&B or Hugging Face authenticated workflows, or any workflow that may create large files on Brev.",
+  "score": 9.4,
+  "rank": 129,
+  "source": "NVIDIA/skills",
+  "license": "Apache-2.0"
+ },
+ {
+  "name": "dynamo-troubleshoot",
+  "category": "data",
+  "description": "Diagnose failed or unhealthy Dynamo deployments. Use when pods, model-cache jobs, PVCs, workers, frontend/router health, endpoints, or benchmark jobs fail; use recipe-runner/router-starter before this for normal bring-up.",
+  "score": 9.4,
+  "rank": 130,
+  "source": "NVIDIA/skills",
+  "license": "Apache-2.0"
+ },
+ {
+  "name": "jetson-print-bsp-info",
+  "category": "cloud",
+  "description": "Use when you need to print Jetson BSP info (L4T version, board configs, rootfs state) from a Linux_for_Tegra root on the host PC. This is an example skill.",
+  "score": 9.4,
+  "rank": 131,
+  "source": "NVIDIA/skills",
+  "license": "Apache-2.0"
+ },
+ {
+  "name": "bigquery-bigframes",
+  "category": "data",
+  "description": "Generates Python code using BigQuery DataFrames (BigFrames), the pandas/scikit-learn-style API over BigQuery. Use when writing BigFrames code or doing pandas-style dataframe/ML work against BigQuery (e.g. in a notebook). Don't use for SQL-first workflows or the google-cloud-bigquery client library — use bigquery-basics.",
+  "score": 9.4,
+  "rank": 132,
+  "source": "google/skills",
+  "license": "Apache-2.0"
+ },
+ {
+  "name": "i4h-catheter-navigation-digital-twin",
+  "category": "misc",
+  "description": "Build a patient vasculature digital twin from CT (preprocess + segment). Use when asked to preprocess CT, segment vessels, extract centerline, or prepare ct_cache for viewport/DRR.",
+  "score": 9.4,
+  "rank": 133,
+  "source": "NVIDIA/skills",
+  "license": "Apache-2.0"
+ },
+ {
+  "name": "i4h-workflow-setup",
+  "category": "agent-tooling",
+  "description": "Verify host requirements and run `workflows/agentic/setup.sh`. Use when asked to set up, install, or bootstrap the agentic workflow, or hits missing `.venv`, third-party checkout, or engine errors.",
+  "score": 9.4,
+  "rank": 134,
+  "source": "NVIDIA/skills",
+  "license": "Apache-2.0"
+ },
+ {
+  "name": "i4h-lerobot-viz",
+  "category": "data",
+  "description": "Serve the LeRobot HTML visualizer for a converted dataset in a browser. Use when asked to visualize, inspect, or open a LeRobot dataset; not for converting HDF5 (use [[i4h-workflow-dataset-convert]]).",
+  "score": 9.4,
+  "rank": 135,
+  "source": "NVIDIA/skills",
+  "license": "Apache-2.0"
+ },
+ {
+  "name": "wiki-qa",
   "category": "productivity",
-  "description": "Create, read, edit .pptx decks, slides, notes, templates.",
-  "dir": "productivity/powerpoint"
+  "description": "Answers questions about a code repository using source file analysis. Use when the user asks a question about how something works, wants to understand a component, or needs help navigating the codebase.",
+  "score": 9.3,
+  "rank": 136,
+  "source": "microsoft/skills",
+  "license": "MIT"
  },
  {
-  "name": "teams-meeting-pipeline",
-  "category": "productivity",
-  "description": "Operate the Teams meeting summary pipeline via Hermes CLI — summarize meetings, inspect pipeline status, replay jobs, manage Microsoft Graph subscriptions.",
-  "dir": "productivity/teams-meeting-pipeline"
+  "name": "openclaw-testing",
+  "category": "ops",
+  "description": "Choose, run, rerun, or debug OpenClaw tests, CI checks, Docker E2E lanes, release validation, and the cheapest safe verification path.",
+  "score": 9.2,
+  "rank": 137,
+  "source": "openclaw",
+  "license": "MIT License  Copyright (c) 2026 OpenClaw Foundation  Permission is hereby grante"
  },
  {
-  "name": "xlsx",
-  "category": "productivity",
-  "description": "Create, read, edit Excel .xlsx spreadsheets and CSVs.",
-  "dir": "productivity/xlsx"
+  "name": "google-mobile-ads-android-migrate-to-next-gen",
+  "category": "misc",
+  "description": "Migrates Android applications from the old, legacy Google Mobile",
+  "score": 9.2,
+  "rank": 138,
+  "source": "google/skills",
+  "license": "Apache-2.0"
  },
  {
-  "name": "arxiv",
-  "category": "research",
-  "description": "Search arXiv papers by keyword, author, category, or ID.",
-  "dir": "research/arxiv"
+  "name": "agent-task-splitter",
+  "category": "agent-tooling",
+  "description": "Use when the user asks to split a goal across Claude, Codex, or Gemini (gemini requests are rerouted - lane deprecated); plan a multi-agent run; break work into parallel agent tasks; or decompose a large task that needs bounded context handoffs. This is the **generic** multi-agent task splitter — writes `.coord/plan.yml` (a DAG) plus per-agent task files. NOT for research-domain routing that touches `.research/`, `.paper/`, or Zotero/Obsidian/NotebookLM ingest pipelines — for those, use `researc",
+  "score": 9.2,
+  "rank": 139,
+  "source": "awesome-claude-code",
+  "license": "MIT License  Copyright (c) 2026 Wen-Yu Chiou  Permission is hereby granted, free"
  },
  {
-  "name": "blogwatcher",
-  "category": "research",
-  "description": "Monitor blogs and RSS/Atom feeds via blogwatcher-cli tool.",
-  "dir": "research/blogwatcher"
+  "name": "openspec-plus-apply",
+  "category": "coding",
+  "description": "MANDATORY skill that activates whenever the OpenSpec apply phase begins. Triggers: /opsx-apply runs, the openspec-apply-change vanilla skill is referenced or active, `openspec instructions apply` is invoked, or the user asks to implement, apply, execute, or build out an OpenSpec change ('implement the change', 'apply tasks', 'execute change', 'build out the change'). Takes over only vanilla step 6 (implementation loop) and emulates step 7 output (final status).",
+  "score": 9.2,
+  "rank": 140,
+  "source": "sudokar/openspec-plus",
+  "license": "MIT License |  | Copyright (c) 2026 sudokar |  | Permission is hereby granted, free of charge, to any person obtaining a copy | of this software and associated documentation files (the \"Software\"), to deal | in the Software without restriction, including without limitation the rights | to use, copy, modify, merge"
  },
  {
-  "name": "bug-bounty-target-research",
-  "category": "research",
-  "description": "Use when selecting bug-bounty targets or prepping a hunt.",
-  "dir": "research/bug-bounty-target-research"
+  "name": "openspec-plus-design",
+  "category": "creative",
+  "description": "MANDATORY skill that activates whenever the OpenSpec design phase begins. Triggers: /opsx-new, /opsx-ff, or /opsx-continue runs; openspec-new-change, openspec-ff-change, openspec-continue-change, or openspec-explore is active; `openspec instructions design` is invoked; or the user wants to create, update, review, refine, or discuss an OpenSpec design document.",
+  "score": 9.2,
+  "rank": 141,
+  "source": "sudokar/openspec-plus",
+  "license": "MIT License |  | Copyright (c) 2026 sudokar |  | Permission is hereby granted, free of charge, to any person obtaining a copy | of this software and associated documentation files (the \"Software\"), to deal | in the Software without restriction, including without limitation the rights | to use, copy, modify, merge"
  },
  {
-  "name": "crypto-derivatives-research",
-  "category": "research",
-  "description": "Use when researching crypto liquidation pools, OI, funding.",
-  "dir": "research/crypto-derivatives-research"
+  "name": "openspec-plus-spec",
+  "category": "coding",
+  "description": "MANDATORY skill that activates whenever the OpenSpec specification phase begins. Triggers: /opsx-new, /opsx-ff, or /opsx-continue runs; openspec-new-change, openspec-ff-change, openspec-continue-change, or openspec-explore is active; `openspec instructions spec` or `openspec instructions specs` is invoked; or the user wants to create, update, review, refine, or discuss an OpenSpec specification.",
+  "score": 9.2,
+  "rank": 142,
+  "source": "sudokar/openspec-plus",
+  "license": "MIT License |  | Copyright (c) 2026 sudokar |  | Permission is hereby granted, free of charge, to any person obtaining a copy | of this software and associated documentation files (the \"Software\"), to deal | in the Software without restriction, including without limitation the rights | to use, copy, modify, merge"
  },
  {
-  "name": "crypto-futures-market-data",
-  "category": "research",
-  "description": "Use for crypto futures funding, OI, liquidation data.",
-  "dir": "research/crypto-futures-market-data"
+  "name": "openspec-plus-tdd",
+  "category": "coding",
+  "description": "MANDATORY skill that activates whenever code is written to implement an OpenSpec change task. Triggers: openspec-plus-apply is active, /opsx-apply is running, the user is implementing tasks from an OpenSpec change, an implementer subagent dispatched by openspec-plus-apply is starting work, or the user invokes phrases like 'TDD for the change', 'implementing change tasks', or 'writing tests for spec scenarios'. Load before any production code is written for an OpenSpec change. Enforces strict RED-GREEN-REFACTOR per test (any test — acceptance, unit, edge case, helper). Iron Law: NO PRODUCTION CODE WITHOUT A FAILING TEST. Gherkin scenarios in spec.md are the canonical source for acceptance tests (every scenario MUST become at least one test); additional unit, edge-case, and helper tests are encouraged and follow the same per-test cycle.",
+  "score": 9.2,
+  "rank": 143,
+  "source": "sudokar/openspec-plus",
+  "license": "MIT License |  | Copyright (c) 2026 sudokar |  | Permission is hereby granted, free of charge, to any person obtaining a copy | of this software and associated documentation files (the \"Software\"), to deal | in the Software without restriction, including without limitation the rights | to use, copy, modify, merge"
  },
  {
-  "name": "crypto-futures-market-research",
-  "category": "research",
-  "description": "Binance Futures scans: funding, OI, crowding, leverage.",
-  "dir": "research/crypto-futures-market-research"
+  "name": "release-openclaw-nightly",
+  "category": "ops",
+  "description": "OpenClaw Tideclaw alpha/nightly release automation: isolated branches, local fixes, release CI, branch retention, and forward-port to main.",
+  "score": 9.2,
+  "rank": 144,
+  "source": "openclaw",
+  "license": "MIT License  Copyright (c) 2026 OpenClaw Foundation  Permission is hereby grante"
  },
  {
-  "name": "ecommerce-price-research",
-  "category": "research",
-  "description": "Best/cheapest product research across Indian e-commerce.",
-  "dir": "research/ecommerce-price-research"
+  "name": "openclaw-changelog-update",
+  "category": "ops",
+  "description": "Regenerate OpenClaw release changelog sections from git history before beta, stable, or extended-stable releases.",
+  "score": 9.2,
+  "rank": 145,
+  "source": "openclaw",
+  "license": "MIT License  Copyright (c) 2026 OpenClaw Foundation  Permission is hereby grante"
  },
  {
-  "name": "india-ecommerce-price-research",
-  "category": "research",
-  "description": "Use when comparing Indian e-commerce prices or history.",
-  "dir": "research/india-ecommerce-price-research"
+  "name": "openspec-plus-tasks",
+  "category": "coding",
+  "description": "MANDATORY skill that activates whenever the OpenSpec tasks phase begins. Triggers: /opsx-new, /opsx-ff, or /opsx-continue runs; openspec-new-change, openspec-ff-change, openspec-continue-change, or openspec-explore is active; `openspec instructions tasks` is invoked; or the user wants to create, update, review, refine, or discuss an OpenSpec tasks.md file.",
+  "score": 9.2,
+  "rank": 146,
+  "source": "sudokar/openspec-plus",
+  "license": "MIT License |  | Copyright (c) 2026 sudokar |  | Permission is hereby granted, free of charge, to any person obtaining a copy | of this software and associated documentation files (the \"Software\"), to deal | in the Software without restriction, including without limitation the rights | to use, copy, modify, merge"
  },
  {
-  "name": "india-ecommerce-research",
-  "category": "research",
-  "description": "Use when researching products/prices on Indian e-commerce.",
-  "dir": "research/india-ecommerce-research"
- },
- {
-  "name": "indian-insurer-unclaimed-data",
-  "category": "research",
-  "description": "Hunt bulk unclaimed-amounts lists from Indian insurers.",
-  "dir": "research/indian-insurer-unclaimed-data"
- },
- {
-  "name": "llm-wiki",
-  "category": "research",
-  "description": "Karpathy's LLM Wiki: build/query interlinked markdown KB.",
-  "dir": "research/llm-wiki"
- },
- {
-  "name": "parallel-research-swarm",
-  "category": "research",
-  "description": "Parallel AI agents research any question into a report.",
-  "dir": "research/parallel-research-swarm"
- },
- {
-  "name": "polymarket",
-  "category": "research",
-  "description": "Query Polymarket: markets, prices, orderbooks, history.",
-  "dir": "research/polymarket"
- },
- {
-  "name": "research-paper-writing",
-  "category": "research",
-  "description": "Write ML papers for NeurIPS/ICML/ICLR: design→submit.",
-  "dir": "research/research-paper-writing"
- },
- {
-  "name": "stock-technical-analysis",
-  "category": "research",
-  "description": "Use when producing a live-verified stock technical report.",
-  "dir": "research/stock-technical-analysis"
- },
- {
-  "name": "technical-feasibility-research",
-  "category": "research",
-  "description": "Can-we-build-X feasibility verdicts with proof, not surveys.",
-  "dir": "research/technical-feasibility-research"
- },
- {
-  "name": "web-research",
-  "category": "research",
-  "description": "Use when gathering verified sources for research dossiers.",
-  "dir": "research/web-research"
- },
- {
-  "name": "sandbox-sdk",
-  "category": "sandbox-sdk",
-  "description": "Build sandboxed applications for secure code execution. Load when building AI code execution, code interpreters, CI/CD systems, interactive dev environments, or executing untrusted code. Covers Sandbox SDK lifecycle, commands, files, code interpreter, and preview URLs. Biases towards retrieval from Cloudflare docs over pre-trained knowledge.",
-  "dir": "sandbox-sdk"
- },
- {
-  "name": "anti-detection-browsing",
-  "category": "scraping",
-  "description": "Use when sites block automated browsing (Cloudflare, bots).",
-  "dir": "scraping/anti-detection-browsing"
- },
- {
-  "name": "scraping-for-ai-knowledge-base",
-  "category": "scraping-for-ai-knowledge-base",
-  "description": "Build a structured data foundation (SQLite + scraped content) for an AI product from public web sources, especially in constrained-budget / blocked-sites / copyright-sensitive environments. Use when scraping for an AI knowledge base, ingesting public educational/reference content, designing a SQLite schema to back RAG or AI features, or planning data collection for an India-market or other budget-constrained AI product.",
-  "dir": "scraping-for-ai-knowledge-base"
- },
- {
-  "name": "agent-battle-arena",
+  "name": "offensive-active-directory",
   "category": "security",
-  "description": "Ghost vs defender agent battles on local labs, live views.",
-  "dir": "security/agent-battle-arena"
+  "description": "Active Directory attack methodology for internal network red team engagements. Covers reconnaissance (BloodHound, PowerView, ADExplorer), credential abuse (Kerberoasting, ASREProasting, NTLM relay, LLMNR/NBT-NS poisoning), privilege escalation (ACL abuse, GPO abuse, unconstrained/constrained delegation), lateral movement (Pass-the-Hash, Pass-the-Ticket, Overpass-the-Hash, WMI/WinRM/PsExec), persistence (Golden/Silver/Diamond Tickets, DCSync, DCShadow, AdminSDHolder, Skeleton Key), forest trust attacks, ADCS abuse (ESC1-ESC15), and modern MDI/Defender for Identity evasion. Use when assessing on-prem AD, hybrid AD/Entra ID environments, or ADCS deployments.",
+  "score": 9.2,
+  "rank": 147,
+  "source": "SnailSploit/Claude-Red",
+  "license": "MIT License |  | Copyright (c) 2024-2025 SnailSploit / Kai Aizen |  | Permission is hereby granted, free of charge, to any person obtaining a copy | of this software and associated documentation files (the \"Software\"), to deal | in the Software without restriction, including without limitation the rights | to use"
  },
  {
-  "name": "asan-libfuzzer-verification",
+  "name": "openspec-plus-proposal",
+  "category": "coding",
+  "description": "MANDATORY skill that activates whenever the OpenSpec proposal phase begins. Triggers: /opsx-new, /opsx-ff, or /opsx-continue runs; openspec-new-change, openspec-ff-change, openspec-continue-change, or openspec-explore is active; `openspec instructions proposal` is invoked; or the user wants to create, update, review, refine, or discuss an OpenSpec proposal.",
+  "score": 9.2,
+  "rank": 148,
+  "source": "sudokar/openspec-plus",
+  "license": "MIT License |  | Copyright (c) 2026 sudokar |  | Permission is hereby granted, free of charge, to any person obtaining a copy | of this software and associated documentation files (the \"Software\"), to deal | in the Software without restriction, including without limitation the rights | to use, copy, modify, merge"
+ },
+ {
+  "name": "offensive-cloud",
   "category": "security",
-  "description": "Verify memory-safety bugs with ASAN+libFuzzer; fuzz more.",
-  "dir": "security/asan-libfuzzer-verification"
+  "description": "Cloud security attack methodology covering AWS, Azure, and GCP. Includes credential harvesting (IMDS, ~/.aws, env vars, leaked CI secrets, instance roles), enumeration with cloud-specific tools (pacu, ScoutSuite, Prowler, ROADtools, gcp_enum), privilege escalation paths (IAM PassRole, AssumeRole chains, Lambda/Functions privilege flips, Azure Owner-on-self, GCP serviceAccountTokenCreator), persistence techniques (IAM user/key creation, AAD app registration, GCP svc account key creation, EventBridge/Logic Apps backdoors), data exfiltration (S3/Blob/GCS, snapshot share, RDS/CosmosDB/Cloud SQL exfil), cloud-native lateral movement (cross-account assume, Azure AD multi-tenant, GCP project hierarchy), serverless attacks (Lambda env vars, layer hijack, Step Functions), Kubernetes-on-cloud (EKS/AKS/GKE-specific paths to node and AWS metadata), and CSPM evasion (CloudTrail blind spots, GuardDuty mute, Sentinel rule shaping). Use when the engagement scope is cloud accounts, when you've stolen cloud credentials, or when assessing cloud posture.",
+  "score": 9.2,
+  "rank": 149,
+  "source": "SnailSploit/Claude-Red",
+  "license": "MIT License |  | Copyright (c) 2024-2025 SnailSploit / Kai Aizen |  | Permission is hereby granted, free of charge, to any person obtaining a copy | of this software and associated documentation files (the \"Software\"), to deal | in the Software without restriction, including without limitation the rights | to use"
  },
  {
-  "name": "bug-bounty-hunting",
-  "category": "security",
-  "description": "Hunt bug bounties on disclosed programs like HackerOne.",
-  "dir": "security/bug-bounty-hunting"
+  "name": "canvas-design",
+  "category": "creative",
+  "description": "Create beautiful visual art in .png and .pdf documents using design philosophy. You should use this skill when the user asks to create a poster, piece of art, design, or other static piece. Create original visual designs, never copying existing artists' work to avoid copyright violations.",
+  "score": 9.2,
+  "rank": 150,
+  "source": "anthropics/skills",
+  "license": "Complete terms in LICENSE.txt"
  },
  {
-  "name": "fuzzing-campaign-ops",
-  "category": "security",
-  "description": "Manage libFuzzer/ASAN fuzz campaigns on a remote VM.",
-  "dir": "security/fuzzing-campaign-ops"
+  "name": "openclaw-test-performance",
+  "category": "ops",
+  "description": "Benchmark, diagnose, and optimize OpenClaw test and plugin-suite runtime, import hotspots, CPU/RSS, heap growth, and slow coverage paths.",
+  "score": 9.2,
+  "rank": 151,
+  "source": "openclaw",
+  "license": "MIT License  Copyright (c) 2026 OpenClaw Foundation  Permission is hereby grante"
  },
  {
-  "name": "lan-android-exploitation",
-  "category": "security",
-  "description": "Use when attacking Android devices or routers on a LAN.",
-  "dir": "security/lan-android-exploitation"
+  "name": "openclaw-qa-testing",
+  "category": "ops",
+  "description": "Run, watch, debug, extend, or explain OpenClaw qa-lab and qa-channel scenarios, artifacts, and live lanes.",
+  "score": 9.2,
+  "rank": 152,
+  "source": "openclaw",
+  "license": "MIT License  Copyright (c) 2026 OpenClaw Foundation  Permission is hereby grante"
  },
  {
-  "name": "libfuzzer-asan-fuzzing",
-  "category": "security",
-  "description": "Use when fuzzing C/C++ libraries with ASAN+libFuzzer.",
-  "dir": "security/libfuzzer-asan-fuzzing"
+  "name": "physical-ai-people-attribute-search",
+  "category": "data",
+  "description": "Use when running people attribute search (PAS) image augmentation and",
+  "score": 9.2,
+  "rank": 153,
+  "source": "NVIDIA/skills",
+  "license": "CC-BY-4.0 AND Apache-2.0"
  },
  {
-  "name": "live-service-hardening",
-  "category": "security",
-  "description": "Use when hardening a live web service under active attack.",
-  "dir": "security/live-service-hardening"
+  "name": "release-openclaw-plugin-testing",
+  "category": "ops",
+  "description": "Plan and run pre-release OpenClaw plugin validation across bundled plugins, package artifacts, lifecycle commands, doctor/fix, config round-trip, gateway startup, SDK compatibility, Docker E2E, Package Acceptance, and Testbox proof.",
+  "score": 9.2,
+  "rank": 154,
+  "source": "openclaw",
+  "license": "MIT License  Copyright (c) 2026 OpenClaw Foundation  Permission is hereby grante"
  },
  {
-  "name": "network-stealth-testing",
-  "category": "security",
-  "description": "Test LAN IP/MAC spoofing capability with detection angles.",
-  "dir": "security/network-stealth-testing"
+  "name": "coding-agent",
+  "category": "agent-tooling",
+  "description": "Delegate coding work to Codex, Claude Code, or OpenCode as background workers; not simple edits or read-only code lookup.",
+  "score": 9.2,
+  "rank": 155,
+  "source": "openclaw",
+  "license": "MIT License  Copyright (c) 2026 OpenClaw Foundation  Permission is hereby grante"
  },
  {
-  "name": "redacted-secret-inspection",
-  "category": "security",
-  "description": "Use when reading secret files; emit only REDACTED-xxxx.",
-  "dir": "security/redacted-secret-inspection"
+  "name": "data-manager-api-event-ingestion",
+  "category": "data",
+  "description": "Guides developers through implementing event and conversion ingestion to",
+  "score": 9.2,
+  "rank": 156,
+  "source": "google/skills",
+  "license": "Apache-2.0"
  },
  {
-  "name": "sandbox-city-expedition",
-  "category": "security",
-  "description": "Use for recurring read-only security expedition cycles.",
-  "dir": "security/sandbox-city-expedition"
+  "name": "mcp-builder",
+  "category": "agent-tooling",
+  "description": "Guide for creating high-quality MCP (Model Context Protocol) servers that enable LLMs to interact with external services through well-designed tools. Use when building MCP servers to integrate external APIs or services, whether in Python (FastMCP) or Node/TypeScript (MCP SDK).",
+  "score": 9.2,
+  "rank": 157,
+  "source": "anthropics/skills",
+  "license": "Complete terms in LICENSE.txt"
  },
  {
-  "name": "openhue",
-  "category": "smart-home",
-  "description": "Control Philips Hue lights, scenes, rooms via OpenHue CLI.",
-  "dir": "smart-home/openhue"
+  "name": "agent-platform-rag-engine-management",
+  "category": "agent-tooling",
+  "description": "Manage and query Agent Platform RAG Engine Corpora and retrieve grounded",
+  "score": 9.2,
+  "rank": 158,
+  "source": "google/skills",
+  "license": "Apache-2.0"
  },
  {
-  "name": "xurl",
-  "category": "social-media",
-  "description": "X/Twitter via xurl CLI: raw post search, posting, DM, media.",
-  "dir": "social-media/xurl"
+  "name": "clawdtributor",
+  "category": "coding",
+  "description": "Use for OpenClaw clawtributors PR/issue triage: Discrawl discovery, live-open rechecks, deep review, topic grouping, and compact @handle/LOC/type/blast/verification summaries.",
+  "score": 9.2,
+  "rank": 159,
+  "source": "openclaw",
+  "license": "MIT License  Copyright (c) 2026 OpenClaw Foundation  Permission is hereby grante"
  },
  {
-  "name": "aarch64-qemu-verification",
-  "category": "software-development",
-  "description": "Use when verifying fault/UB claims via qemu-aarch64.",
-  "dir": "software-development/aarch64-qemu-verification"
+  "name": "vss-deploy-profile",
+  "category": "cloud",
+  "description": "Use to select, configure, deploy, verify, debug, or tear down a VSS profile (base, search, lvs, warehouse, edge). Not for standalone microservices — use the vss-deploy-* skill.",
+  "score": 9.1,
+  "rank": 160,
+  "source": "NVIDIA/skills",
+  "license": "Apache-2.0"
  },
  {
-  "name": "cdp-browser-automation",
-  "category": "software-development",
-  "description": "Automate Chromium via CDP — trusted input, extensions.",
-  "dir": "software-development/cdp-browser-automation"
+  "name": "tao-train-oneformer",
+  "category": "data",
+  "description": "OneFormer for universal image segmentation. Unifies panoptic, instance, and semantic segmentation with a",
+  "score": 9.1,
+  "rank": 161,
+  "source": "NVIDIA/skills",
+  "license": "Apache-2.0"
  },
  {
-  "name": "data-collection-strategy",
-  "category": "software-development",
-  "description": "How to approach data collection, scraping, and knowledge-base building for AI products — especially when sources are blocklisted, copyrighted, or fragmented. Use when user says \"scrape all X\", \"collect data for Y\", \"build a knowledge base\", or \"get all study material for Z\". Forces product-defining questions before any scraping, defaults to sequential over parallel, and pivots to manual download or paid sampling when sources block. Concrete Indian edtech source landscape in references/.",
-  "dir": "software-development/data-collection-strategy"
+  "name": "nemo-automodel-distributed-training",
+  "category": "data",
+  "description": "Guide for selecting and configuring distributed training strategies in NeMo AutoModel, including FSDP2, Megatron FSDP, DDP, and parallelism settings.",
+  "score": 9.1,
+  "rank": 162,
+  "source": "NVIDIA/skills",
+  "license": "Apache-2.0"
  },
  {
-  "name": "dogfood",
-  "category": "software-development",
-  "description": "Exploratory QA of web apps: find bugs, evidence, reports.",
-  "dir": "software-development/dogfood"
+  "name": "azure-kusto-graph",
+  "category": "cloud",
+  "description": "Build and query Kusto graphs from natural language. Covers transient graphs (make-graph), persistent graph models/snapshots, pattern matching (graph-match), shortest paths, connected components, and graph-to-table export. Generates the edges-first thinking: define edges, define node lookups, union, make-graph. WHEN: make-graph, graph-match, graph-shortest-paths, graph-to-table, graph-mark-components, persistent graph, graph model, graph snapshot, build a graph from data, find paths between nodes, pattern matching in graph, connected components, transient graph, Kusto graph, KQL graph.",
+  "score": 9.1,
+  "rank": 163,
+  "source": "microsoft/skills",
+  "license": "MIT"
  },
  {
-  "name": "hermes-agent-skill-authoring",
-  "category": "software-development",
-  "description": "Author in-repo SKILL.md files: frontmatter and structure.",
-  "dir": "software-development/hermes-agent-skill-authoring"
+  "name": "nemo-mbridge-recipe-recommender",
+  "category": "data",
+  "description": "Recommend and customize Megatron Bridge library and benchmark recipes for a user's model, GPU count, hardware, sequence length, and pretrain/SFT/PEFT goal. Use when selecting a starting recipe, comparing library and benchmark configs, resizing parallelism for a GPU allocation, or distinguishing convergence changes, semantics-preserving execution tuning, and benchmark-only shortcuts.",
+  "score": 9.1,
+  "rank": 164,
+  "source": "NVIDIA/skills",
+  "license": "Apache-2.0"
  },
  {
-  "name": "inspecting-hermes-desktop-dom",
-  "category": "software-development",
-  "description": "Read the live Hermes desktop DOM/CSS over CDP.",
-  "dir": "software-development/inspecting-hermes-desktop-dom"
+  "name": "tao-train-nvpanoptix3d",
+  "category": "data",
+  "description": "NVPanoptix3D for panoptic 3D scene reconstruction from posed RGB images. Produces 3D panoptic segmentation",
+  "score": 9.1,
+  "rank": 165,
+  "source": "NVIDIA/skills",
+  "license": "Apache-2.0"
  },
  {
-  "name": "node-inspect-debugger",
-  "category": "software-development",
-  "description": "Debug Node.js via --inspect + Chrome DevTools Protocol CLI.",
-  "dir": "software-development/node-inspect-debugger"
+  "name": "tao-run-platform",
+  "category": "cloud",
+  "description": "TAO Execution SDK for submitting and monitoring GPU training jobs on supported platforms (Brev, SLURM,",
+  "score": 9.1,
+  "rank": 166,
+  "source": "NVIDIA/skills",
+  "license": "Apache-2.0"
  },
  {
-  "name": "plan",
-  "category": "software-development",
-  "description": "Write a markdown plan to .hermes/plans/; no execution.",
-  "dir": "software-development/plan"
+  "name": "tao-train-grounding-dino",
+  "category": "data",
+  "description": "Grounding DINO for open-set object detection. Combines DINO-style detection with a BERT text encoder for",
+  "score": 9.1,
+  "rank": 167,
+  "source": "NVIDIA/skills",
+  "license": "Apache-2.0"
  },
  {
-  "name": "python-debugpy",
-  "category": "software-development",
-  "description": "Debug Python: pdb REPL + debugpy remote (DAP).",
-  "dir": "software-development/python-debugpy"
+  "name": "tao-train-sparse4d",
+  "category": "data",
+  "description": "Sparse4D for multi-camera temporal 3D object detection and tracking. Uses sparse queries with deformable",
+  "score": 9.1,
+  "rank": 168,
+  "source": "NVIDIA/skills",
+  "license": "Apache-2.0"
  },
  {
-  "name": "python-http-server-patterns",
-  "category": "software-development",
-  "description": "Fix Python http.server handler hangs and body-loss bugs.",
-  "dir": "software-development/python-http-server-patterns"
+  "name": "tao-train-deformable-detr",
+  "category": "data",
+  "description": "Deformable DETR for 2D object detection. Uses deformable attention for efficient multi-scale feature processing,",
+  "score": 9.1,
+  "rank": 169,
+  "source": "NVIDIA/skills",
+  "license": "Apache-2.0"
  },
  {
-  "name": "requesting-code-review",
-  "category": "software-development",
-  "description": "Pre-commit review: security scan, quality gates, auto-fix.",
-  "dir": "software-development/requesting-code-review"
+  "name": "nemo-mbridge-perf-memory-tuning",
+  "category": "data",
+  "description": "Techniques for reducing peak GPU memory in Megatron Bridge — expandable segments, PEFT + SP input re-gather, parallelism resizing, activation recompute, CPU offloading constraints, and common OOM fixes.",
+  "score": 9.1,
+  "rank": 170,
+  "source": "NVIDIA/skills",
+  "license": "Apache-2.0"
  },
  {
-  "name": "simplify-code",
-  "category": "software-development",
-  "description": "Parallel 4-agent cleanup of recent code changes.",
-  "dir": "software-development/simplify-code"
+  "name": "tao-train-segformer",
+  "category": "data",
+  "description": "SegFormer for semantic segmentation. Lightweight transformer-based architecture with hierarchical feature",
+  "score": 9.1,
+  "rank": 171,
+  "source": "NVIDIA/skills",
+  "license": "Apache-2.0"
  },
  {
-  "name": "spike",
-  "category": "software-development",
-  "description": "Throwaway experiments to validate an idea before build.",
-  "dir": "software-development/spike"
+  "name": "nemo-mbridge-perf-expert-parallel-overlap",
+  "category": "agent-tooling",
+  "description": "Validate and use MoE expert-parallel communication overlap in Megatron-Bridge, including overlap_moe_expert_parallel_comm, delay_wgrad_compute, and flex dispatcher backends such as DeepEP and HybridEP.",
+  "score": 9.1,
+  "rank": 172,
+  "source": "NVIDIA/skills",
+  "license": "Apache-2.0"
  },
  {
-  "name": "systematic-debugging",
-  "category": "software-development",
-  "description": "4-phase root cause debugging: understand bugs before fixing.",
-  "dir": "software-development/systematic-debugging"
+  "name": "azure-storage-queue-ts",
+  "category": "data",
+  "description": "Azure Queue Storage JavaScript/TypeScript SDK (@azure/storage-queue) for message queue operations. Use for sending, receiving, peeking, and deleting messages in queues. Supports visibility timeout, message encoding, and batch operations. Triggers: \"queue storage\", \"@azure/storage-queue\", \"QueueServiceClient\", \"QueueClient\", \"send message\", \"receive message\", \"dequeue\", \"visibility timeout\".",
+  "score": 9.1,
+  "rank": 173,
+  "source": "microsoft/skills",
+  "license": "MIT"
  },
  {
-  "name": "test-driven-development",
-  "category": "software-development",
-  "description": "TDD: enforce RED-GREEN-REFACTOR, tests before code.",
-  "dir": "software-development/test-driven-development"
+  "name": "tao-run-deft-aoi",
+  "category": "cloud",
+  "description": "Run the full DEFT AOI improvement loop for NVIDIA TAO VisualChangeNet / ChangeNet PCB inspection models:",
+  "score": 9.1,
+  "rank": 174,
+  "source": "NVIDIA/skills",
+  "license": "Apache-2.0 AND CC-BY-4.0"
  },
  {
-  "name": "unified-agent-plugins",
-  "category": "software-development",
-  "description": "Use when extending the unified-agent/plugins collection.",
-  "dir": "software-development/unified-agent-plugins"
+  "name": "azure-appconfiguration-java",
+  "category": "cloud",
+  "description": "Azure App Configuration SDK for Java. Centralized application configuration management with key-value settings, feature flags, and snapshots.",
+  "score": 9.1,
+  "rank": 175,
+  "source": "microsoft/skills",
+  "license": "MIT"
  },
  {
-  "name": "turnstile-spin",
-  "category": "turnstile-spin",
-  "description": "Set up Cloudflare Turnstile end-to-end in a project. Scan the codebase, create the widget via the Cloudflare API, embed it where user requests need bot verification (form submissions, SPA actions, API endpoints, download links, comment or vote submissions, etc.), wire canonical server-side siteverify in the customer's existing backend, validate, and persist the skill. Load this when a user asks to add Turnstile, set up CAPTCHA, protect a form or endpoint from bots, or fix a Turnstile integration. Mirrors developers.cloudflare.com/turnstile/spin.",
-  "dir": "turnstile-spin"
+  "name": "tao-finetune-cosmos-embed",
+  "category": "media",
+  "description": "Cosmos-Embed1 video-text embedding for text-to-video retrieval, video-to-video search, semantic deduplication, and",
+  "score": 9.1,
+  "rank": 176,
+  "source": "NVIDIA/skills",
+  "license": "Apache-2.0"
  },
  {
-  "name": "web-perf",
-  "category": "web-perf",
-  "description": "Analyzes web performance using Chrome DevTools MCP. Measures Core Web Vitals (LCP, INP, CLS) and supplementary metrics (FCP, TBT, Speed Index), identifies render-blocking resources, network dependency chains, layout shifts, caching issues, and accessibility gaps. Use when asked to audit, profile, debug, or optimize page load performance, Lighthouse scores, or site speed. Biases towards retrieval from current documentation over pre-trained knowledge.",
-  "dir": "web-perf"
+  "name": "cloud-logging-configuration-basics",
+  "category": "cloud",
+  "description": "Configure single-project Google Cloud Logging: regional log buckets, log sinks, log views, restricting or hiding sensitive logs in the default view (_Default) filter,",
+  "score": 9.1,
+  "rank": 177,
+  "source": "google/skills",
+  "license": "Apache-2.0"
  },
  {
-  "name": "workers-best-practices",
-  "category": "workers-best-practices",
-  "description": "Reviews and authors Cloudflare Workers code against production best practices. Load when writing new Workers, reviewing Worker code, configuring wrangler.jsonc, or checking for common Workers anti-patterns (streaming, floating promises, global state, secrets, bindings, observability). Biases towards retrieval from Cloudflare docs over pre-trained knowledge.",
-  "dir": "workers-best-practices"
+  "name": "azure-ai-openai-dotnet",
+  "category": "cloud",
+  "description": "Azure OpenAI SDK for .NET. Client library for Azure OpenAI and OpenAI services. Use for chat completions, embeddings, image generation, audio transcription, and assistants. Triggers: \"Azure OpenAI\", \"AzureOpenAIClient\", \"ChatClient\", \"chat completions .NET\", \"GPT-4\", \"embeddings\", \"DALL-E\", \"Whisper\", \"OpenAI .NET\".",
+  "score": 9.1,
+  "rank": 178,
+  "source": "microsoft/skills",
+  "license": "MIT"
  },
  {
-  "name": "wrangler",
-  "category": "wrangler",
-  "description": "Cloudflare Workers CLI for deploying, developing, and managing Workers, KV, R2, D1, Vectorize, Hyperdrive, Workers AI, Containers, Queues, Workflows, Pipelines, and Secrets Store. Load before running wrangler commands to ensure correct syntax and best practices. Biases towards retrieval from Cloudflare docs over pre-trained knowledge.",
-  "dir": "wrangler"
+  "name": "tao-train-pose-classification",
+  "category": "data",
+  "description": "Pose classification using ST-GCN (Spatial Temporal Graph Convolutional Network). Classifies skeleton sequences",
+  "score": 9.1,
+  "rank": 179,
+  "source": "NVIDIA/skills",
+  "license": "Apache-2.0"
  },
  {
-  "name": "yuanbao",
-  "category": "yuanbao",
-  "description": "Yuanbao (元宝) groups: @mention users, query info/members.",
-  "dir": "yuanbao"
+  "name": "nemo-mbridge-perf-moe-optimization-workflow",
+  "category": "agent-tooling",
+  "description": "Evidence-gated workflow for MoE performance optimization in Megatron Bridge. Covers measurement contracts, the Three Walls framework, parallel folding, profiling, matched A/B tuning, and final validation.",
+  "score": 9.1,
+  "rank": 180,
+  "source": "NVIDIA/skills",
+  "license": "Apache-2.0"
  }
 ];
 
@@ -1077,19 +1690,32 @@ const domainEl = document.getElementById('domain');
 const gridEl = document.getElementById('grid');
 const countEl = document.getElementById('count');
 
+function chip(cls, text) {
+  return `<span class="chip ${cls}">${text}</span>`;
+}
+
 function render() {
   const q = searchEl.value.trim().toLowerCase();
   const d = domainEl.value;
   const items = SKILLS.filter(s => {
     if (d && s.category !== d) return false;
     if (!q) return true;
-    return (s.name + ' ' + s.description + ' ' + s.category).toLowerCase().includes(q);
+    return (s.name + ' ' + s.description + ' ' + s.category + ' ' + (s.source || '')).toLowerCase().includes(q);
   });
   countEl.textContent = items.length === SKILLS.length
-    ? `Showing all ${SKILLS.length} skills`
+    ? `Showing all ${SKILLS.length} curated skills`
     : `${items.length} of ${SKILLS.length} skills`;
   gridEl.innerHTML = items.map(s =>
-    `<div class="card"><span class="tag">${s.category}</span><h3>${s.name}</h3><div class="desc">${s.description || '—'}</div></div>`
+    `<div class="card">`
+    + `<div class="meta">`
+    + (s.rank ? chip('rank', '#' + s.rank) : '')
+    + (s.score != null ? chip('score', 'score ' + s.score) : '')
+    + chip('tag', s.category)
+    + (s.source ? chip('source', s.source) : '')
+    + `</div>`
+    + `<h3>${s.name}</h3>`
+    + `<div class="desc">${s.description || '—'}</div>`
+    + `</div>`
   ).join('') || '<div class="empty">No skills match your filters.</div>';
 }
 

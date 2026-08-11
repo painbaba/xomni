@@ -39,23 +39,74 @@ INJECT_MAX_CHARS = 900         # memory brief budget injected into a turn
 INJECT_MIN_QUERY_LEN = 8       # only inject for non-trivial user messages
 
 
+_SCHEMA = """
+CREATE TABLE IF NOT EXISTS facts (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    text TEXT NOT NULL,
+    source TEXT NOT NULL DEFAULT 'user',
+    created REAL NOT NULL,
+    accessed REAL NOT NULL,
+    hits INTEGER NOT NULL DEFAULT 0,
+    tags TEXT NOT NULL DEFAULT ''
+)
+"""
+
+_REQUIRED_COLS = {"id", "text", "source", "created", "accessed", "hits", "tags"}
+
+
+def _schema_ok(db: sqlite3.Connection) -> bool:
+    try:
+        cols = {row[1] for row in db.execute("PRAGMA table_info(facts)")}
+        return _REQUIRED_COLS <= cols
+    except sqlite3.DatabaseError:
+        return False
+
+
+def _quarantine_corrupt_db() -> None:
+    """Move a corrupt store aside so the next connect starts fresh.
+
+    The target name is made unique so two corruptions inside the same
+    second each keep their own evidence file.
+    """
+    if not DB_PATH.exists():
+        return
+    target = STATE_DIR / f"memory.db.corrupt-{int(time.time())}"
+    n = 0
+    while target.exists():
+        n += 1
+        target = STATE_DIR / f"memory.db.corrupt-{int(time.time())}-{n}"
+    try:
+        os.replace(str(DB_PATH), str(target))
+    except OSError:
+        try:
+            os.remove(str(DB_PATH))
+        except OSError:
+            pass
+
+
 def _conn() -> sqlite3.Connection:
+    """Open the store; a corrupt/malformed DB is quarantined and rebuilt."""
     STATE_DIR.mkdir(parents=True, exist_ok=True)
-    db = sqlite3.connect(str(DB_PATH))
-    db.execute(
-        """
-        CREATE TABLE IF NOT EXISTS facts (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            text TEXT NOT NULL,
-            source TEXT NOT NULL DEFAULT 'user',
-            created REAL NOT NULL,
-            accessed REAL NOT NULL,
-            hits INTEGER NOT NULL DEFAULT 0,
-            tags TEXT NOT NULL DEFAULT ''
-        )
-        """
-    )
-    return db
+    db = None
+    for attempt in range(2):
+        try:
+            db = sqlite3.connect(str(DB_PATH))
+            db.execute(_SCHEMA)
+            if not _schema_ok(db):
+                raise sqlite3.DatabaseError("facts table is missing required columns")
+            return db
+        except sqlite3.DatabaseError:
+            if db is not None:
+                try:
+                    db.close()
+                except Exception:  # noqa: BLE001 — best-effort cleanup
+                    pass
+                db = None
+            if attempt == 0:
+                _quarantine_corrupt_db()
+            else:
+                raise
+    raise RuntimeError("unreachable")
 
 
 def remember(text: str, source: str = "user", tags: str = "") -> int:

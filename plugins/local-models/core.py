@@ -62,6 +62,8 @@ def _extract_model_ids(data) -> list[str]:
         rows = data.get("data") or data.get("models") or []
     else:
         return []
+    if not isinstance(rows, list):  # malformed payload (e.g. {"data": "oops"})
+        return []
     ids = []
     for row in rows:
         if isinstance(row, dict) and row.get("id"):

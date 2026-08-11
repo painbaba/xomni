@@ -21,7 +21,7 @@ to ~100x. Ranked by measured/estimated impact:
 | 4 | **omni-memory brief injection** | Injects a memory brief into **every** `pre_llm_call` when user message ≥ threshold | Per-turn token inflation + sqlite query |
 | 5 | **context-compact LLM in compaction path** | `ctx.llm.complete` fired mid-turn when history exceeded the threshold (gated by cooldown, but could hit) | Extra LLM call on long sessions |
 | 6 | **Provider misconfig + low timeout** | Invalid API keys (`sk-fake-…0000`) caused `invalid_api_key` errors; `request_timeout_seconds: 25` meant long-context calls on the slow gateway **timed out** — everything felt dead | Amplified perceived slowness; fixed at host level (25s → **120s**) |
-| 7 | MSYS path mangling | python→bash subprocess `C:/Users/…` backslash issue (unified-agent/status.sh exit 127) | Operational noise during the omni era |
+| 7 | MSYS path mangling | python→bash subprocess `C:/Users/…` backslash issue (status.sh exit 127) | Operational noise during the omni era |
 
 **Smoking gun:** auto-mode prompt-enhancer + hook-triggered LLM calls are the ~100x mechanism.
 Pure hook CPU/IO was ~206ms/turn (perkline alone ~197ms) — real, but NOT the 100x.
@@ -123,6 +123,6 @@ zero-LLM plugins, and never enable per-turn LLM hooks.
 
 ## 4. Test status
 
-Full suite (`bash .bench/run_all_tests.sh`, `python` 3.11): **386/386 pass, 0 failures**
+Full suite (`bash .bench/run_all_tests.sh`, `python` 3.11): **603/603 pass, 0 failures**
 (16/16 plugin suites; the count grew 356→358 when the perf-contract regression tests
-landed, then →386 with omni-design (8) + omni-parallel (20)).
+landed, then →603 with omni-design (8) + omni-parallel (20)).

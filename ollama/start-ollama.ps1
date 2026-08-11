@@ -1,4 +1,4 @@
-# ============================================================
+﻿# ============================================================
 #  XOMNI bundled Ollama starter (Windows PowerShell)
 #  Gives users LOCAL models with zero extra installs:
 #    1. Downloads the official portable Ollama build ONCE

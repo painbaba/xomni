@@ -117,6 +117,48 @@ class ParsePrListTests(unittest.TestCase):
         items = core.parse_pr_list(text)
         self.assertIs(items[0]["draft"], False)
 
+    def test_crlf_line_endings(self):
+        items = core.parse_pr_list(PR_TABLE.replace("\n", "\r\n"))
+        self.assertEqual(len(items), 4)
+        self.assertEqual(items[0]["title"], "Add the octocat logo")
+        self.assertEqual(items[3]["state"], "MERGED")
+
+    def test_header_only_no_rows(self):
+        self.assertEqual(core.parse_pr_list("NUMBER  TITLE  BRANCH  STATE  DRAFT\n"), [])
+
+    def test_none_input_is_empty(self):
+        self.assertEqual(core.parse_pr_list(None), [])
+
+    def test_missing_draft_column_does_not_crash(self):
+        text = "NUMBER  TITLE  BRANCH  STATE\n#1      X      main    OPEN\n"
+        items = core.parse_pr_list(text)
+        self.assertEqual(len(items), 1)
+        self.assertEqual(items[0]["number"], 1)
+        self.assertEqual(items[0]["state"], "OPEN")
+        self.assertIs(items[0]["draft"], False)  # absent column -> never invented
+
+    def test_missing_branch_column_does_not_crash(self):
+        text = "NUMBER  TITLE  STATE  DRAFT\n#1      X      OPEN   false\n"
+        items = core.parse_pr_list(text)
+        self.assertEqual(len(items), 1)
+        self.assertEqual(items[0]["branch"], "")
+        self.assertEqual(items[0]["state"], "OPEN")
+
+    def test_missing_state_becomes_unknown(self):
+        text = "NUMBER  TITLE  BRANCH  STATE  DRAFT\n#1      X      main\n"
+        items = core.parse_pr_list(text)
+        self.assertEqual(items[0]["state"], "UNKNOWN")
+
+    def test_non_numeric_number_rows_skipped(self):
+        text = (
+            "NUMBER  TITLE  BRANCH  STATE  DRAFT\n"
+            "#abc    broken row        OPEN   false\n"
+            "N/A     another bad row   main   OPEN   true\n"
+            "#2      good row          dev    OPEN   false\n"
+        )
+        items = core.parse_pr_list(text)
+        self.assertEqual([i["number"] for i in items], [2])
+
 
 class ParseIssueListTests(unittest.TestCase):
     def test_realistic_table(self):
@@ -143,6 +185,31 @@ class ParseIssueListTests(unittest.TestCase):
 
     def test_garbage_no_header(self):
         self.assertEqual(core.parse_issue_list("random text"), [])
+
+    def test_crlf_line_endings(self):
+        items = core.parse_issue_list(ISSUE_TABLE.replace("\n", "\r\n"))
+        self.assertEqual(len(items), 4)
+        self.assertEqual(items[0]["title"], "Crash when opening settings.json")
+
+    def test_header_only_no_rows(self):
+        self.assertEqual(core.parse_issue_list("NUMBER  TITLE  LABELS  STATE\n"), [])
+
+    def test_missing_labels_column_does_not_crash(self):
+        text = "NUMBER  TITLE  STATE\n#1      X      OPEN\n"
+        items = core.parse_issue_list(text)
+        self.assertEqual(len(items), 1)
+        self.assertEqual(items[0]["labels"], "")
+        self.assertEqual(items[0]["state"], "OPEN")
+
+    def test_more_empty_wordings(self):
+        for text in (
+            "No results found",
+            "No open issues are currently available",
+            "There are no open issues",
+            "NO PULL REQUESTS FOUND",
+        ):
+            with self.subTest(text=text):
+                self.assertEqual(core.parse_issue_list(text), [])
 
 
 class ParseTsvTests(unittest.TestCase):
@@ -183,6 +250,37 @@ class ParseTsvTests(unittest.TestCase):
         self.assertEqual(items[0]["title"], "Fix the thing")
         self.assertEqual(items[0]["state"], "OPEN")
 
+    def test_tsv_crlf_line_endings(self):
+        items = core.parse_pr_list(PR_TSV.replace("\n", "\r\n"))
+        self.assertEqual(len(items), 2)
+        self.assertEqual(items[0]["number"], 14120)
+
+    def test_tsv_short_row_pads_missing_cells(self):
+        line = "5\tTitle only\n"
+        items = core.parse_pr_list(line)
+        self.assertEqual(len(items), 1)
+        self.assertEqual(items[0]["number"], 5)
+        self.assertEqual(items[0]["title"], "Title only")
+        self.assertEqual(items[0]["branch"], "")
+        self.assertEqual(items[0]["state"], "UNKNOWN")
+
+    def test_tsv_footer_hint_skipped(self):
+        text = PR_TSV + "Use `gh pr list --author @me` to list your own pull requests.\n"
+        items = core.parse_pr_list(text)
+        self.assertEqual(len(items), 2)
+
+    def test_tsv_blank_lines_ignored(self):
+        text = "7\tFix the thing\tmain\tOPEN\t2026-01-01T00:00:00Z\n\n\n"
+        items = core.parse_pr_list(text)
+        self.assertEqual(len(items), 1)
+
+    def test_issue_tsv_extra_columns_ignored(self):
+        line = "9\tOPEN\tTitle here\tbug\t2026-01-01T00:00:00Z\tEXTRA\n"
+        items = core.parse_issue_list(line)
+        self.assertEqual(len(items), 1)
+        self.assertEqual(items[0]["title"], "Title here")
+        self.assertEqual(items[0]["labels"], "bug")
+
 
 class FormatSummaryTests(unittest.TestCase):
     def test_pr_shape(self):
@@ -212,6 +310,31 @@ class FormatSummaryTests(unittest.TestCase):
         out = core.format_summary(items, "pr")
         self.assertEqual(out.splitlines()[0], "1 PR:")
         self.assertEqual(out.splitlines()[1], "  #1 Only one [OPEN] branch: main")
+
+    def test_unknown_kind_empty(self):
+        self.assertEqual(core.format_summary([], "banana"), "Nothing found.")
+        self.assertEqual(core.format_summary([], None), "Nothing found.")
+
+    def test_unknown_kind_nonempty(self):
+        items = [{"number": 1, "title": "T", "state": "OPEN"}]
+        out = core.format_summary(items, "banana")
+        self.assertEqual(out.splitlines()[0], "1 item:")
+        self.assertIn("#1 T [OPEN]", out)
+
+    def test_issue_singular(self):
+        items = [{"number": 7, "title": "Only", "labels": "", "state": "OPEN"}]
+        out = core.format_summary(items, "issue")
+        self.assertEqual(out.splitlines()[0], "1 issue:")
+
+    def test_pr_missing_branch_renders_dash(self):
+        items = [{"number": 3, "title": "No branch", "state": "OPEN", "draft": False}]
+        out = core.format_summary(items, "pr")
+        self.assertIn("branch: -", out)
+
+    def test_issue_empty_labels_no_suffix(self):
+        items = [{"number": 4, "title": "Bare", "labels": "", "state": "OPEN"}]
+        out = core.format_summary(items, "issue")
+        self.assertNotIn("labels:", out)
 
 
 class DetectCliTests(unittest.TestCase):
@@ -261,6 +384,72 @@ class GhArgvTests(unittest.TestCase):
     def test_unknown_action_raises(self):
         with self.assertRaises(ValueError):
             core.gh_argv("frobnicate")
+
+    def test_prs_empty_repo_omits_flag(self):
+        for repo in ("", "   ", None):
+            self.assertEqual(core.gh_argv("prs", repo), ["gh", "pr", "list", "--limit", "20"])
+
+    def test_issues_empty_repo_omits_flag(self):
+        for repo in ("", "   ", None):
+            self.assertEqual(core.gh_argv("issues", repo), ["gh", "issue", "list", "--limit", "20"])
+
+    def test_status_and_me_ignore_repo(self):
+        self.assertEqual(core.gh_argv("status", "octocat/x"), ["gh", "auth", "status"])
+        self.assertEqual(core.gh_argv("me", "octocat/x"), ["gh", "api", "user", "--jq", ".login"])
+
+    def test_none_or_empty_action_raises(self):
+        with self.assertRaises(ValueError):
+            core.gh_argv(None)
+        with self.assertRaises(ValueError):
+            core.gh_argv("")
+
+
+class ClassifyErrorTests(unittest.TestCase):
+    """classify_error: auth vs network vs generic error strings."""
+
+    def test_auth_variants(self):
+        for err in (
+            "You are not logged in to any GitHub hosts.",
+            "gh: To use 'gh pr', please run 'gh auth login' first.",
+            "authentication required",
+            "Please log in via 'gh auth login'.",
+        ):
+            with self.subTest(err=err):
+                self.assertIn("not authenticated", core.classify_error(err, 1))
+
+    def test_network_variants(self):
+        for err in (
+            "dial tcp: lookup api.github.com: no such host",
+            "Get https://api.github.com: dial tcp: connection refused",
+            "connection reset by peer",
+            "request timed out after 30s",
+            "net/http: TLS handshake timeout",
+            "connect: network is unreachable",
+            "failed to connect to api.github.com port 443",
+            "github.com:443: http 500: Internal Server Error",
+        ):
+            with self.subTest(err=err):
+                self.assertIn("network error", core.classify_error(err, 1))
+
+    def test_network_error_takes_first_line(self):
+        msg = core.classify_error(
+            "dial tcp: lookup api.github.com: no such host\nmore detail", 1
+        )
+        self.assertEqual(
+            msg, "network error talking to GitHub: dial tcp: lookup api.github.com: no such host"
+        )
+
+    def test_auth_checked_before_network(self):
+        self.assertIn("not authenticated", core.classify_error("not logged in — connection refused", 1))
+
+    def test_whitespace_stderr_falls_back_to_exit_code(self):
+        self.assertEqual(core.classify_error("   \n\t", 7), "gh command failed (exit code 7).")
+
+    def test_generic_takes_first_line(self):
+        self.assertEqual(core.classify_error("boom\nsecond line", 2), "gh error: boom")
+
+    def test_none_stderr_falls_back(self):
+        self.assertEqual(core.classify_error(None, 3), "gh command failed (exit code 3).")
 
 
 class RunGhTests(unittest.TestCase):
@@ -317,6 +506,28 @@ class RunGhTests(unittest.TestCase):
         with mock.patch.object(core.subprocess, "run", return_value=fake):
             res = core.run_gh(["gh", "x"])
         self.assertEqual(res["error"], "gh command failed (exit code 3).")
+
+    def test_whitespace_stderr_falls_back(self):
+        fake = self._fake(returncode=4, stderr="   ")
+        with mock.patch.object(core.subprocess, "run", return_value=fake):
+            res = core.run_gh(["gh", "x"])
+        self.assertEqual(res["error"], "gh command failed (exit code 4).")
+
+    def test_timeout_message_includes_seconds(self):
+        with mock.patch.object(
+            core.subprocess, "run",
+            side_effect=subprocess.TimeoutExpired(cmd=["gh"], timeout=15),
+        ):
+            res = core.run_gh(["gh", "x"], timeout=15)
+        self.assertEqual(res["error"], "gh command timed out after 15s.")
+
+    def test_success_empty_stdout_ok(self):
+        fake = self._fake(returncode=0, stdout="")
+        with mock.patch.object(core.subprocess, "run", return_value=fake):
+            res = core.run_gh(["gh", "x"])
+        self.assertTrue(res["ok"])
+        self.assertEqual(res["stdout"], "")
+        self.assertIsNone(res["error"])
 
 
 class ExecuteTests(unittest.TestCase):
@@ -416,6 +627,36 @@ class ExecuteTests(unittest.TestCase):
              }):
             out = core.execute("prs")
         self.assertEqual(out, "gh is not authenticated — run 'gh auth login' first.")
+
+    def test_prs_empty_repo_argv(self):
+        for repo in (None, "", "  "):
+            fake = mock.Mock(returncode=0, stdout=EMPTY_PRS, stderr="")
+            with mock.patch.object(core.subprocess, "run", return_value=fake) as m, \
+                 mock.patch.object(core, "detect_cli", return_value={"gh": True, "glab": False}):
+                core.execute("prs", repo)
+            m.assert_called_once_with(
+                ["gh", "pr", "list", "--limit", "20"],
+                capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=30.0,
+            )
+
+    def test_me_empty_stdout(self):
+        fake = mock.Mock(returncode=0, stdout="", stderr="")
+        with mock.patch.object(core.subprocess, "run", return_value=fake), \
+             mock.patch.object(core, "detect_cli", return_value={"gh": True, "glab": False}):
+            out = core.execute("me")
+        self.assertEqual(out, "Authenticated (login unavailable)")
+
+    def test_execute_none_action(self):
+        self.assertIn("Unknown gh_ops action", core.execute(None))
+
+    def test_network_error_propagates(self):
+        with mock.patch.object(core, "detect_cli", return_value={"gh": True, "glab": False}), \
+             mock.patch.object(core, "run_gh", return_value={
+                 "ok": False, "stdout": "", "stderr": "dial tcp: no such host",
+                 "error": "network error talking to GitHub: dial tcp: no such host",
+             }):
+            out = core.execute("prs")
+        self.assertIn("network error", out)
 
 
 if __name__ == "__main__":

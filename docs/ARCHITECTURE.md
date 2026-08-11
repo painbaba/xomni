@@ -1,8 +1,8 @@
 # Architecture
 
 The unified host is **one host core + edge modules**. This is the only merge
-strategy that produces working software from six different codebases; a literal
-source merge (Python + Go + Rust, 2.7 GB across the six repos) would be an
+strategy that produces working software from seven different codebases; a literal
+source merge (Python + Go + Rust, 2.7 GB across the seven repos) would be an
 unmaintainable monolith. The AGENTS.md of the host project states the rule
 itself: *"the core is a narrow waist; capability lives at the edges."* We follow
 it.
@@ -12,7 +12,7 @@ it.
 The local git checkout is the host source:
 `C:\Users\HP\AppData\Local\hermes\hermes-agent` (public mirror:
 `NousResearch/hermes-agent`, Python, MIT, ~228k stars). It is the only one of
-the six tools with:
+the seven tools with:
 
 - skills + memory persistence across sessions
 - plugin system (ctx API: commands, tools, hooks) — the sanctioned extension path
@@ -22,6 +22,14 @@ the six tools with:
 Everything else lands as a module **on** this core, never **in** it.
 
 ## 2. Edge modules (shipped)
+
+**16 edge modules are shipped as of 2026-08-12** — the three deep-dives below
+plus: `provider-pool` (25 verified free models), `context-compact` (jcode),
+`sandbox-gate` (Codex), `mcp-catalog` (Goose), `context-loader`,
+`verify-runner`, `gh-ops`, `local-models`, `title-statusline` (OpenCode),
+`omni-memory`, `omni-media` (OpenClaw), `omni-design`, `omni-parallel`, and
+the sponsorship pair. Full per-plugin matrix, tests, and statuses:
+[`docs/FEATURES.md`](FEATURES.md). The sections below detail the first three.
 
 ### 2.1 Sponsorship module (`plugins/waitperk`) — the WaitPerk fundamental
 
@@ -115,8 +123,16 @@ more than budget. `~/.perkline/current.txt` is the external statusline sink.
    plugin-local files — no core files touched.
 4. **No telemetry without opt-in**: the sync endpoint is off by default.
 
-## 4. Deferred (see PORT-PLAN.md)
+## 4. Deferred (see FEATURES.md roadmap)
 
-jcode RAM-compaction for long sessions, Codex-style sandboxing, Goose-style MCP
-catalog wiring, OpenCode-style first-class statusline surface in the Hermes TUI,
-Aider git-diff discipline (precise patch application).
+Now SHIPPED (previously deferred in this list): jcode RAM-compaction
+(`plugins/context-compact`), Codex-style sandboxing (`plugins/sandbox-gate`),
+Goose-style MCP catalog wiring (`plugins/mcp-catalog`), OpenCode-style
+statusline surface (`plugins/title-statusline`), and OpenClaw memory/media
+(`plugins/omni-memory`, `plugins/omni-media`).
+
+Still deferred:
+- Aider git-diff discipline (precise patch application) — queued
+- Repo-map tree-sitter upgrade (repomap regex v1 shipped) — parked P3b
+- LSP servers integration, jcode OAuth provider flows — queued
+- Real sponsor sync network / productized marketplace — parked (business decision)

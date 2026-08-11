@@ -2,7 +2,7 @@
 # ============================================================
 #  XOMNI launcher (git-bash / POSIX)
 #  One agent. Every feature. Every free model.
-#  Starts the Hermes host with all 14 XOMNI plugins loaded.
+#  Starts the Hermes host with all 16 XOMNI plugins loaded.
 #  Usage:  ./run.sh                (interactive chat)
 #          ./run.sh chat -q "..."  (one-shot)
 #          ./run.sh --continue     (resume last session)
@@ -17,5 +17,5 @@ if command -v ollama >/dev/null 2>&1 && ! curl -sf --max-time 2 http://127.0.0.1
         sleep 2
     done
 fi
-echo "[XOMNI] starting host + 14 plugins..."
+echo "[XOMNI] starting host + 16 plugins..."
 hermes "$@"
