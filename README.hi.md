@@ -3,9 +3,9 @@
 **XOMNI** (X + Omni = सब कुछ, एक में) एक सिंगल टर्मिनल एजेंट है — सात सबसे अच्छे open-source coding agents **Hermes, OpenCode, jcode, Codex, Aider, Goose, OpenClaw** की सिग्नेचर ताकतें एक ही host पर, साथ में बिल्ट-इन **sponsorship engine** जो आपको आपके installs के लिए पैसे देता है।
 
 - **हमेशा फ्री।** MIT sources, कोई license key नहीं, कोई "pro" wall नहीं। एजेंट फ्री bait है; sponsorship network ही असली product है।
-- **एक command में install।** Windows + POSIX launchers, सभी 16 plugins अपने आप load।
+- **एक command में install।** Windows + POSIX launchers, सभी 17 plugins अपने आप load।
 - **25 verified free models** — हर एक को test करके देखा गया कि वाकई चलता है (deepseek-v4-*, qwen3.8-max, glm-5.2, kimi-k3, minimax-m3 vision, और भी), provider pool + live health checks के साथ।
-- **635 passing tests** पूरे plugin suite में।
+- **647 passing tests** पूरे plugin suite में।
 - **कमाते हुए काम करें**: 50/50 impression-share sponsorship payouts, receipts, escrow caps, second-price auctions।
 
 > Design rule: **compose करो, merge मत करो।** सात codebases का literal merge (Python + Go + Rust) एक टूटा हुआ monolith बनाएगा। XOMNI एक host है (Hermes — सातों में सबसे rich framework, MIT, और इकलौता जिसमें skills/memory/cron/plugins/gateway हैं) और बाकी agents की सिग्नेचर ताकतें edge modules के रूप में port की गई हैं।
@@ -24,7 +24,7 @@
 | Goose | Rust | MCP-native extensibility | MCP-server catalog conventions | SHIPPED (`plugins/mcp-catalog`) |
 | OpenClaw | TypeScript | Personal assistant: persistent semantic memory, media understanding (OCR/vision), platform-native automation | Local memory + media pipeline | SHIPPED (`plugins/omni-memory`, `plugins/omni-media`) |
 
-## 16 plugins
+## 17 plugins
 
 | Plugin | क्या करता है | Origin strength |
 |---|---|---|
@@ -55,7 +55,7 @@ run.cmd
 ./run.sh
 ```
 
-Launcher सभी 16 plugins के साथ Hermes host शुरू करता है — interactive chat, `-q` one-shots, `--continue` resume। Plugins drop-in install भी हो सकती हैं:
+Launcher सभी 17 plugins के साथ Hermes host शुरू करता है — interactive chat, `-q` one-shots, `--continue` resume। Plugins drop-in install भी हो सकती हैं:
 
 ```bash
 cp -r plugins/* ~/AppData/Local/hermes/plugins/
@@ -67,10 +67,10 @@ hermes plugins enable waitperk perkline repomap
 ```bash
 cd plugins/waitperk && python -m unittest tests.test_core -v
 cd plugins/repomap  && python -m unittest tests.test_core -v
-# ... पूरे suite में 635 tests
+# ... पूरे suite में 647 tests
 ```
 
-Live verified (2026-08-12): **635/635 tests pass, 0 failures.**
+Live verified (2026-08-12): **647/647 tests pass, 0 failures.**
 
 | Plugin | Tests | Plugin | Tests |
 |---|---|---|---|

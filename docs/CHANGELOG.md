@@ -1,12 +1,12 @@
 # XOMNI Changelog
 
-> Current: **16 plugins / 635 tests / 519 skills / 311 MCPs**
+> Current: **17 plugins / 647 tests / 519 skills / 311 MCPs**
 > All entries are taken verbatim from `git log`; nothing invented.
 
 ## 2026-08-12
 
 - `da432f3` — site: 7 theme columns (auto-fit grid), heading fix
-- `ee24e9e` — XOMNI: 16 plugins, flagship site, skills+MCP catalogs, 635 tests green
+- `ee24e9e` — XOMNI: 17 plugins, flagship site, skills+MCP catalogs, 647 tests green
 
 ## 2026-08-11
 

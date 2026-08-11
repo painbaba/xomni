@@ -27,7 +27,7 @@
 | P0 | **Capability-declared model registry** (kosong design) | 25-model pool becomes self-describing: per-model ctx/thinking/vision/tool-use; models.dev sync; honest capability display on the site | provider-pool upgrade |
 | P0 | **SKILL.md interop loader + marketplace installer** | Ecosystem unlock — install anthropics/skills + wshobson/agents + claude-plugins content into the Hermes skills surface; XOMNI content becomes portable | new plugin (omni-skills) |
 | P0 | **Hybrid codebase index** (BM25 + embeddings, incremental) | The core moat both Cursor (2026 indexing) and Claude (codegraph) converge on; repomap on-demand → persistent index | repomap upgrade |
-| P1 | **Tool-search pattern** (on-demand tool loading) | 16 plugins + 311 MCP servers will blow the 30-50-tool accuracy ceiling; catalog-in-context, load-on-use | host-level pattern + mcp-catalog |
+| P1 | **Tool-search pattern** (on-demand tool loading) | 17 plugins + 311 MCP servers will blow the 30-50-tool accuracy ceiling; catalog-in-context, load-on-use | host-level pattern + mcp-catalog |
 | P1 | **Sandbox abstraction** (LocalKaos/E2B-style) | sandbox-gate grows from classifier to execution sandbox (win/lateral move vs Codex) | sandbox-gate v2 |
 | P1 | **Model routing with budget alerts** (Cursor Router style) | cost-aware Auto mode over the 25-model pool; budget caps per session | provider-pool |
 | P1 | **Fail-closed hooks/guardrails** | Kimi's are fail-open (documented weakness) — our posture is already stricter; formalize the hook bus + blocking semantics | sandbox-gate + docs |
