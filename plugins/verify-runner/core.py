@@ -151,11 +151,11 @@ def discover_lint_command(dir: str) -> str:
     """
     for marker in RUFF_MARKERS:
         if os.path.exists(os.path.join(dir, marker)):
-            return "ruff"
+            return "ruff check ."
     if _pyproject_wants_ruff(dir):
-        return "ruff"
+        return "ruff check ."
     if shutil.which("ruff"):
-        return "ruff"
+        return "ruff check ."
     files = changed_py_files(dir)
     if not files:
         return "python -m py_compile"

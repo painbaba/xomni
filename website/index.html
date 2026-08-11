@@ -141,6 +141,7 @@ footer.site-footer{border-top:1px solid var(--border);padding:40px 24px;margin-t
       <a href="index.html" aria-current="true">Home</a>
       <a href="skills.html">Skills</a>
       <a href="mcp.html">MCP Catalog</a>
+      <a href="gallery.html">Gallery</a>
       <a href="docs/install.html">Docs</a>
       <a href="docs/sponsorship.html">Sponsorship</a>
       <a href="https://github.com/painbaba/xomni">GitHub</a>
@@ -178,7 +179,7 @@ footer.site-footer{border-top:1px solid var(--border);padding:40px 24px;margin-t
     <div class="stat"><strong class="num" data-count="17">0</strong><span>plugins shipped</span></div>
     <div class="stat"><strong class="num" data-count="170">0</strong><span>skills</span></div>
     <div class="stat"><strong class="num" data-count="25">0</strong><span>verified free models</span></div>
-    <div class="stat"><strong class="num" data-count="647">0</strong><span>tests passing</span></div>
+    <div class="stat"><strong class="num" data-count="677">0</strong><span>tests passing</span></div>
     <div class="stat"><strong class="num" data-count="42">0</strong><span>domains</span></div>
   </section>
   <section class="block reveal" id="compose">
@@ -289,10 +290,10 @@ footer.site-footer{border-top:1px solid var(--border);padding:40px 24px;margin-t
   function boot(){
     var cmd=qs('#typedCmd'),lines=qs('#termLines');
     var text='hermes run --compose';
-    if(RM){cmd.textContent=text;lines.innerHTML='<div class="out">▸ 7 agents online — Hermes host core</div><div class="out">▸ 17 plugins loaded — <b>0 hooks in hot path</b></div><div class="out">▸ 170 skills indexed across 42 domains</div><div class="out">▸ 25 free models verified — <b>latency 2–26s, honest</b></div><div class="out ok">▸ 647/647 tests passing</div>';return}
+    if(RM){cmd.textContent=text;lines.innerHTML='<div class="out">▸ 7 agents online — Hermes host core</div><div class="out">▸ 17 plugins loaded — <b>0 hooks in hot path</b></div><div class="out">▸ 170 skills indexed across 42 domains</div><div class="out">▸ 25 free models verified — <b>latency 2–26s, honest</b></div><div class="out ok">▸ 677/677 tests passing</div>';return}
     var i=0;
     function type(){if(i<=text.length){cmd.textContent=text.slice(0,i);i++;setTimeout(type,60+Math.random()*50)}else{enter()}}
-    function enter(){var linesArr=['<div class="out">▸ 7 agents online — Hermes host core</div>','<div class="out">▸ 17 plugins loaded — <b>0 hooks in hot path</b></div>','<div class="out">▸ 170 skills indexed across 42 domains</div>','<div class="out">▸ 25 free models verified — <b>latency 2–26s, honest</b></div>','<div class="out ok">▸ 647/647 tests passing</div>'];
+    function enter(){var linesArr=['<div class="out">▸ 7 agents online — Hermes host core</div>','<div class="out">▸ 17 plugins loaded — <b>0 hooks in hot path</b></div>','<div class="out">▸ 170 skills indexed across 42 domains</div>','<div class="out">▸ 25 free models verified — <b>latency 2–26s, honest</b></div>','<div class="out ok">▸ 677/677 tests passing</div>'];
       var k=0;function line(){if(k<linesArr.length){lines.innerHTML+=linesArr[k];k++;setTimeout(line,90)}}
       setTimeout(line,120);
     }

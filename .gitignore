@@ -37,3 +37,8 @@ skills/security/agent-battle-arena/references/supply-chain-and-keeper-attacks.md
 # os
 .DS_Store
 Thumbs.db
+
+# python build artifacts
+build/
+*.egg-info/
+.pytest_cache/

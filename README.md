@@ -14,7 +14,7 @@ a built-in **sponsorship engine** that pays you for your installs.
 - **25 verified free models** — every one tested to actually work (deepseek-v4-*,
   qwen3.8-max, glm-5.2, kimi-k3, minimax-m3 vision, and more) via the provider
   pool with live health checks.
-- **647 passing tests** across the plugin suite.
+- **677 passing tests** across the plugin suite.
 - **Earn while you work**: 50/50 impression-share sponsorship payouts, receipts,
   escrow caps, second-price auctions.
 
@@ -62,6 +62,18 @@ a built-in **sponsorship engine** that pays you for your installs.
 
 ## Install (one command)
 
+**A) pip (recommended — installs the `xomni` CLI):**
+
+```bash
+pip install .            # from the repo root — or: pip install git+https://github.com/painbaba/xomni
+xomni doctor             # verify the environment
+xomni plugins install    # load all 17 plugins into the Hermes plugins dir
+xomni skill search <q>   # search skills from the terminal
+xomni providers          # every provider Hermes supports, one table
+```
+
+**B) launcher (zero-pip, from a checkout):**
+
 ```bash
 # Windows
 run.cmd
@@ -83,22 +95,22 @@ hermes plugins enable waitperk perkline repomap
 ```bash
 cd plugins/waitperk && python -m unittest tests.test_core -v
 cd plugins/repomap  && python -m unittest tests.test_core -v
-# ... 647 tests total across the suite
+# ... 677 tests total across the suite
 ```
 
-Verified live (2026-08-12): **647/647 tests pass, 0 failures.**
+Verified live (2026-08-12): **677/677 tests pass, 0 failures.**
 
 | Plugin | Tests | Plugin | Tests |
 |---|---|---|---|
-| gh-ops | 60 | verify-runner | 38 |
-| context-loader | 34 | context-compact | 30 |
-| local-models | 40 | sandbox-gate | 29 |
-| title-statusline | 27 | mcp-catalog | 26 |
-| provider-pool | 16 | repomap | 15 |
-| waitperk | 14 | perkline | 11 |
-| omni-media | 9 | omni-memory | 8 |
+| gh-ops | 99 | verify-runner | 38 |
+| context-loader | 69 | context-compact | 31 |
+| local-models | 87 | sandbox-gate | 67 |
+| title-statusline | 32 | mcp-catalog | 26 |
+| provider-pool | 36 | repomap | 42 |
+| waitperk | 34 | perkline | 18 |
+| omni-media | 27 | omni-memory | 26 |
 | omni-design | 8 | omni-parallel | 20 |
-| omni-skills | 12 |  |  |
+| omni-skills | 17 |  |  |
 
 ## Verified free-model routing (live-tested)
 

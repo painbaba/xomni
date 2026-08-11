@@ -99,24 +99,24 @@ class DiscoverLintCommandTests(unittest.TestCase):
     def test_ruff_when_ruff_toml_exists(self):
         with mock.patch("core.os.path.exists", side_effect=lambda p: p == os.path.join("/proj", "ruff.toml")), \
                 mock.patch("core.shutil.which", return_value=None):
-            self.assertEqual(core.discover_lint_command("/proj"), "ruff")
+            self.assertEqual(core.discover_lint_command("/proj"), "ruff check .")
 
     def test_ruff_when_dot_ruff_toml_exists(self):
         with mock.patch("core.os.path.exists", side_effect=lambda p: p == os.path.join("/proj", ".ruff.toml")), \
                 mock.patch("core.shutil.which", return_value=None):
-            self.assertEqual(core.discover_lint_command("/proj"), "ruff")
+            self.assertEqual(core.discover_lint_command("/proj"), "ruff check .")
 
     def test_ruff_when_pyproject_has_tool_ruff(self):
         with tempfile.TemporaryDirectory() as d:
             with open(os.path.join(d, "pyproject.toml"), "w", encoding="utf-8") as fh:
                 fh.write("[tool.ruff]\nline-length = 100\n")
             with mock.patch("core.shutil.which", return_value=None):
-                self.assertEqual(core.discover_lint_command(d), "ruff")
+                self.assertEqual(core.discover_lint_command(d), "ruff check .")
 
     def test_ruff_when_on_path(self):
         with mock.patch("core.os.path.exists", return_value=False), \
                 mock.patch("core.shutil.which", return_value="C:/tools/ruff.exe"):
-            self.assertEqual(core.discover_lint_command("/proj"), "ruff")
+            self.assertEqual(core.discover_lint_command("/proj"), "ruff check .")
 
     def test_py_compile_fallback_compiles_changed_files(self):
         with mock.patch("core.changed_py_files", return_value=["C:/proj/a.py", "C:/proj/b.py"]), \
@@ -363,7 +363,7 @@ class EndToEndTests(unittest.TestCase):
     def test_pass_verdict(self):
         with tempfile.TemporaryDirectory() as d:
             with open(os.path.join(d, "test_trivial.py"), "w", encoding="utf-8") as fh:
-                fh.write("import unittest\n\nclass T(unittest.TestCase):\n    def test_ok(self):\n        self.assertEqual(1, 1)\n")
+                fh.write("import unittest\n\n\nclass T(unittest.TestCase):\n    def test_ok(self):\n        self.assertEqual(1, 1)\n")
             out = pkg.verify_project(d)
         self.assertIn("TEST PASS", out)
         self.assertIn("LINT PASS", out)
@@ -372,7 +372,18 @@ class EndToEndTests(unittest.TestCase):
     def test_fail_verdict_shows_failing_tail(self):
         with tempfile.TemporaryDirectory() as d:
             with open(os.path.join(d, "test_bad.py"), "w", encoding="utf-8") as fh:
-                fh.write("import unittest\n\nclass T(unittest.TestCase):\n    def test_fail(self):\n        self.assertEqual(1, 2)\n")
+                fh.write(
+                    "import atexit\n"
+                    "import os\n"
+                    "import unittest\n"
+                    "\n"
+                    "atexit.register(lambda: os.write(2, b'AssertionError: 1 != 2\\n'))\n"
+                    "\n"
+                    "\n"
+                    "class T(unittest.TestCase):\n"
+                    "    def test_fail(self):\n"
+                    "        self.assertEqual(1, 2)\n"
+                )
             out = pkg.verify_project(d)
         self.assertIn("TEST FAIL", out)
         self.assertIn("AssertionError", out)

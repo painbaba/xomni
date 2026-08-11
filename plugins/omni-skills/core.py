@@ -185,3 +185,97 @@ def fingerprint(skill_dir: str) -> str:
         except OSError:
             pass
     return h.hexdigest()[:16]
+
+
+# ------------------------------------------------------------------ search
+def find_xomni_home() -> str:
+    """XOMNI checkout root (env XOMNI_HOME, else ../.. from the plugin dir)."""
+    env = os.environ.get("XOMNI_HOME")
+    if env and os.path.isdir(env):
+        return env
+    cand = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                        "..", ".."))
+    return cand if os.path.isdir(os.path.join(cand, "plugins")) else ""
+
+
+def search_skills(query: str, limit: int = 20) -> list[dict]:
+    """Search curated DB (checkout) then fall back to skill trees. Returns
+    [{name, rank?, category?, source?, description?}]."""
+    q = (query or "").lower()
+    if not q:
+        return []
+    hits = []
+    home = find_xomni_home()
+    db = os.path.join(home, "data", "curated-skills.json") if home else ""
+    if db and os.path.isfile(db):
+        try:
+            for s in json.load(open(db, encoding="utf-8")):
+                hay = " ".join(str(s.get(k, "")) for k in
+                               ("name", "category", "description", "purpose",
+                                "content", "source", "tags")).lower()
+                if q in hay:
+                    hits.append({"name": s.get("name", "?"),
+                                 "rank": s.get("rank", "?"),
+                                 "category": s.get("category", ""),
+                                 "description": str(s.get("description", ""))[:90],
+                                 "source": "curated-db"})
+                    if len(hits) >= limit:
+                        return hits
+        except (OSError, ValueError):
+            pass
+    for label, root in (("hermes-skills", os.path.expanduser("~/AppData/Local/hermes/skills")),
+                        ("checkout-skills", os.path.join(home, "skills") if home else "")):
+        if not root or not os.path.isdir(root):
+            continue
+        for base, _dirs, files in os.walk(root):
+            if "SKILL.md" not in files:
+                continue
+            path = os.path.join(base, "SKILL.md")
+            try:
+                text = open(path, encoding="utf-8", errors="ignore").read()
+            except OSError:
+                continue
+            if q in text.lower():
+                hits.append({"name": os.path.basename(base), "rank": "",
+                             "category": label, "description": "", "source": label,
+                             "path": path})
+                if len(hits) >= limit:
+                    return hits
+    return hits
+
+
+def list_plugins(plugins_dir: str | None = None) -> list[dict]:
+    """Inventory plugin packages -> [{name, has_hooks, tests?}]."""
+    d = plugins_dir or os.path.join(find_xomni_home() or os.path.dirname(
+        os.path.dirname(os.path.abspath(__file__))), "plugins")
+    out = []
+    if not os.path.isdir(d):
+        return out
+    for entry in sorted(os.listdir(d)):
+        p = os.path.join(d, entry)
+        if not (os.path.isdir(p) and os.path.isfile(os.path.join(p, "__init__.py"))):
+            continue
+        src = open(os.path.join(p, "__init__.py"), encoding="utf-8", errors="ignore").read()
+        out.append({"name": entry, "has_hooks": "register_hook" in src})
+    return out
+
+
+def env_status() -> dict:
+    """XOMNI environment summary (plugins, skills, data, models)."""
+    home = find_xomni_home()
+    plugins = list_plugins()
+    skills_count = 0
+    for root in (os.path.join(home, "skills"), os.path.expanduser("~/AppData/Local/hermes/skills")):
+        if os.path.isdir(root):
+            skills_count += sum(1 for e in os.listdir(root)
+                                if os.path.isfile(os.path.join(root, e, "SKILL.md")))
+    data = {}
+    for f in ("curated-skills.json", "mcps.json"):
+        p = os.path.join(home, "data", f)
+        if os.path.isfile(p):
+            try:
+                data[f] = len(json.load(open(p, encoding="utf-8")))
+            except (OSError, ValueError):
+                data[f] = "?"
+    return {"xomni_home": home, "plugins": plugins,
+            "plugins_total": len(plugins), "skills_total": skills_count, "data": data}

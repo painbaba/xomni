@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "xomni"
+version = "1.0.0"
+description = "One agent. Every feature. Every free model. — XOMNI composes 7 agents on one host with plugins, skills, free-model routing and a sponsorship engine."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+keywords = ["ai", "agent", "hermes", "plugins", "skills", "llm", "mcp"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+
+[project.scripts]
+xomni = "xomni_cli:main"
+
+[tool.setuptools.packages.find]
+where = [".", "plugins"]
+include = ["xomni_cli", "xomni_cli.*", "*"]
+exclude = ["data*", "skills*", "website*", "docs*", "tmp*", ".tmp*", ".bench*",
+           ".git*", ".pytest_cache*", "tests*", "scripts*", "ollama*", "build*",
+           "work*", "omni-backup*", "unified-agent*", "vendor*"]
+
+[tool.setuptools.package-data]
+"*" = ["*.yaml", "*.md", "*.txt", "*.html", "templates/*", "references/*", "examples/*", "*.json"]

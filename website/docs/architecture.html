@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#050607">
+<title>Architecture — Docs</title>
+<meta name="description" content="XOMNI architecture: one host core plus edge modules — compose, don't merge. Plugin anatomy and data pipelines.">
+<link rel="icon" type="image/svg+xml" href="../favicon.svg">
+<link rel="stylesheet" href="../css/style.css">
+<style>
+/* ===== flagship void/emerald token aliases (map to css/style.css palette) ===== */
+:root{
+  --font-sans:var(--sans);--font-mono:var(--mono);
+  --radius-1:6px;--dur-fast:150ms;--dur-med:300ms;--ease-out-expo:cubic-bezier(.16,1,.3,1);
+  --surface-1:var(--bg-soft);--surface-2:var(--panel);--elevated:var(--card);
+  --ink:var(--text);--faint:#7B828A;
+  --accent-hover:#00FFB0;--accent-dim:var(--accent2);--success:var(--green);--danger:var(--red);--warning:var(--amber);
+}
+/* ===== flagship nav ===== */
+html{scroll-behavior:smooth}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+::selection{background:color-mix(in srgb,var(--accent) 35%,transparent)}
+.skip-link{position:absolute;left:-999px;top:0;background:var(--accent);color:#000;padding:10px 16px;z-index:100;border-radius:0 0 var(--radius-1) 0}
+.skip-link:focus{left:0}
+header.site-nav{display:block;position:sticky;top:0;z-index:50;background:var(--bg);border-bottom:1px solid var(--border);transition:box-shadow var(--dur-med),border-color var(--dur-med)}
+header.site-nav.scrolled{box-shadow:0 8px 24px rgba(0,0,0,.5)}
+.nav-inner{max-width:1200px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;gap:24px}
+.wordmark{font-family:var(--font-mono);font-weight:700;font-size:17px;letter-spacing:.12em;color:var(--accent)}
+.wordmark:hover{text-decoration:none}
+.wordmark span{color:var(--ink)}
+.nav-links{display:flex;gap:4px;margin-left:auto;align-items:center;flex-wrap:wrap}
+.nav-links a{padding:8px 12px;border-radius:var(--radius-1);color:var(--muted);font-size:14px;position:relative;transition:color var(--dur-fast)}
+.nav-links a::after{content:"";position:absolute;left:12px;right:12px;bottom:4px;height:1px;background:var(--accent);transform:scaleX(0);transform-origin:left;transition:transform var(--dur-med) var(--ease-out-expo)}
+.nav-links a:hover{color:var(--ink)}
+.nav-links a:hover::after{transform:scaleX(1)}
+.nav-links a[aria-current="page"]{color:var(--accent)}
+.nav-links a[aria-current="page"]::after{transform:scaleX(1)}
+.nav-links .nav-cta{margin-left:0;padding:8px 16px!important;min-height:36px}
+.btn-primary{background:var(--accent);border-color:var(--accent);color:#000;font-weight:600}
+.btn-primary:hover{background:var(--accent-hover);box-shadow:0 0 24px var(--accent-dim);color:#000;text-decoration:none}
+.bg-grid{position:fixed;inset:0;z-index:-1;pointer-events:none;background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);background-size:56px 56px;opacity:.35;mask-image:radial-gradient(ellipse 80% 60% at 50% 0%,#000 40%,transparent 75%)}
+/* ===== docs polish (emerald, no legacy blues) ===== */
+.docs-body h2{scroll-margin-top:96px}
+.docs-link.active{background:color-mix(in srgb,var(--accent) 8%,transparent)}
+@media(max-width:860px){
+  header.site-nav{display:block;position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--border);padding:0}
+  .nav-inner{flex-wrap:wrap;padding:12px 20px}
+  .nav-links .nav-cta{margin:0}
+}
+@media(max-width:600px){.nav-links{display:none}}
+@media (prefers-reduced-motion: reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}.bg-grid{display:none}}
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<div class="bg-grid" aria-hidden="true"></div>
+<header class="site-nav" id="siteNav">
+  <div class="nav-inner">
+    <a class="wordmark" href="../index.html">XOMNI<span>.</span></a>
+    <nav class="nav-links" aria-label="Primary">
+      <a href="../index.html">Home</a>
+      <a href="../skills.html">Skills</a>
+      <a href="../mcp.html">MCP Catalog</a>
+      <a href="../gallery.html">Gallery</a>
+      <a href="architecture.html" aria-current="page">Docs</a>
+      <a href="sponsorship.html">Sponsorship</a>
+      <a href="https://github.com/painbaba/xomni">GitHub</a>
+      <a class="nav-cta btn-primary" href="install.html">Install</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+  <div class="container page">
+    <aside class="docs-side" aria-label="Docs navigation">
+      <p class="docs-h">Docs</p>
+      <a href="architecture.html" class="docs-link active" aria-current="page">Architecture</a>
+      <a href="install.html" class="docs-link">Install</a>
+      <a href="byo-provider.html" class="docs-link">BYO Provider</a>
+      <a href="sponsorship.html" class="docs-link">Sponsorship</a>
+      <a href="faq.html" class="docs-link">FAQ</a>
+      <a href="security.html" class="docs-link">Security</a>
+      <p class="docs-h">Site</p>
+      <a href="../skills.html" class="docs-link">Skills</a>
+      <a href="../index.html" class="docs-link">Home</a>
+    </aside>
+
+    <article class="docs-body">
+      <h1>Architecture</h1>
+      <p class="lead">XOMNI is <strong>one host core + edge modules</strong>. Seven source codebases — Python, Go, and Rust across seven repos, ~2.7 GB — are composed into one working agent without merging a line of their source.</p>
+
+      <h2 id="compose">Compose, don't merge</h2>
+      <p>A literal source merge of the seven repos would be an unmaintainable monolith. The host project's <span class="mono">AGENTS.md</span> states the rule that makes composition work: <em>"the core is a narrow waist; capability lives at the edges."</em></p>
+      <blockquote>
+        <p>Everything else lands as a module <strong>on</strong> this core, never <strong>in</strong> it.</p>
+      </blockquote>
+      <p>Each ported capability keeps its own directory, its own state, and its own tests; the host only ever sees it through the plugin API. That is the entire merge strategy — there is no other.</p>
+
+      <h2 id="host-core">The host core: Hermes</h2>
+      <p>XOMNI <em>is</em> Hermes. The local checkout at <span class="mono">AppData\Local\hermes\hermes-agent</span> (public mirror: <span class="mono">NousResearch/hermes-agent</span>, Python, MIT) is the only one of the seven tools with:</p>
+      <ul class="check-list">
+        <li>Skills + memory persistence across sessions.</li>
+        <li>A plugin system — the <span class="mono">ctx</span> API (commands, tools, hooks) — the sanctioned extension path.</li>
+        <li>Cron/scheduling, subagent delegation, and a multi-platform gateway.</li>
+        <li>A real terminal and browser driver.</li>
+      </ul>
+
+      <h2 id="seven-agents">Seven agents, one host</h2>
+      <div class="table-wrap">
+      <table>
+        <thead><tr><th>Tool</th><th>Language</th><th>Signature strength</th><th>Where it lands in XOMNI</th></tr></thead>
+        <tbody>
+          <tr><td>Hermes</td><td>Python</td><td>Full agent framework: skills, memory, cron, plugins, gateway</td><td>The host core (XOMNI IS Hermes)</td></tr>
+          <tr><td>OpenCode</td><td>Go</td><td>Terminal TUI, provider-agnostic loop</td><td><span class="mono">title-statusline</span>, <span class="mono">local-models</span>, <span class="mono">gh-ops</span></td></tr>
+          <tr><td>jcode</td><td>Rust</td><td>RAM-efficient harness</td><td><span class="mono">context-compact</span></td></tr>
+          <tr><td>Codex</td><td>Rust</td><td>Sandboxed execution, plan+act loop</td><td><span class="mono">sandbox-gate</span></td></tr>
+          <tr><td>Aider</td><td>Python</td><td>Repo map, surgical git diffs, images/web context, lint+test</td><td><span class="mono">repomap</span>, <span class="mono">context-loader</span>, <span class="mono">verify-runner</span></td></tr>
+          <tr><td>Goose</td><td>Rust</td><td>MCP-native extensibility</td><td><span class="mono">mcp-catalog</span></td></tr>
+          <tr><td>OpenClaw</td><td>TypeScript</td><td>Persistent semantic memory + media understanding</td><td><span class="mono">omni-memory</span>, <span class="mono">omni-media</span></td></tr>
+          <tr><td>—</td><td>—</td><td>Sponsorship fundamental</td><td><span class="mono">waitperk</span>, <span class="mono">perkline</span></td></tr>
+          <tr><td>—</td><td>—</td><td>Design + parallel-task layers</td><td><span class="mono">omni-design</span>, <span class="mono">omni-parallel</span></td></tr>
+        </tbody>
+      </table>
+      </div>
+
+      <h2 id="anatomy">Plugin anatomy</h2>
+      <p>Every one of the <strong>17 plugins</strong> (647 tests, all passing) is a self-contained directory under <span class="mono">plugins/&lt;name&gt;/</span> with the same four-part shape:</p>
+      <ul class="check-list">
+        <li><span class="mono">plugin.yaml</span> — metadata: name, version, description. That's all the host needs to discover it.</li>
+        <li><span class="mono">__init__.py</span> — the wiring: a <span class="mono">register(ctx)</span> entry point that exposes commands, tools, and hooks through the host's plugin API — never through core internals.</li>
+        <li><span class="mono">core.py</span> — the pure logic: no host imports, no <span class="mono">ctx</span> in sight, unit-testable in isolation.</li>
+        <li>Tests — counted per plugin in the auto-generated <span class="mono">docs/TEST-MATRIX.md</span> (647 / 647 passing as of 2026-08-12).</li>
+      </ul>
+      <p><strong>Zero-hooks rule.</strong> The cheapest hook is the one that is never registered: <span class="mono">omni-design</span> and <span class="mono">omni-skills</span> ship commands and tools only — zero hooks, zero per-turn cost. Even hook-bearing modules honor the rule of least behavior: waitperk's hooks always return <span class="mono">None</span> and never alter agent behavior.</p>
+
+      <h2 id="invariants">Composition invariants</h2>
+      <p>From the host's <span class="mono">AGENTS.md</span>, honored by every module:</p>
+      <ol>
+        <li><strong>Prompt-cache safe</strong> — modules never mutate past context or rebuild the system prompt.</li>
+        <li><strong>Narrow waist</strong> — nothing added to the core schema; everything ships via <span class="mono">register_hook</span> / <span class="mono">register_tool</span> / <span class="mono">register_command</span>.</li>
+        <li><strong>Plugins own their directory</strong> — state lives in plugin-local files (e.g. <span class="mono">~/.waitperk/</span>); no core files touched.</li>
+        <li><strong>No telemetry without opt-in</strong> — the sync endpoint is off by default.</li>
+      </ol>
+
+      <h2 id="pipelines">Data pipelines</h2>
+      <p>Every number below was verified live against the repo on 2026-08-12 — SQLite row counts, JSON array lengths, and file listings. Nothing carried over from memory.</p>
+      <ul class="check-list">
+        <li><span class="mono">data/build_db.py</span> — scrapes <span class="mono">data/raw/scrape{1..7}.json</span> → dedupe by sha256 → <span class="mono">data/skills.db</span>: <strong>544 rows, 505 unique</strong>, 201 ranked, 7 sources; merges curated ranks; regenerates <span class="mono">docs/SKILLS-SECURITY.md</span>.</li>
+        <li><span class="mono">data/curated-skills.json</span> — a <strong>180-entry</strong> ranked shortlist keyed by sha256 (the top-useful subset of the external-skills DB).</li>
+        <li><span class="mono">website/scripts/gen_skills.py</span> — <span class="mono">skills/**/SKILL.md</span> (170 files, 42 domain folders) → <span class="mono">website/data/skills.json</span> + <span class="mono">website/skills.html</span>.</li>
+        <li>MCP catalog pipeline — harvest scripts → <span class="mono">data/mcp/catalog.json</span> → <span class="mono">data/mcps.db</span> → <span class="mono">website/data/mcps.json</span> → <span class="mono">website/mcp.html</span>: <strong>311 servers</strong>, identical across every stage.</li>
+        <li>Test matrix — <span class="mono">docs/TEST-MATRIX.md</span> regenerated by the test harness: 647 / 647 passing, 0 failures.</li>
+      </ul>
+
+      <h2 id="sponsorship">Sponsorship rails</h2>
+      <p>Two modules own the money path. <span class="mono">waitperk</span> ships the WaitPerk fundamental — one sponsor message in the status area, revenue split 50/50 by impression share. <span class="mono">perkline</span> is the researched v2: tiered CPM/CPC/CPA pricing, local relevance matching, HMAC-SHA256 receipts, and per-sponsor escrow. The end-to-end flow:</p>
+      <div class="code-block">
+        <div class="code-head"><span class="dot dot-green"></span><span class="code-title">waitperk · impression ledger</span><button class="copy-btn" data-copy="on_session_start --> open session, pick sponsor (round-robin)
+pre_llm_call / post_tool_call --> impression += 1, current.txt rewritten
+on_session_end --> close session, persist state.json
+/sponsor --> status: sponsor, impressions, est. earnings, share %
+/sponsor sync --> sync_payload() -> POST sync_url (dry-run without url)">copy</button></div>
+        <pre><code>on_session_start ──► ledger: open session, pick sponsor (round-robin)
+pre_llm_call / post_tool_call ──► impression += 1 (skipped while paused),
+                                  active_seconds += delta, current.txt rewritten
+on_session_end ──► ledger: close session, persist state.json
+/sponsor          ──► status: sponsor, impressions, active time, est. earnings,
+                           share %, paused flag, sync mode
+/sponsor sync     ──► build sync_payload() → POST sync_url (dry-run without url)</code></pre>
+      </div>
+      <p>The invariant holds by construction: payouts are capped at what sponsors paid — <span class="mono">earnings = min(0.5 × P × your_share, 0.5 × P)</span>, so <span class="mono">Σ earnings ≤ P</span>. PerkLine generalizes it with escrow: the developer can never earn more than half the budget, and the sponsor never pays more than budget. Every render and engagement carries an HMAC-SHA256 receipt signed with the install secret. Prompts, code, and conversation content never leave the machine — only the signed sync payload does, and only when a <span class="mono">sync_url</span> is configured. Read the full model on the <a href="sponsorship.html">sponsorship page</a>.</p>
+    </article>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <div>
+      <p class="footer-brand"><span class="logo-x">X</span>OMNI</p>
+      <p class="muted">one agent. every feature. every free model.</p>
+    </div>
+    <div class="footer-cols">
+      <div class="footer-col">
+        <p class="footer-h">Docs</p>
+        <a href="architecture.html">Architecture</a>
+        <a href="install.html">Install</a>
+        <a href="byo-provider.html">BYO Provider</a>
+        <a href="sponsorship.html">Sponsorship</a>
+      </div>
+      <div class="footer-col">
+        <p class="footer-h">More</p>
+        <a href="faq.html">FAQ</a>
+        <a href="security.html">Security</a>
+        <a href="../skills.html">Skills</a>
+      </div>
+      <div class="footer-col">
+        <p class="footer-h">Project</p>
+        <a href="https://github.com/painbaba/xomni" target="_blank" rel="noopener">GitHub</a>
+        <a href="../index.html">Home</a>
+      </div>
+    </div>
+  </div>
+  <p class="footer-bottom muted">© <span data-year>2026</span> XOMNI · compose, don't merge.</p>
+</footer>
+
+<script src="../js/site.js"></script>
+</body>
+</html>

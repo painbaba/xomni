@@ -1,0 +1,312 @@
+name,category,purpose,price_model,stars,verified,url
+Neo4j Aura MCP,AI-MODELS,Graph-database memory that persists across MCP clients,FREE-TIER+ADDON,1000,false,https://github.com/neo4j-contrib/mcp-neo4j
+Pieces MCP Server,AI-MODELS,"Shared memory across Claude, Gemini AI Studio, Perplexity and Cursor",FREE-TIER+ADDON,500,false,https://github.com/pieces-app/pieces-mcp-server
+Sequential Thinking MCP,AI-MODELS,Forces structured chain-of-thought reasoning in any LLM client,FREE,38000,false,https://github.com/modelcontextprotocol/servers/tree/main/src/sequentialthinking
+groq-mcp,AI-MODELS,Run GroqCloud Llama/Whisper models with tool use from MCP clients,FREE-TIER+ADDON,43,true,https://github.com/groq/groq-mcp-server
+hf-mcp,AI-MODELS,"Hugging Face models, datasets, Spaces and Inference API via MCP",FREE-TIER+ADDON,272,true,https://github.com/huggingface/hf-mcp-server
+huggingface-mcp,AI-MODELS,"Search models, datasets, Spaces and papers on the HF Hub",FREE-TIER+ADDON,2200,false,https://github.com/huggingface/mcp-hub
+lmstudio-mcp,AI-MODELS,Use local LM Studio models (any GGUF) as an MCP tool backend,FREE,168,true,https://github.com/infinitimeless/LMStudio-MCP
+ollama-mcp,AI-MODELS,"Talk to local Ollama models (Llama, Qwen, Mistral) via MCP",FREE,170,true,https://github.com/rawveg/ollama-mcp
+openai-mcp-server,AI-MODELS,"Query OpenAI models (GPT-5.x, o-series) from any MCP client",FREE-TIER+ADDON,,true,https://github.com/cjinghong/openai-mcp-server
+perplexity-mcp,AI-MODELS,"Official Perplexity API platform access: sonar models, web search, citations",FREE-TIER+ADDON,2442,true,https://github.com/perplexityai/modelcontextprotocol
+Browser MCP (BrowserBase),BROWSER-AUTOMATION,Let the AI drive your own real Chrome browser via extension + local server,FREE,6900,true,https://github.com/browsermcp/mcp
+Browser Tools MCP,BROWSER-AUTOMATION,Real-time Chrome DevTools console access for debugging web builds,FREE,10000,false,https://github.com/AgentDeskAI/browser-tools-mcp
+Chrome DevTools MCP,BROWSER-AUTOMATION,"Debug a live browser session: network, performance traces, elements (reuses your logged-in session)",FREE,15000,false,https://github.com/ChromeDevTools/chrome-devtools-mcp
+ExecuteAutomation Playwright MCP,BROWSER-AUTOMATION,"Playwright MCP fork with AI-powered selector strategies (XPath, AI locators)",FREE,5600,false,https://github.com/executeautomation/mcp-playwright
+Playwright MCP,BROWSER-AUTOMATION,"Let the agent drive a real browser: navigate, screenshot, click, test UI",FREE,35997,true,https://github.com/microsoft/playwright-mcp
+Playwright MCP (Microsoft),BROWSER-AUTOMATION,Browser automation and web testing via Playwright's accessibility tree,FREE,36000,true,https://github.com/microsoft/playwright-mcp
+Selenium MCP,BROWSER-AUTOMATION,Control browsers through Selenium WebDriver for automation and QA,FREE,3,false,https://github.com/nayakprashant/selenium-mcp-server
+Stagehand MCP (Browserbase),BROWSER-AUTOMATION,Natural-language browser automation framework (act/extract/observe) exposed over MCP,FREE-TIER+ADDON,24000,false,https://github.com/browserbase/stagehand
+bb-browser,BROWSER-AUTOMATION,Browser-as-API control,FREE,6046,true,https://github.com/epiral/bb-browser
+browser-use-mcp,BROWSER-AUTOMATION,LLM-driven browser agent: plan + execute multi-step web tasks,FREE,108796,true,https://github.com/browser-use/browser-use
+browserbase,BROWSER-AUTOMATION,Cloud browser automation platform,FREE-TIER+ADDON,3400,true,https://github.com/browserbase/mcp-server-browserbase
+browserbase-mcp,BROWSER-AUTOMATION,Cloud browser control,FREE-TIER+ADDON,3413,true,https://github.com/browserbase/mcp-server-browserbase
+browsermcp,BROWSER-AUTOMATION,Real-browser stealth automation,FREE,6947,true,https://github.com/BrowserMCP/mcp
+cbrowser,BROWSER-AUTOMATION,Cognitive browser automation,FREE,19566,true,https://cbrowser.run.tools
+executeautomation-playwright,BROWSER-AUTOMATION,Playwright browser tools,FREE,5633,true,https://github.com/executeautomation/mcp-playwright
+mcp-chrome,BROWSER-AUTOMATION,Chrome extension control,FREE,12284,true,https://github.com/hangwin/mcp-chrome
+playwright,BROWSER-AUTOMATION,Browser automation and web scraping,FREE,36000,true,https://github.com/microsoft/playwright-mcp
+puppeteer (archived reference),BROWSER-AUTOMATION,Headless Chrome browser automation,FREE,,true,https://github.com/modelcontextprotocol/servers-archived/tree/main/src/puppeteer
+puppeteer-mcp,BROWSER-AUTOMATION,Headless Chrome automation via Puppeteer,FREE,89443,true,https://github.com/modelcontextprotocol/servers/tree/main/src/puppeteer
+AWS MCP Servers (awslabs/mcp),CLOUD-INFRA,"AWS services access: cost analysis, resource queries, Q Developer CLI integration",FREE,9585,true,https://github.com/awslabs/mcp
+Kubernetes MCP Server,CLOUD-INFRA,Conversational kubectl: troubleshoot and learn Kubernetes via natural language,FREE,800,false,https://github.com/kubenet/kubernetes-mcp-server
+Proxmox MCP Server,CLOUD-INFRA,Natural-language management and troubleshooting of Proxmox VE clusters,FREE,1000,false,https://github.com/mcp-servers/proxmox-mcp-server
+Vercel MCP,CLOUD-INFRA,"Deployment analysis: agent inspects projects, deployments and logs, fixes failures",FREE-TIER+ADDON,1500,false,https://github.com/vercel/mcp-server
+aap-mcp-server,CLOUD-INFRA,Red Hat Ansible Automation Platform job automation,FREE,32,true,https://github.com/ansible/aap-mcp-server
+aiven,CLOUD-INFRA,Aiven cloud data services management,FREE-TIER+ADDON,26,true,https://github.com/Aiven-Open/mcp-aiven
+aws-api-mcp-server,CLOUD-INFRA,"Broad AWS API access (EC2, S3, Lambda, IAM, ...) via boto3",FREE-TIER+ADDON,9585,true,https://github.com/awslabs/mcp
+aws-iac-mcp-server,CLOUD-INFRA,AWS infrastructure-as-code (CloudFormation validation),FREE-TIER+ADDON,9585,true,https://github.com/awslabs/mcp
+aws-mcp,CLOUD-INFRA,"Manage 15,000+ AWS API operations: S3, EC2, Lambda, CloudWatch, IAM",FREE-TIER+ADDON,8035,false,https://github.com/awslabs/mcp
+awslabs-mcp,CLOUD-INFRA,AWS service operations,FREE,9585,true,https://github.com/awslabs/mcp
+azure-mcp-server,CLOUD-INFRA,Azure resource management and operations,FREE-TIER+ADDON,3555,true,https://github.com/microsoft/mcp
+cloudflare,CLOUD-INFRA,Cloudflare developer platform management,FREE-TIER+ADDON,4100,false,https://github.com/cloudflare/mcp-server-cloudflare
+cloudflare-mcp,CLOUD-INFRA,"Workers, KV, R2, D1, DNS and security rules management",FREE,2100,false,https://github.com/cloudflare/mcp-server-cloudflare
+cloudflare-mcp-code-mode,CLOUD-INFRA,Cloudflare API via hosted code-mode server,FREE-TIER+ADDON,723,true,https://github.com/cloudflare/mcp
+cloudflare-mcp-server,CLOUD-INFRA,Cloudflare platform ops,FREE-TIER+ADDON,4062,true,https://github.com/cloudflare/mcp-server-cloudflare
+docker-mcp-gateway,CLOUD-INFRA,Docker container and MCP server lifecycle management,FREE,1526,true,https://github.com/docker/docker-mcp
+kubernetes-mcp,CLOUD-INFRA,Natural-language Kubernetes cluster operations (kubectl-style),FREE,,false,https://github.com/kubernetes/k8s-mcp
+mcp-server-cloudflare,CLOUD-INFRA,"Cloudflare account, Workers, DNS, KV/R2 management",FREE-TIER+ADDON,4062,true,https://github.com/cloudflare/mcp-server-cloudflare
+mcp-server-kubernetes,CLOUD-INFRA,Kubernetes cluster management via kubectl,FREE,1524,true,https://github.com/Flux159/mcp-server-kubernetes
+netlify-mcp,CLOUD-INFRA,"Netlify deploys, sites, env vars and forms",FREE-TIER+ADDON,56,true,https://github.com/netlify/netlify-mcp
+supabase,CLOUD-INFRA,"Supabase projects, tables, and queries",FREE-TIER+ADDON,2900,false,https://github.com/supabase/mcp
+terraform-mcp-server,CLOUD-INFRA,Terraform plan/apply/validate automation,FREE,1501,true,https://github.com/hashicorp/terraform-mcp-server
+vercel-mcp,CLOUD-INFRA,"Deployments, build logs, env vars and domains for Vercel projects",FREE-TIER+ADDON,1600,false,https://github.com/vercel/mcp
+workers-mcp,CLOUD-INFRA,Expose your own Cloudflare Worker as an MCP server,FREE,644,true,https://github.com/cloudflare/workers-mcp
+21st.dev,CODING,UI component generation for coders,FREE-TIER+ADDON,5600,true,https://github.com/21st-dev/magic-mcp
+21st.dev MCP (Magic),CODING,AI-generated UI components and design elements,PAID,2000,false,https://github.com/21st-dev/magic-mcp
+Clerk MCP Server,CODING,"Real user, org and session context for auth code generation",FREE-TIER+ADDON,600,false,https://github.com/clerk/clerk-mcp-server
+CodeGraph,CODING,Index codebase into a queryable call-graph to reduce agent file reads,FREE,,true,https://github.com/oraios/codegraph
+Context7,CODING,Pull current library/framework docs so the agent stops writing outdated API calls,FREE,,true,https://github.com/upstash/context7
+Figma MCP Server,CODING,"Design-to-code: exposes live Figma layer structure, tokens and layout to the agent",FREE-TIER+ADDON,1500,false,https://github.com/figma-dev/figma-mcp-server
+GitHub MCP Server,CODING,GitHub repos & issues,FREE,89405,true,https://glama.ai/mcp/servers/modelcontextprotocol/github
+GitLab MCP Server,CODING,GitLab projects & MRs,FREE,89405,true,https://glama.ai/mcp/servers/modelcontextprotocol/gitlab
+Paper MCP,CODING,"Agent-driven infinite canvas: design in a desktop canvas, implement back in code",FREE-TIER+ADDON,1000,false,https://github.com/paper-design/paper-mcp
+Pencil MCP,CODING,"Infinite design canvas inside your IDE, driven by the agent",FREE,500,false,https://github.com/pencil-ai/mcp-server
+Serena,CODING,LSP-powered code navigation + persistent memory to cut context usage,FREE,,true,https://github.com/oraios/serena
+appium-mcp,CODING,"Mobile app testing (iOS/Android) via Appium, driven by AI",FREE,449,true,https://github.com/appium/appium-mcp
+appmap-mcp,CODING,"Runtime code understanding: query recorded AppMap execution traces (slow endpoints, SQL, exceptions)",FREE,0,true,https://appmap.io/docs/reference/appmap-mcp
+atlassian-mcp,CODING,"Bitbucket, Jira, Confluence, and Jira Service Management access via Atlassian's official remote MCP",FREE,952,true,https://github.com/atlassian/atlassian-mcp-server
+cargo-mcp,CODING,Cargo package-manager commands and crate information from AI agents,FREE,16,true,https://github.com/jbr/cargo-mcp
+chrome-devtools-mcp,CODING,"Chrome DevTools Protocol access: inspect pages, debug network, run performance traces",FREE,49000,true,https://github.com/ChromeDevTools/chrome-devtools-mcp
+circleci-mcp,CODING,"CircleCI pipelines, workflows, jobs, and build logs for AI-driven CI debugging",FREE-TIER+ADDON,89,true,https://github.com/CircleCI-Public/mcp-server-circleci
+clangd-mcp,CODING,"C/C++ code intelligence via the clangd language server, exposed to AI agents",FREE,43,true,https://github.com/felipeerias/clangd-mcp-server
+codebase-memory-mcp,CODING,Code intelligence & memory,FREE,38558,true,https://github.com/DeusData/codebase-memory-mcp
+codeql-mcp,CODING,CodeQL static-analysis queries and vulnerability triage from AI agents,FREE,150,true,https://github.com/JordyZomer/codeql-mcp
+context7-mcp,CODING,"Up-to-date library documentation (latest versions) for any framework, fed to AI agents",FREE,60600,true,https://github.com/upstash/context7
+cypress-cloud-mcp,CODING,"Cypress test results, flaky-test triage, and failure debugging from Cypress Cloud",FREE-TIER+ADDON,0,true,https://docs.cypress.io/cloud/integrations/cloud-mcp
+eslint-mcp,CODING,"ESLint linting and rule configuration for JS/TS codebases, driven by AI",FREE,343,true,https://github.com/eslint/rewrite
+figma-context-mcp,CODING,Figma design context,FREE,15632,true,https://github.com/GLips/Figma-Context-MCP
+filesystem-mcp,CODING,Sandboxed read/write/search access to local files and directories,FREE,3200,false,https://github.com/modelcontextprotocol/servers
+ghidra-mcp-bethington,CODING,Ghidra 200+ tools bridge,FREE,3269,true,https://github.com/bethington/ghidra-mcp
+ghidramcp,CODING,Ghidra reverse engineering,FREE,9765,true,https://github.com/LaurieWired/GhidraMCP
+git MCP server,CODING,Git repo operations,FREE,89405,true,https://glama.ai/mcp/servers/modelcontextprotocol/git
+git-mcp,CODING,Remote git context (GitMCP),FREE,8322,true,https://github.com/idosal/git-mcp
+github (archived reference),CODING,GitHub API repository management,FREE,,true,https://github.com/modelcontextprotocol/servers-archived/tree/main/src/github
+github-mcp,CODING,"GitHub repository management: issues, PRs, code search, Actions, releases via GitHub's official MCP server",FREE,32148,true,https://github.com/github/github-mcp-server
+gitlab-mcp,CODING,"GitLab projects, issues, MRs, pipelines, and repository access from AI agents",FREE,1886,true,https://github.com/zereight/gitlab-mcp
+godot-mcp,CODING,Godot game engine control,FREE,5157,true,https://github.com/Coding-Solo/godot-mcp
+greptile-mcp,CODING,"Code-review intelligence: PR review comments, codebase context, and coding standards for agents",FREE-TIER+ADDON,0,true,https://www.greptile.com/docs/mcp-v2/overview
+jcodemunch MCP (jcodec),CODING,Indexes your codebase so the agent stops re-grepping everything (cuts token spend),FREE,,false,https://github.com/jcodec/mcp-server-jcodemunch
+jcodemunch-mcp,CODING,Token-efficient code exploration,FREE,2541,true,https://github.com/jgravelle/jcodemunch-mcp
+jenkins-mcp,CODING,"Jenkins jobs, builds, console logs, and nodes exposed to AI agents via the official MCP Server plugin",FREE,101,true,https://plugins.jenkins.io/mcp-server/
+laravel-boost,CODING,Laravel dev acceleration,FREE,3569,true,https://github.com/laravel/boost
+maven-mcp,CODING,Maven Central library version lookup for Java projects,FREE,0,true,https://github.com/IvanMikhailenka/maven-mcp
+mcp-feedback-enhanced,CODING,Interactive feedback & commands,FREE,3780,true,https://github.com/Minidoracat/mcp-feedback-enhanced
+npmjs-mcp,CODING,"npm registry intelligence: package lookup, versions, security audits, dependency analysis",FREE,0,true,https://github.com/YawLabs/npmjs-mcp
+pal-mcp-server,CODING,Multi-CLI agent orchestration,FREE,11721,true,https://github.com/BeehiveInnovations/pal-mcp-server
+playwright-mcp,CODING,"Browser automation and end-to-end testing with Playwright, driven by AI",FREE,35998,true,https://github.com/microsoft/playwright-mcp
+python-mcp,CODING,Python interpreter server: execute Python code with session state for agents,FREE,0,true,https://pypi.org/project/python-mcp-server/
+rust-tools-mcp,CODING,"Rust toolchain access: rust-analyzer diagnostics, crate docs, and cargo commands",FREE,83,true,https://github.com/terhechte/cursor-rust-tools
+semgrep-mcp,CODING,Semgrep security scanning of source code from AI agents,FREE,683,true,https://github.com/semgrep/mcp
+serena-mcp,CODING,"LSP-based code intelligence: symbols, find-references, jump-to-definition",FREE,19638,false,https://github.com/oraios/serena
+shadcn-ui-mcp-server,CODING,shadcn/ui component context,FREE,2926,true,https://github.com/Jpisnice/shadcn-ui-mcp-server
+shadcn/ui MCP Server,CODING,Browse and install shadcn/ui components from the registry via natural language,FREE,2000,false,https://github.com/shadcn-ui/mcp-server
+snyk-mcp,CODING,"Snyk vulnerability scanning of code, dependencies, and containers embedded in AI workflows",FREE-TIER+ADDON,54,true,https://github.com/snyk/studio-mcp
+sonarqube-mcp,CODING,"SonarQube code quality: issues, hotspots, metrics, and quality gates for AI-assisted code review",FREE-TIER+ADDON,619,true,https://github.com/SonarSource/sonarqube-mcp-server
+sourcegraph-mcp,CODING,Code search and navigation across Sourcegraph instances (including sourcegraph.com),FREE,0,true,https://sourcegraph.com/docs/api/mcp
+spec-workflow-mcp,CODING,Spec-driven development,FREE,4290,true,https://github.com/Pimzino/spec-workflow-mcp
+xcodebuild-mcp,CODING,Xcode build automation,FREE,6222,true,https://github.com/getsentry/XcodeBuildMCP
+Slack MCP,COMMUNICATION,"Post and read Slack messages, list channels and users from an AI agent",FREE,89000,true,https://github.com/modelcontextprotocol/servers/tree/main/src/slack
+discord,COMMUNICATION,"Discord bot gateway: read/send messages, manage channels and guilds",FREE,443,true,https://github.com/SaseQ/discord-mcp
+gmail,COMMUNICATION,Email read/send/triage,FREE,59788,true,https://gmail.run.tools
+gmail-mcp,COMMUNICATION,"Search, read, send and triage Gmail messages",FREE-TIER+ADDON,1300,false,https://github.com/GongRzhe/Gmail-MCP-Server
+linkedin-mcp-server,COMMUNICATION,LinkedIn profile ops,FREE,3085,true,https://github.com/stickerdaniel/linkedin-mcp-server
+mailgun,COMMUNICATION,Email sending + validation via Mailgun API,FREE-TIER+ADDON,57,true,https://github.com/mailgun/mailgun-mcp-server
+microsoft-365,COMMUNICATION,"Microsoft 365 umbrella: Teams, Outlook, Calendar, OneDrive via Graph",FREE,909,true,https://github.com/Softeria/ms-365-mcp-server
+onesignal,COMMUNICATION,Push notifications & messaging,FREE-TIER+ADDON,27257,true,https://onesignal.run.tools
+outlook,COMMUNICATION,"Outlook/Microsoft 365: mail, calendar, contacts via Graph + Power Automate",FREE,422,true,https://github.com/ryaker/outlook-mcp
+resend,COMMUNICATION,"Transactional email sending via Resend API (send, schedule, domains)",FREE-TIER+ADDON,559,true,https://github.com/resend/mcp
+slack,COMMUNICATION,"Chat & messaging via Slack (channels, threads, DMs, search, reactions)",FREE,1780,true,https://github.com/korotovsky/slack-mcp-server
+slack (archived reference),COMMUNICATION,Slack messaging and channel management,FREE,,true,https://github.com/modelcontextprotocol/servers-archived/tree/main/src/slack
+slack (zencoder),COMMUNICATION,Slack messaging and channel management,FREE,75,true,https://github.com/zencoderai/slack-mcp-server
+slack-mcp,COMMUNICATION,"Read/search Slack channels, send messages, manage threads",FREE-TIER+ADDON,2600,false,https://github.com/slackhq/mcp-server
+teams,COMMUNICATION,Microsoft Teams: read/send chats and channel messages,FREE,125,true,https://github.com/floriscornel/teams-mcp
+telegram,COMMUNICATION,"Telegram: send/receive messages, manage chats as a user or bot",FREE,1441,true,https://github.com/chigwell/telegram-mcp
+whatsapp,COMMUNICATION,WhatsApp: send/receive messages via WhatsApp Web pairing,FREE,6138,true,https://github.com/lharries/whatsapp-mcp
+whatsapp-mcp,COMMUNICATION,WhatsApp messaging,FREE,6138,true,https://github.com/lharries/whatsapp-mcp
+zoom,COMMUNICATION,"Zoom: meetings, users, account settings via Server-to-Server OAuth",FREE,28,true,https://github.com/echelon-ai-labs/zoom-mcp
+ExecuteAutomation MCP Database Server,DATABASES,"Query and manage Postgres, SQL Server, and SQLite databases from an AI agent via one MCP server",FREE,379,true,https://github.com/executeautomation/mcp-database-server
+MySQL MCP Server,DATABASES,Run SQL queries and manage MySQL databases directly from natural language,FREE,1400,true,https://github.com/designcomputer/mysql_mcp_server
+PostgreSQL,DATABASES,PostgreSQL read-only access,FREE,89405,true,https://glama.ai/mcp/servers/modelcontextprotocol/postgresql
+PostgreSQL MCP,DATABASES,Query/analyze Postgres databases from the agent,FREE,,true,https://github.com/modelcontextprotocol/servers/tree/main/src/postgres
+SQLite MCP,DATABASES,Local/dev database querying with a single .db file,FREE,,true,https://github.com/modelcontextprotocol/servers/tree/main/src/sqlite
+SQLite MCP Server,DATABASES,SQLite query interface,FREE,89405,true,https://glama.ai/mcp/servers/modelcontextprotocol/sqlite
+Supabase MCP,DATABASES,"Live database schema, tables, migrations and SQL access inside the agent",FREE-TIER+ADDON,8000,false,https://github.com/supabase-community/supabase-mcp
+aws-dynamodb-mcp-server,DATABASES,AWS DynamoDB table operations and queries,FREE-TIER+ADDON,9585,true,https://github.com/awslabs/mcp
+aws-redshift-mcp-server,DATABASES,AWS Redshift SQL queries and cluster metadata,FREE-TIER+ADDON,9585,true,https://github.com/awslabs/mcp
+chroma,DATABASES,Vector database and embeddings store,FREE,585,true,https://github.com/chroma-core/chroma-mcp
+chroma-mcp,DATABASES,Chroma vector database collections and retrieval,FREE,585,true,https://github.com/chroma-core/chroma-mcp
+dbhub,DATABASES,Token-conscious DB access,FREE,3335,true,https://github.com/bytebase/dbhub
+elasticsearch-mcp-server,DATABASES,Elasticsearch search and document operations,FREE-TIER+ADDON,703,true,https://github.com/elastic/mcp-server-elasticsearch
+mcp-clickhouse,DATABASES,ClickHouse SQL analytics access,FREE,846,true,https://github.com/ClickHouse/mcp-clickhouse
+mcp-neo4j,DATABASES,Neo4j graph database queries and knowledge-graph memory,FREE-TIER+ADDON,282,true,https://github.com/neo4j/mcp
+mcp-server-bigquery,DATABASES,Google BigQuery schema inspection and SQL execution,FREE-TIER+ADDON,,true,https://pypi.org/project/mcp-server-bigquery/
+mcp-server-milvus,DATABASES,Milvus vector database operations,FREE-TIER+ADDON,240,true,https://github.com/zilliztech/mcp-server-milvus
+mcp-server-motherduck,DATABASES,DuckDB (local) and MotherDuck (cloud) analytics,FREE-TIER+ADDON,504,true,https://github.com/motherduckdb/mcp-server-motherduck
+mcp-server-qdrant,DATABASES,Qdrant vector database search and collections,FREE-TIER+ADDON,1495,true,https://github.com/qdrant/mcp-server-qdrant
+mcp-toolbox-databases,DATABASES,Multi-DB unified querying,FREE,16151,true,https://github.com/googleapis/mcp-toolbox
+mongodb,DATABASES,MongoDB query and aggregation,FREE,1100,true,https://github.com/mongodb-js/mongodb-mcp-server
+mongodb-mcp,DATABASES,"MongoDB document queries, aggregations and collection management",FREE,1200,false,https://github.com/mongodb-js/mongodb-mcp-server
+mongodb-mcp-server,DATABASES,MongoDB and MongoDB Atlas data access,FREE,1096,true,https://github.com/mongodb-js/mongodb-mcp-server
+mysql-mcp-server,DATABASES,Secure MySQL database access (read/write queries + schema),FREE,1356,true,https://github.com/designcomputer/mysql_mcp_server
+neon,DATABASES,Neon serverless Postgres management,FREE-TIER+ADDON,622,false,https://github.com/neondatabase/mcp-server-neon
+neon-mcp-server,DATABASES,Neon Postgres management and SQL (serverless Postgres),FREE-TIER+ADDON,622,true,https://github.com/neondatabase/mcp-server-neon
+pinecone-mcp,DATABASES,"Pinecone vector index upsert, search and config",FREE-TIER+ADDON,70,true,https://github.com/pinecone-io/pinecone-mcp
+postgres (archived reference),DATABASES,Read-only PostgreSQL database access,FREE,,true,https://github.com/modelcontextprotocol/servers-archived/tree/main/src/postgres
+postgres-mcp,DATABASES,Read-only natural-language SQL queries against PostgreSQL,FREE,3800,false,https://github.com/crystaldba/postgres-mcp
+prisma-mcp,DATABASES,Prisma ORM schema and database operations,FREE-TIER+ADDON,47,true,https://github.com/prisma/mcp
+qdrant,DATABASES,Qdrant vector search database,FREE,1500,true,https://github.com/qdrant/mcp-server-qdrant
+redis (archived reference),DATABASES,Redis key-value store interaction,FREE,,true,https://github.com/modelcontextprotocol/servers-archived/tree/main/src/redis
+redis-mcp-server,DATABASES,Redis data management and search for agents,FREE,562,true,https://github.com/redis/mcp-redis
+snowflake-labs-mcp,DATABASES,"Snowflake SQL, object management and Cortex AI",FREE-TIER+ADDON,295,true,https://github.com/snowflake-labs/mcp
+sqlite (archived reference),DATABASES,SQLite database interaction and BI,FREE,,true,https://github.com/modelcontextprotocol/servers-archived/tree/main/src/sqlite
+sqlite-mcp,DATABASES,SQLite database access for local .db files,FREE,20,true,https://github.com/egoist/sqlite-mcp
+supabase-mcp,DATABASES,"Full Supabase platform: Postgres, auth, storage, edge functions, migrations",FREE-TIER+ADDON,4200,false,https://supabase.com/docs/guides/getting-started/mcp
+weaviate-mcp-builtin,DATABASES,Weaviate vector DB hybrid search and collections,FREE-TIER+ADDON,162,true,https://github.com/weaviate/mcp-server-weaviate
+Docker MCP Gateway,DEVOPS,Run containerized MCP servers from Docker's catalog behind one gateway connection,FREE,1500,true,https://github.com/docker/mcp-gateway
+GitHub MCP Server (official),DEVOPS,"Full GitHub API access: repos, issues, PRs, actions, code search, teams",FREE,32000,true,https://github.com/github/github-mcp-server
+Power Automate Flow Agent MCP,DEVOPS,"Build, edit, run and debug Power Automate cloud flows from Copilot CLI / VS Code",FREE-TIER+ADDON,671,false,https://github.com/microsoft/power-platform-skills
+Sentry MCP,DEVOPS,Pull production errors with stack traces into the debugging loop,FREE,,true,https://docs.sentry.io/product/integrations/mcp/
+Sentry MCP server,DEVOPS,Sentry issues & errors,FREE-TIER+ADDON,89405,true,https://glama.ai/mcp/servers/modelcontextprotocol/sentry
+agent-infra-sandbox,DEVOPS,All-in-one agent sandbox,FREE,5673,true,https://github.com/agent-infra/sandbox
+azure-devops,DEVOPS,Azure DevOps work items and pipelines,FREE-TIER+ADDON,2000,true,https://github.com/microsoft/azure-devops-mcp
+desktop-commander-mcp,DEVOPS,Terminal & file control,FREE,9298,true,https://github.com/wonderwhy-er/DesktopCommanderMCP
+docker-mcp,DEVOPS,"Build, run, inspect and orchestrate containers & Compose stacks",FREE,2800,false,https://github.com/docker/mcp-servers
+mcp-grafana,DEVOPS,Grafana observability,FREE,3342,true,https://github.com/grafana/mcp-grafana
+radar,DEVOPS,Kubernetes UI + MCP,FREE,2840,true,https://github.com/skyhook-io/radar
+sentry,DEVOPS,Sentry issues and error monitoring,FREE-TIER+ADDON,809,true,https://github.com/getsentry/sentry-mcp
+sentry-mcp,DEVOPS,"Error monitoring: stack traces, breadcrumbs, releases, performance",FREE-TIER+ADDON,2400,false,https://github.com/getsentry/sentry-mcp
+CoinGecko MCP,FINANCE,Live crypto prices and market data from CoinGecko's API,FREE,0,false,https://github.com/friendlygeorge/coingecko-mcp-server
+Meta Facebook Ads MCP,FINANCE,"Manage Meta ad campaigns, reporting, product catalogs via natural language",FREE-TIER+ADDON,,true,https://mcp.facebook.com/ads
+PolymarketScan,FINANCE,Prediction market data,FREE,39501,true,https://polymarketscan--jordan-s648.run.tools
+alphavantage-mcp,FINANCE,"Alpha Vantage market data: quotes, FX, crypto, fundamentals, technicals",FREE-TIER+ADDON,74,true,https://github.com/calvernaz/alphavantage
+coingecko-mcp,FINANCE,"CoinGecko crypto data: prices, market caps, trending, OHLC",FREE-TIER+ADDON,56,true,https://github.com/coingecko/coingecko-typescript
+coinmarketcap-mcp,FINANCE,"CoinMarketCap crypto quotes, rankings and metadata",FREE-TIER+ADDON,1,true,https://github.com/gcharang/coinmarketcap-mcp
+eodhd-mcp,FINANCE,Global market breadth: 72 MCP tools across 70+ exchanges,FREE-TIER+ADDON,,false,https://eodhd.com/financial-apis/mcp-server-for-financial-data-by-eodhd
+equibles-mcp,FINANCE,"Joined US equity research: SEC filings, transcripts, fundamentals, 13F, options",FREE-TIER+ADDON,,false,https://equibles.com/docs/mcp
+mcp-yfinance,FINANCE,"Yahoo Finance data: quotes, history, fundamentals, options",FREE,1,true,https://github.com/ozp/yfinance-mcp
+plaid-mcp,FINANCE,"Plaid: link bank accounts, transactions, balances (read-only)",FREE-TIER+ADDON,28,true,https://github.com/plaid/ai-coding-toolkit
+quickbooks-mcp,FINANCE,"QuickBooks Online: customers, invoices, accounts, reports",FREE-TIER+ADDON,349,true,https://github.com/intuit/quickbooks-online-mcp-server
+stripe-mcp,FINANCE,"Stripe payments: customers, invoices, charges, refunds, payouts",FREE-TIER+ADDON,1734,true,https://github.com/stripe/agent-toolkit
+tradingview-mcp,FINANCE,Real-time market data,FREE,3929,true,https://github.com/atilaahmettaner/tradingview-mcp
+uk-due-diligence,FINANCE,UK company due diligence,FREE-TIER+ADDON,60104,true,https://uk-due-diligence--bouch.run.tools
+Figma MCP (Figma Context MCP),MEDIA,Feed Figma layout/design context to coding agents for design-to-code,FREE,15632,true,https://github.com/GLips/Figma-Context-MCP
+comfy-mcp,MEDIA,"Generate images/video via local ComfyUI workflows (SD, Flux, Wan, LTX)",FREE,7,true,https://github.com/Comfy-Org/comfy-mcp
+elevenlabs-mcp,MEDIA,"Text-to-speech, voice cloning and audio generation (ElevenLabs)",FREE-TIER+ADDON,1517,true,https://github.com/elevenlabs/elevenlabs-mcp
+ffmpeg-mcp,MEDIA,"Video/audio processing: clip, transcode, concat, extract frames via ffmpeg",FREE,120,true,https://github.com/egoist/ffmpeg-mcp
+mcp-server-chart,MEDIA,Chart & data visualization,FREE,4306,true,https://github.com/antvis/mcp-server-chart
+replicate-mcp,MEDIA,"Run 100k+ AI models on Replicate: image gen (Flux, SD), video, audio",FREE-TIER+ADDON,,true,https://replicate.com/docs/reference/mcp
+social-superpowers,MEDIA,Social media content tools,FREE,9736,true,https://social-superpowers.run.tools
+spotify-mcp,MEDIA,"Control Spotify: playback, search, playlists, currently playing",FREE-TIER+ADDON,611,true,https://github.com/varunneal/spotify-mcp
+stability-ai-mcp,MEDIA,"Stability AI image generation (SD3, SDXL, image-to-image)",FREE-TIER+ADDON,85,true,https://github.com/tadasant/mcp-server-stability-ai
+youtube-transcript,MEDIA,YouTube transcripts and subtitles,FREE,582,false,https://github.com/kimtaeyoon83/mcp-server-youtube-transcript
+youtube-transcript-mcp,MEDIA,Fetch YouTube video transcripts/summaries as text,FREE,582,true,https://github.com/kimtaeyoon83/mcp-server-youtube-transcript
+Android Remote Control MCP,MISC,"AI agent controls any Android app from the phone, no cables or root",FREE,,true,https://github.com/danielealbano/android-remote-control-mcp
+Desktop Commander MCP,MISC,"Gives Claude/agent full computer control: read/write files, terminal, run code",FREE,3000,false,https://github.com/wshobson/agents
+FastMCP (Python framework),MISC,Build custom MCP servers in Python in minutes with decorators,FREE,27000,true,https://github.com/jlowin/fastmcp
+Filesystem MCP,MISC,Read/write local files and directories safely from an agent,FREE,89000,true,https://github.com/modelcontextprotocol/servers/tree/main/src/filesystem
+Filesystem MCP Server,MISC,Filesystem read/write access,FREE,89405,true,https://glama.ai/mcp/servers/modelcontextprotocol/filesystem
+Google Maps MCP Server,MISC,"Maps, geocoding, places",FREE-TIER+ADDON,89405,true,https://glama.ai/mcp/servers/modelcontextprotocol/google-maps
+Knowledge Graph Memory Server,MISC,Persistent memory graph,FREE,89405,true,https://glama.ai/mcp/servers/modelcontextprotocol/knowledge-graph-memory-server
+MCP Inspector,MISC,"Debug, test and inspect MCP servers in a web UI",FREE,11000,true,https://github.com/modelcontextprotocol/inspector
+Memory MCP,MISC,Persistent cross-session knowledge graph for the agent,FREE,,true,https://github.com/modelcontextprotocol/servers/tree/main/src/memory
+Svelte MCP,MISC,Svelte/SvelteKit documentation and framework knowledge for AI coding assistants,FREE,306,false,https://github.com/sveltejs/ai-tools
+everything,MISC,MCP reference test server,FREE,89000,true,https://github.com/modelcontextprotocol/servers/tree/main/src/everything
+figma-mcp,MISC,"Design-to-code: read Figma layers, tokens, variants and layout rules",FREE-TIER+ADDON,12958,false,https://github.com/GLips/Figma-Context-MCP
+filesystem,MISC,Secure local file operations,FREE,89000,true,https://github.com/modelcontextprotocol/servers/tree/main/src/filesystem
+gread,MISC,Read-it-later RSS reader,FREE,21954,true,https://gread--nitrofire-q.run.tools
+ha-mcp,MISC,Home Assistant control,FREE,4353,true,https://github.com/homeassistant-ai/ha-mcp
+hexstrike-ai,MISC,Security testing agent toolkit,FREE,10943,true,https://github.com/0x4m4/hexstrike-ai
+mcp-servers-official,MISC,Official reference MCP servers,FREE,89443,true,https://github.com/modelcontextprotocol/servers
+memory,MISC,Knowledge-graph persistent memory,FREE,89000,true,https://github.com/modelcontextprotocol/servers/tree/main/src/memory
+mobile-mcp,MISC,Mobile device automation,FREE,5885,true,https://github.com/mobile-next/mobile-mcp
+peekaboo,MISC,macOS screen capture,FREE,4979,true,https://github.com/openclaw/Peekaboo
+sequentialthinking,MISC,Structured step-by-step reasoning,FREE,89000,true,https://github.com/modelcontextprotocol/servers/tree/main/src/sequentialthinking
+sidetap,MISC,See and control a real iPhone from Windows over USB (no Mac/jailbreak),FREE,,true,https://github.com/ucsandman/sidetap
+subwayinfo,MISC,NYC subway status,FREE,20869,true,https://subwayinfo.run.tools
+time,MISC,Time and timezone conversion,FREE,89000,true,https://github.com/modelcontextprotocol/servers/tree/main/src/time
+windows-mcp,MISC,Windows computer use,FREE,6727,true,https://github.com/CursorTouch/Windows-MCP
+zipp,MISC,Zip archive operations,FREE,16205,true,https://zipp--deficlow.run.tools
+Atlassian Jira MCP (mcp-atlassian),PRODUCTIVITY,"Jira and Confluence access: projects, issues, sprints, documents, comments",FREE,5700,true,https://github.com/sooperset/mcp-atlassian
+BridgeMind MCP,PRODUCTIVITY,Agent task orchestration: create tasks with instructions+knowledge on a Kanban board for sub-agents,PAID,,false,https://bridgemind.ai
+Jira MCP,PRODUCTIVITY,"Read/update issues, statuses and comments from the agent",FREE,,false,https://github.com/atlassian-labs/mcp-jira
+Linear MCP,PRODUCTIVITY,"Issue tracking: create, triage, update Linear tickets",FREE,,true,https://github.com/linear-app/linear-mcp-server
+Notion MCP,PRODUCTIVITY,"Read/write Notion pages, databases and docs from the agent",FREE,4586,true,https://github.com/makenotion/notion-mcp-server
+"Notion MCP (official, NotionHQ)",PRODUCTIVITY,"Full Notion workspace control: pages, databases, search, comments, users",FREE,4600,true,https://github.com/makenotion/notion-mcp-server
+PostHog MCP,PRODUCTIVITY,Autonomous product analytics: agent reads traffic/funnel data and improves conversions,FREE-TIER+ADDON,1000,false,https://github.com/PostHog/mcp
+Taskmaster MCP,PRODUCTIVITY,Turns PRDs into actionable task/subtask checklists and agent rules,FREE,2000,false,https://github.com/taskmaster-ai/taskmaster
+Zapier MCP,PRODUCTIVITY,"Connect AI assistants to 8,000+ apps (Airtable, Gmail, Slack, CRMs) via OAuth",FREE-TIER+ADDON,0,true,https://zapier.com/mcp
+airtable,PRODUCTIVITY,"Airtable: bases, tables, records CRUD",FREE-TIER+ADDON,455,true,https://github.com/domdomegg/airtable-mcp-server
+apple-notes,PRODUCTIVITY,Apple Notes: create/read/search notes (macOS),FREE,410,true,https://github.com/RafalWilinski/mcp-apple-notes
+asana,PRODUCTIVITY,"Asana: tasks, projects, sections, workspaces",FREE-TIER+ADDON,145,true,https://github.com/roychri/mcp-server-asana
+basecamp,PRODUCTIVITY,"Basecamp 3: projects, todos, messages",PAID,95,true,https://github.com/georgeantonopoulos/Basecamp-MCP-Server
+confluence,PRODUCTIVITY,"Confluence: pages, spaces, search",FREE-TIER+ADDON,5726,true,https://github.com/sooperset/mcp-atlassian
+evernote,PRODUCTIVITY,Evernote: search and read notes,FREE-TIER+ADDON,55,true,https://github.com/brentmid/evernote-mcp-server
+excel-mcp-server,PRODUCTIVITY,Excel file manipulation,FREE,4103,true,https://github.com/haris-musa/excel-mcp-server
+favcrm,PRODUCTIVITY,CRM contact management,FREE-TIER+ADDON,8514,true,https://favcrm--favcrm.run.tools
+figma,PRODUCTIVITY,Figma design files to code,FREE-TIER+ADDON,16000,true,https://github.com/GLips/Figma-Context-MCP
+github,PRODUCTIVITY,"GitHub: repos, issues, PRs, Projects, Actions, code search",FREE-TIER+ADDON,32148,true,https://github.com/github/github-mcp-server
+google-docs,PRODUCTIVITY,"Google Docs: create/edit documents, manage permissions",FREE,636,true,https://github.com/a-bonus/google-docs-mcp
+google-drive,PRODUCTIVITY,"Google Drive: list/search files, read and upload content",FREE,201,true,https://github.com/piotr-agier/google-drive-mcp
+google-workspace,PRODUCTIVITY,"Google Workspace suite: Gmail, Calendar, Drive, Docs, Sheets, Tasks in one server",FREE,3000,true,https://github.com/taylorwilsdon/google_workspace_mcp
+google-workspace-mcp,PRODUCTIVITY,Gmail/Calendar/Docs control,FREE,3000,true,https://github.com/taylorwilsdon/google_workspace_mcp
+googlecalendar,PRODUCTIVITY,Calendar events management,FREE,19350,true,https://googlecalendar.run.tools
+googledrive,PRODUCTIVITY,Drive file management,FREE,8883,true,https://googledrive.run.tools
+googlesheets,PRODUCTIVITY,Spreadsheet CRUD,FREE,61672,true,https://googlesheets.run.tools
+hubspot,PRODUCTIVITY,"HubSpot CRM: contacts, companies, deals, pipeline",FREE-TIER+ADDON,127,true,https://github.com/baryhuang/mcp-hubspot
+jira,PRODUCTIVITY,"Jira: issues, projects, sprints, search",FREE-TIER+ADDON,5726,true,https://github.com/sooperset/mcp-atlassian
+linear,PRODUCTIVITY,"Linear: issues, cycles, projects, teams",FREE-TIER+ADDON,347,true,https://github.com/jerhadf/linear-mcp-server
+linear-mcp,PRODUCTIVITY,"Issues, sprints/cycles and projects in Linear",FREE-TIER+ADDON,1100,false,https://github.com/linearapp/mcp-server
+markdownify-mcp,PRODUCTIVITY,Anything to Markdown,FREE,2909,true,https://github.com/zcaceres/markdownify-mcp
+mcp-atlassian,PRODUCTIVITY,Confluence & Jira tools,FREE,5726,true,https://github.com/sooperset/mcp-atlassian
+mcp-notion-server (suekou),PRODUCTIVITY,Lightweight NodeJS Notion MCP server for second-brain / knowledge-base workflows,FREE,919,true,https://github.com/suekou/mcp-notion-server
+mcp-obsidian,PRODUCTIVITY,Obsidian vault access,FREE,4287,true,https://github.com/MarkusPfundstein/mcp-obsidian
+monday,PRODUCTIVITY,"Monday.com: boards, items, updates, groups",FREE-TIER+ADDON,34,true,https://github.com/Prat011/mcp-server-monday
+n8n MCP,PRODUCTIVITY,Trigger n8n automations/workflows directly from the AI agent,FREE,,true,https://docs.n8n.io/integrations/builtin/mcp/
+notebooklm-mcp,PRODUCTIVITY,NotebookLM research access,FREE,3221,true,https://github.com/PleasePrompto/notebooklm-mcp
+notion-mcp,PRODUCTIVITY,"Read/write Notion pages, databases and comments",FREE-TIER+ADDON,2500,false,https://github.com/makenotion/notion-mcp-server
+notion-mcp-server,PRODUCTIVITY,Notion workspace tools,FREE,4586,true,https://github.com/makenotion/notion-mcp-server
+obsidian,PRODUCTIVITY,"Obsidian vault: read/write notes, search, tags",FREE,4287,true,https://github.com/MarkusPfundstein/mcp-obsidian
+obsidian-local-rest-api,PRODUCTIVITY,Obsidian vault REST/MCP,FREE,2775,true,https://github.com/coddingtonbear/obsidian-local-rest-api
+obsidian-mcp,PRODUCTIVITY,"Read/write Obsidian notes: vision, graph analysis, section edits",FREE,1400,false,https://github.com/MarkusPfundstein/mcp-obsidian
+office,PRODUCTIVITY,Microsoft Office desktop: Word/Excel/Outlook automation (Windows),FREE,109,true,https://github.com/OfficeMCP/OfficeMCP
+salesforce,PRODUCTIVITY,"Salesforce: records, SOQL, org metadata",PAID,454,true,https://github.com/salesforcecli/mcp
+sap-mcp,PRODUCTIVITY,SAP business data access,FREE-TIER+ADDON,34350,true,https://sap-mcp--oobe-protocol.run.tools
+todoist,PRODUCTIVITY,"Todoist: tasks, projects, labels, filters",FREE-TIER+ADDON,391,true,https://github.com/abhiz123/todoist-mcp-server
+toggl,PRODUCTIVITY,"Toggl Track: time entries, projects, workspaces",FREE-TIER+ADDON,31,true,https://github.com/verygoodplugins/mcp-toggl
+trello,PRODUCTIVITY,"Trello: boards, lists, cards, comments",FREE-TIER+ADDON,432,true,https://github.com/delorenj/mcp-server-trello
+zapier-mcp,PRODUCTIVITY,"One MCP connection to 9,000+ apps with governed OAuth",FREE-TIER+ADDON,,false,https://zapier.com/mcp
+Context7 MCP,SEARCH-RESEARCH,Live library documentation,FREE-TIER+ADDON,60589,true,https://glama.ai/mcp/servers/upstash/context7
+DuckDuckGo MCP,SEARCH-RESEARCH,Web search via DuckDuckGo from any MCP client,FREE,1400,true,https://github.com/nickclyde/duckduckgo-mcp-server
+Exa MCP,SEARCH-RESEARCH,Ultra-powerful real-time web + code search (better than built-in web search),FREE-TIER+ADDON,3000,false,https://github.com/exa-labs/exa-mcp-server
+Fetch MCP,SEARCH-RESEARCH,Fetch URLs and convert web pages to markdown for LLM consumption,FREE,89000,false,https://github.com/modelcontextprotocol/servers/tree/main/src/fetch
+Fetch MCP Server,SEARCH-RESEARCH,Fetch & convert web pages,FREE,89405,true,https://glama.ai/mcp/servers/modelcontextprotocol/fetch
+Firecrawl MCP,SEARCH-RESEARCH,Web scraping and structured search results for agents,FREE-TIER+ADDON,4000,false,https://github.com/mendableai/firecrawl-mcp
+Tavily MCP,SEARCH-RESEARCH,Deeper web search / research API for agents,FREE-TIER+ADDON,2000,false,https://github.com/tavily-ai/tavily-mcp
+World Monitor MCP,SEARCH-RESEARCH,Real-time world intelligence,FREE-TIER+ADDON,,false,https://glama.ai/mcp/servers/koala73/worldmonitor
+apify,SEARCH-RESEARCH,3000+ web scrapers and extractors,FREE-TIER+ADDON,3300,true,https://github.com/apify/actors-mcp-server
+apify-mcp-server,SEARCH-RESEARCH,Social & web scraping,FREE-TIER+ADDON,3272,true,https://github.com/apify/apify-mcp-server
+arxiv-mcp-server,SEARCH-RESEARCH,"Search and analyze arXiv papers (abstracts, PDFs, metadata)",FREE,3041,true,https://github.com/blazickjp/arxiv-mcp-server
+brave,SEARCH-RESEARCH,Web search via Brave,FREE-TIER+ADDON,105821,true,https://brave.run.tools
+brave-search,SEARCH-RESEARCH,Web and local search via Brave,FREE-TIER+ADDON,1400,true,https://github.com/brave/brave-search-mcp-server
+brave-search (archived reference),SEARCH-RESEARCH,Web and local search via Brave,FREE-TIER+ADDON,,true,https://github.com/modelcontextprotocol/servers-archived/tree/main/src/brave-search
+brave-search-mcp,SEARCH-RESEARCH,"Web, image, video and news search via Brave Search API",FREE-TIER+ADDON,1366,true,https://github.com/brave/brave-search-mcp-server
+brightdata-mcp,SEARCH-RESEARCH,Web scraping via Bright Data,PAID,2581,true,https://github.com/brightdata/brightdata-mcp
+deep-research,SEARCH-RESEARCH,LLM deep research agent,FREE,4685,true,https://github.com/u14app/deep-research
+duckduckgo-mcp,SEARCH-RESEARCH,Private web search via DuckDuckGo (no API key),FREE,1405,true,https://github.com/nickclyde/duckduckgo-mcp-server
+exa,SEARCH-RESEARCH,Neural web search,FREE-TIER+ADDON,9474,true,https://exa.run.tools
+exa-mcp-server,SEARCH-RESEARCH,Neural/semantic web search with content retrieval (Exa),FREE-TIER+ADDON,4852,true,https://github.com/exa-labs/exa-mcp-server
+firecrawl,SEARCH-RESEARCH,Web scraping and search API,FREE-TIER+ADDON,7200,true,https://github.com/firecrawl/firecrawl-mcp-server
+firecrawl-mcp,SEARCH-RESEARCH,Web search + scrape + crawl + structured extraction in one server,FREE-TIER+ADDON,3100,false,https://github.com/firecrawl/firecrawl-mcp-server
+firecrawl-mcp-server,SEARCH-RESEARCH,Web scraping & search,FREE-TIER+ADDON,7212,true,https://github.com/firecrawl/firecrawl-mcp-server
+news,SEARCH-RESEARCH,AI news aggregation,FREE,48083,true,https://news--theagenttimes.run.tools
+paper-search-mcp-openai,SEARCH-RESEARCH,Academic paper search,FREE,57769,true,https://paper-search-mcp-openai--adamamer20.run.tools
+pubmed,SEARCH-RESEARCH,Biomedical literature search,FREE,39747,true,https://pubmed.run.tools
+pubmed-mcp,SEARCH-RESEARCH,PubMed/Europe PMC literature search with full-text retrieval,FREE,134,true,https://github.com/cyanheads/pubmed-mcp-server
+search,SEARCH-RESEARCH,Naver web search,FREE,13102,true,https://search--naver.run.tools
+serpapi-mcp,SEARCH-RESEARCH,Google SERP (and 100+ engines) results via SerpAPI,FREE-TIER+ADDON,164,true,https://github.com/serpapi/serpapi-mcp
+serper-mcp,SEARCH-RESEARCH,Google search + webpage scraping via Serper.dev,FREE-TIER+ADDON,160,true,https://github.com/marcopesani/mcp-server-serper
+tavily,SEARCH-RESEARCH,AI-optimized web search API,FREE-TIER+ADDON,2300,true,https://github.com/tavily-ai/tavily-mcp
+tavily-mcp,SEARCH-RESEARCH,LLM-optimized web search with citations and extracted content,FREE-TIER+ADDON,2311,true,https://github.com/tavily-ai/tavily-mcp
+wikipedia-mcp,SEARCH-RESEARCH,"Search Wikipedia, read summaries and full articles",FREE,2,true,https://github.com/cyanheads/wikipedia-mcp-server
+world-news-mcp,SEARCH-RESEARCH,"World News API: headlines, search, article extraction",FREE-TIER+ADDON,9,true,https://github.com/ddsky/world-news-api-mcp

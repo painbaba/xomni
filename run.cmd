@@ -13,5 +13,5 @@ REM models work with zero extra installs (never blocks chat).
 if exist "%~dp0ollama\start-ollama.ps1" (
     powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0ollama\start-ollama.ps1" >nul 2>&1
 )
-echo [XOMNI] starting host + 16 plugins...
+echo [XOMNI] starting host + 17 plugins...
 hermes %*

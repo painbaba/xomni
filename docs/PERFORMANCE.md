@@ -123,6 +123,6 @@ zero-LLM plugins, and never enable per-turn LLM hooks.
 
 ## 4. Test status
 
-Full suite (`bash .bench/run_all_tests.sh`, `python` 3.11): **647/647 pass, 0 failures**
+Full suite (`bash .bench/run_all_tests.sh`, `python` 3.11): **677/677 pass, 0 failures**
 (17/17 plugin suites; the count grew 356→358 when the perf-contract regression tests
-landed, then →647 with omni-design (8) + omni-parallel (20)).
+landed, then →677 with omni-design (8) + omni-parallel (20)).

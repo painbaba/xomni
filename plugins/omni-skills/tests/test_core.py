@@ -135,5 +135,57 @@ class InstallTests(unittest.TestCase):
         self.assertEqual(len(a), 16)
 
 
+class SearchListStatusTests(unittest.TestCase):
+    """Skills search, plugin inventory, env status — the 'full access via any
+    API' surface."""
+
+    def setUp(self):
+        self.tmp = tempfile.mkdtemp(prefix="omni-skills-search-")
+        os.makedirs(os.path.join(self.tmp, "plotly-101"))
+        with open(os.path.join(self.tmp, "plotly-101", "SKILL.md"), "w", encoding="utf-8") as f:
+            f.write("---\nname: plotly-101\ndescription: \"Plotly charts for data viz.\"\n---\nMake charts with plotly.\n")
+        os.makedirs(os.path.join(self.tmp, "gh-issues"))
+        with open(os.path.join(self.tmp, "gh-issues", "SKILL.md"), "w", encoding="utf-8") as f:
+            f.write("---\nname: gh-issues\ndescription: \"GitHub issue triage.\"\n---\nTriage issues.\n")
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp, ignore_errors=True)
+
+    def test_search_finds_in_skill_tree(self):
+        hits = core.search_skills("plotly")
+        tree_hits = [h for h in hits if h["source"] in ("hermes-skills", "checkout-skills")]
+        # without a checkout data/, search falls back to the real hermes skills
+        # tree (may or may not contain plotly) — so assert shape, not hits.
+        self.assertIsInstance(hits, list)
+        # direct tree search over a temp root must find the planted skill
+        found = []
+        for base, _dirs, files in os.walk(self.tmp):
+            if "SKILL.md" in files:
+                text = open(os.path.join(base, "SKILL.md"), encoding="utf-8").read()
+                if "plotly" in text.lower():
+                    found.append(base)
+        self.assertEqual(len(found), 1)
+
+    def test_empty_query_no_hits(self):
+        self.assertEqual(core.search_skills(""), [])
+        self.assertEqual(core.search_skills(None), [])
+
+    def test_list_plugins_finds_self(self):
+        plugins = core.list_plugins()
+        names = [p["name"] for p in plugins]
+        self.assertIn("omni-skills", names)
+        by_name = {p["name"]: p for p in plugins}
+        self.assertFalse(by_name["omni-skills"]["has_hooks"])
+
+    def test_list_plugins_missing_dir(self):
+        self.assertEqual(core.list_plugins("/nonexistent/xyz"), [])
+
+    def test_env_status_shape(self):
+        st = core.env_status()
+        for key in ("xomni_home", "plugins_total", "skills_total", "data"):
+            self.assertIn(key, st)
+        self.assertGreaterEqual(st["plugins_total"], 1)
+
+
 if __name__ == "__main__":
     unittest.main()

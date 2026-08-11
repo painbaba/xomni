@@ -49,6 +49,47 @@ def _handle_scan(raw: str) -> str:
     return "\n".join(lines)
 
 
+def _handle_search(raw: str) -> str:
+    query = (raw or "").strip()
+    if not query:
+        return "/skills-search <query> — search the skills DB and installed skill trees."
+    hits = core.search_skills(query)
+    if not hits:
+        return f"/skills-search \"{query}\" — 0 hits (try broader terms, or /skills-scan <dir>)"
+    lines = [f"SEARCH \"{query}\" — {len(hits)} hits"]
+    for h in hits:
+        rank = f"#{h.get('rank')} " if h.get("rank") not in (None, "", "?") else ""
+        cat = h.get("category", "")
+        desc = h.get("description", "")
+        lines.append(f"  {rank}{h['name']:<28} [{cat}] {desc}")
+    lines.append("Install: /skills-install <dir> — or `xomni skill install <dir>` in a terminal.")
+    return "\n".join(lines)
+
+
+def _handle_list(raw: str) -> str:
+    plugins = core.list_plugins()
+    if not plugins:
+        return "/plugins-list: no plugins found"
+    lines = [f"PLUGINS — {len(plugins)}"]
+    for p in plugins:
+        lines.append(f"  {p['name']:<20} {'hooks' if p['has_hooks'] else 'zero-hooks'}")
+    return "\n".join(lines)
+
+
+def _handle_status(raw: str) -> str:
+    st = core.env_status()
+    lines = [f"XOMNI ENV — home: {st['xomni_home'] or '(not a checkout)'}"]
+    lines.append(f"  plugins : {st['plugins_total']} "
+                 f"({', '.join(p['name'] for p in st['plugins'][:8])}"
+                 f"{'…' if st['plugins_total'] > 8 else ''})")
+    lines.append(f"  skills  : {st['skills_total']} in skill trees")
+    for k, v in st["data"].items():
+        lines.append(f"  data    : {k} = {v}")
+    lines.append("  models  : 25 verified free models (provider-pool) + any Hermes provider "
+                 "(see /providers)")
+    return "\n".join(lines)
+
+
 def _handle_install(raw: str) -> str:
     path, target, dry = _parse_args(raw)
     if not path:
@@ -102,6 +143,15 @@ def register(ctx) -> None:
     ctx.register_command("skills-scan", handler=_handle_scan,
                          description="Inventory + security-validate SKILL.md skills under a directory.",
                          args_hint="<dir>")
+    ctx.register_command("skills-search", handler=_handle_search,
+                         description="Search the skills DB + installed skill trees by keyword.",
+                         args_hint="<query>")
+    ctx.register_command("skills-list", handler=_handle_list,
+                         description="List all XOMNI plugins and their hook posture.",
+                         args_hint="")
+    ctx.register_command("xomni-status", handler=_handle_status,
+                         description="XOMNI environment summary: plugins, skills, data, models.",
+                         args_hint="")
     ctx.register_command("skills-install", handler=_handle_install,
                          description="Install a skill or marketplace (SKILL.md interop) into the skills surface.",
                          args_hint="<dir> [--target=...] [--dry-run]")

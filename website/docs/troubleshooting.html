@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#050607">
+<title>Troubleshooting — Docs</title>
+<meta name="description" content="Fix slow responses, Ollama port conflicts, firewall prompts, PowerShell parse issues, MCP connect failures, and plugin slowdowns in XOMNI.">
+<link rel="icon" type="image/svg+xml" href="../favicon.svg">
+<link rel="stylesheet" href="../css/style.css">
+<style>
+/* ===== flagship void/emerald token aliases (map to css/style.css palette) ===== */
+:root{
+  --font-sans:var(--sans);--font-mono:var(--mono);
+  --radius-1:6px;--dur-fast:150ms;--dur-med:300ms;--ease-out-expo:cubic-bezier(.16,1,.3,1);
+  --surface-1:var(--bg-soft);--surface-2:var(--panel);--elevated:var(--card);
+  --ink:var(--text);--faint:#7B828A;
+  --accent-hover:#00FFB0;--accent-dim:var(--accent2);--success:var(--green);--danger:var(--red);--warning:var(--amber);
+}
+/* ===== flagship nav ===== */
+html{scroll-behavior:smooth}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+::selection{background:color-mix(in srgb,var(--accent) 35%,transparent)}
+.skip-link{position:absolute;left:-999px;top:0;background:var(--accent);color:#000;padding:10px 16px;z-index:100;border-radius:0 0 var(--radius-1) 0}
+.skip-link:focus{left:0}
+header.site-nav{display:block;position:sticky;top:0;z-index:50;background:var(--bg);border-bottom:1px solid var(--border);transition:box-shadow var(--dur-med),border-color var(--dur-med)}
+header.site-nav.scrolled{box-shadow:0 8px 24px rgba(0,0,0,.5)}
+.nav-inner{max-width:1200px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;gap:24px}
+.wordmark{font-family:var(--font-mono);font-weight:700;font-size:17px;letter-spacing:.12em;color:var(--accent)}
+.wordmark:hover{text-decoration:none}
+.wordmark span{color:var(--ink)}
+.nav-links{display:flex;gap:4px;margin-left:auto;align-items:center;flex-wrap:wrap}
+.nav-links a{padding:8px 12px;border-radius:var(--radius-1);color:var(--muted);font-size:14px;position:relative;transition:color var(--dur-fast)}
+.nav-links a::after{content:"";position:absolute;left:12px;right:12px;bottom:4px;height:1px;background:var(--accent);transform:scaleX(0);transform-origin:left;transition:transform var(--dur-med) var(--ease-out-expo)}
+.nav-links a:hover{color:var(--ink)}
+.nav-links a:hover::after{transform:scaleX(1)}
+.nav-links a[aria-current="page"]{color:var(--accent)}
+.nav-links a[aria-current="page"]::after{transform:scaleX(1)}
+.nav-links .nav-cta{margin-left:0;padding:8px 16px!important;min-height:36px}
+.btn-primary{background:var(--accent);border-color:var(--accent);color:#000;font-weight:600}
+.btn-primary:hover{background:var(--accent-hover);box-shadow:0 0 24px var(--accent-dim);color:#000;text-decoration:none}
+.bg-grid{position:fixed;inset:0;z-index:-1;pointer-events:none;background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);background-size:56px 56px;opacity:.35;mask-image:radial-gradient(ellipse 80% 60% at 50% 0%,#000 40%,transparent 75%)}
+/* ===== docs polish (emerald, no legacy blues) ===== */
+.docs-body h2{scroll-margin-top:96px}
+.docs-link.active{background:color-mix(in srgb,var(--accent) 8%,transparent)}
+@media(max-width:860px){
+  header.site-nav{display:block;position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--border);padding:0}
+  .nav-inner{flex-wrap:wrap;padding:12px 20px}
+  .nav-links .nav-cta{margin:0}
+}
+@media(max-width:600px){.nav-links{display:none}}
+@media (prefers-reduced-motion: reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}.bg-grid{display:none}}
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<div class="bg-grid" aria-hidden="true"></div>
+<header class="site-nav" id="siteNav">
+  <div class="nav-inner">
+    <a class="wordmark" href="../index.html">XOMNI<span>.</span></a>
+    <nav class="nav-links" aria-label="Primary">
+      <a href="../index.html">Home</a>
+      <a href="../skills.html">Skills</a>
+      <a href="../mcp.html">MCP Catalog</a>
+      <a href="install.html" aria-current="page">Docs</a>
+      <a href="sponsorship.html">Sponsorship</a>
+      <a href="https://github.com/painbaba/xomni">GitHub</a>
+      <a class="nav-cta btn-primary" href="install.html">Install</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+  <div class="container page">
+    <aside class="docs-side" aria-label="Docs navigation">
+      <p class="docs-h">Docs</p>
+      <a href="install.html" class="docs-link">Install</a>
+      <a href="byo-provider.html" class="docs-link">BYO Provider</a>
+      <a href="sponsorship.html" class="docs-link">Sponsorship</a>
+      <a href="faq.html" class="docs-link">FAQ</a>
+      <a href="security.html" class="docs-link">Security</a>
+      <a href="troubleshooting.html" class="docs-link active" aria-current="page">Troubleshooting</a>
+      <p class="docs-h">Site</p>
+      <a href="../skills.html" class="docs-link">Skills</a>
+      <a href="../index.html" class="docs-link">Home</a>
+    </aside>
+
+    <article class="docs-body">
+      <h1>Troubleshooting</h1>
+      <p class="lead">Real fixes for the issues that actually come up: slow free-model responses, Ollama port conflicts, firewall prompts, PowerShell parse failures, MCP servers that won't connect, and plugin slowdowns. If something feels dead, start with <span class="mono">/models</span> — most "is it broken?" questions are really "which provider is slow?".</p>
+
+      <h2 id="slow-responses">Slow responses</h2>
+      <p>XOMNI routes through a pool of 25 free models on a shared gateway. 2–26&nbsp;s per response is <strong>normal</strong> for free-model latency — a 10–20&nbsp;s single call on the slow provider is typical, and per-turn hook overhead adds well under 1&nbsp;s on top. Before blaming anything else, check provider health live:</p>
+      <div class="code-block">
+        <div class="code-head"><span class="dot dot-green"></span><span class="code-title">inside XOMNI</span><button class="copy-btn" data-copy="/models&#10;/models coding">copy</button></div>
+        <pre><code><span class="prompt">&gt;</span> /models            <span class="cmt"># live status + list of the 25 verified free models</span>
+<span class="prompt">&gt;</span> /models coding     <span class="cmt"># filter: fast | reasoning | coding | vision | frontier</span></code></pre>
+      </div>
+      <p>If a provider shows unhealthy or erroring, the pool fails over to the next free model automatically. A long pause followed by a normal answer is the slow gateway, not a hang — wait it out or switch to a <span class="mono">fast</span> model.</p>
+
+      <h2 id="api-timeout">API timeouts</h2>
+      <p>A <span class="mono">request_timeout_seconds</span> of 25&nbsp;s turns long-context calls on the slow gateway into hard failures that feel like the agent is dead. The host-level fix that landed after the 100x incident: keep it at <strong>120&nbsp;s or higher</strong>.</p>
+      <div class="code-block">
+        <div class="code-head"><span class="dot"></span><span class="code-title">config.yaml</span><button class="copy-btn" data-copy="request_timeout_seconds: 120">copy</button></div>
+        <pre><code>request_timeout_seconds: 120   <span class="cmt"># 25s caused timeout-death on slow gateways</span></code></pre>
+      </div>
+      <p>Low timeouts amplify any per-turn plugin overhead into hard errors — if you raised one knob, raise this one too.</p>
+
+      <h2 id="port-conflicts">Ollama / LM Studio port conflicts</h2>
+      <p>XOMNI's zero-install Ollama runtime serves on <span class="mono">127.0.0.1:11434</span>; the local-models plugin also probes LM Studio on <span class="mono">:1234/v1</span>. If another Ollama instance is already answering, the start script exits cleanly (already serving). But a <em>non-Ollama</em> app holding the port blocks the bind entirely:</p>
+      <div class="code-block">
+        <div class="code-head"><span class="dot"></span><span class="code-title">cmd.exe</span><button class="copy-btn" data-copy="netstat -ano | findstr 11434">copy</button></div>
+        <pre><code><span class="prompt">C:\&gt;</span> netstat -ano | findstr 11434</code></pre>
+      </div>
+      <p>Free the port (or stop the other app), or point the runtime elsewhere with <span class="mono">OLLAMA_HOST</span> — note the plugin still probes <span class="mono">127.0.0.1:11434/v1</span> by default, so changing the port means reconfiguring the probe too. Check what the plugin sees at any time with <span class="mono">/localmodels status</span> and <span class="mono">/localmodels scan</span>.</p>
+
+      <h2 id="firewall">Firewall blocks</h2>
+      <p>The first <span class="mono">ollama serve</span> may trigger a Windows Firewall prompt — allow it (localhost traffic is usually exempt). If local models never come up and you dismissed the prompt, re-run <span class="mono">run.cmd</span> and accept it.</p>
+
+      <h2 id="powershell">PowerShell parse issues (BOM)</h2>
+      <p>If you edit <span class="mono">ollama/start-ollama.ps1</span>, <strong>keep the UTF-8 BOM</strong>. Windows PowerShell 5.1 reads BOM-less files as ANSI, which mangles non-ASCII characters and breaks parsing — the shipped script carries the BOM for exactly this reason. Save with UTF-8 with BOM encoding, or the whole zero-install flow fails with cryptic parse errors.</p>
+
+      <h2 id="mcp">MCP servers won't connect</h2>
+      <p>After adding a server from the 311-server catalog, confirm it registered, then reload:</p>
+      <div class="code-block">
+        <div class="code-head"><span class="dot dot-green"></span><span class="code-title">terminal</span><button class="copy-btn" data-copy="hermes mcp list">copy</button></div>
+        <pre><code><span class="prompt">$</span> hermes mcp list   <span class="cmt"># does the server show up?</span></code></pre>
+      </div>
+      <ul class="check-list">
+        <li>If it's missing from <span class="mono">hermes mcp list</span>, the add failed — re-run <span class="mono">hermes mcp add &lt;name&gt; -- &lt;install_command&gt;</span> and restart (or use <span class="mono">/reload-mcp</span>).</li>
+        <li><strong>Windows npx gotcha:</strong> for npx-based servers use the <span class="mono">cmd /c</span> form in <span class="mono">config.yaml</span> — bare <span class="mono">npx</span> as the command doesn't resolve on Windows: <span class="mono">mcp_servers.filesystem: {command: "cmd", args: ["/c", "npx", "-y", "@modelcontextprotocol/server-filesystem", "C:/path/to/allowed"]}</span>.</li>
+        <li>Verify with a read-only tool call — ask the agent to list files in the allowed directory.</li>
+      </ul>
+
+      <h2 id="plugin-speed">Plugin slowdowns (speed checks)</h2>
+      <p>After the 100x incident, every plugin cold-imports in under 90&nbsp;ms and steady-state hook overhead is ~1.9&nbsp;ms/turn. Enforce both gates after any plugin change:</p>
+      <div class="code-block">
+        <div class="code-head"><span class="dot"></span><span class="code-title">bash</span><button class="copy-btn" data-copy="python .bench/ci_gate.py&#10;python .bench/ci_gate.py --limit-ms 120">copy</button></div>
+        <pre><code><span class="prompt">$</span> python .bench/ci_gate.py               <span class="cmt"># full plugin sweep, 90 ms import limit</span>
+<span class="prompt">$</span> python .bench/ci_gate.py --limit-ms 120  <span class="cmt"># custom import ceiling</span></code></pre>
+      </div>
+      <p>The root causes of the 100x were configuration, not any single plugin. Rules that prevent a repeat:</p>
+      <ul class="check-list">
+        <li><strong>Never</strong> enable <span class="mono">prompt-enhancer</span> auto mode (<span class="mono">allow_provider_override: true</span>) — one extra LLM call per turn was the primary multiplier. Run enhancement as an explicit command instead.</li>
+        <li>Enable ≤ 5 plugins total; at most <strong>one</strong> may touch <span class="mono">llm</span> at all, and never inside a hook.</li>
+        <li>Grep for perf-contract violations: <span class="mono">grep -rn 'ctx.llm' plugins/*/__init__.py</span> — any hit inside a <span class="mono">_on_*</span> hook is a violation.</li>
+        <li>Per-event file I/O in hooks was a measured 90–107&nbsp;ms per event; now batched to ≤ 1 flush/30&nbsp;s. If you write hooks, keep them deterministic and in-memory.</li>
+        <li>Target: <strong>&lt; 1&nbsp;s/turn total overhead</strong>. Current steady state is ~1.9&nbsp;ms/turn.</li>
+      </ul>
+
+      <h2 id="ollama-runtime">Ollama runtime issues</h2>
+      <ul class="check-list">
+        <li><strong>Slow pull</strong> — <span class="mono">qwen2.5:3b</span> is ~1.9&nbsp;GB and registry throttling can slow it. Re-run <span class="mono">/ollama pull qwen2.5:3b</span> to resume; pulls happen only on first run.</li>
+        <li><strong>"did not answer in 90&nbsp;s" warning</strong> — serve may still come up late; check with <span class="mono">/ollama status</span>.</li>
+        <li><strong>Download fails</strong> — a partial zip is discarded automatically; just re-run <span class="mono">run.cmd</span> and it retries cleanly.</li>
+      </ul>
+
+      <h2 id="logs">Where logs live</h2>
+      <ul class="check-list">
+        <li><span class="mono">.bench/bench_run.log</span> — benchmark run output from the plugin speed suite.</li>
+        <li><span class="mono">.bench/results-before.json</span> / <span class="mono">.bench/results-after.json</span> — before/after hook-overhead measurements; <span class="mono">.bench/rootcause-recovered.md</span> has the 100x narrative.</li>
+        <li><span class="mono">ollama/runtime/</span> (repo root, or <span class="mono">~/.xomni/ollama/runtime</span>) — the bundled portable Ollama runtime; <span class="mono">OLLAMA_MODELS</span> (default <span class="mono">~/.ollama/models</span>) holds pulled models.</li>
+        <li>Your config, keys, and memory live outside the repo checkout — updates never clobber them.</li>
+      </ul>
+
+      <h2 id="still-stuck">Still stuck?</h2>
+      <ul class="check-list">
+        <li>Verify the install: <span class="mono">cd plugins/repomap &amp;&amp; python -m unittest tests.test_core -v</span> (15 tests); full suite is 647/647.</li>
+        <li>Re-read <a href="install.html">Install</a>, <a href="faq.html">FAQ</a>, and <a href="byo-provider.html">BYO Provider</a> — most issues are covered there.</li>
+        <li>Open an issue at <a href="https://github.com/painbaba/xomni" target="_blank" rel="noopener">github.com/painbaba/xomni</a> with the relevant log from above.</li>
+      </ul>
+    </article>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <div>
+      <p class="footer-brand"><span class="logo-x">X</span>OMNI</p>
+      <p class="muted">one agent. every feature. every free model.</p>
+    </div>
+    <div class="footer-cols">
+      <div class="footer-col">
+        <p class="footer-h">Docs</p>
+        <a href="install.html">Install</a>
+        <a href="byo-provider.html">BYO Provider</a>
+        <a href="sponsorship.html">Sponsorship</a>
+      </div>
+      <div class="footer-col">
+        <p class="footer-h">More</p>
+        <a href="faq.html">FAQ</a>
+        <a href="security.html">Security</a>
+        <a href="troubleshooting.html">Troubleshooting</a>
+      </div>
+      <div class="footer-col">
+        <p class="footer-h">Project</p>
+        <a href="https://github.com/painbaba/xomni" target="_blank" rel="noopener">GitHub</a>
+        <a href="../index.html">Home</a>
+      </div>
+    </div>
+  </div>
+  <p class="footer-bottom muted">© <span data-year>2026</span> XOMNI · compose, don't merge.</p>
+</footer>
+
+<script src="../js/site.js"></script>
+</body>
+</html>

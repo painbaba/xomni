@@ -5,7 +5,7 @@
 - **हमेशा फ्री।** MIT sources, कोई license key नहीं, कोई "pro" wall नहीं। एजेंट फ्री bait है; sponsorship network ही असली product है।
 - **एक command में install।** Windows + POSIX launchers, सभी 17 plugins अपने आप load।
 - **25 verified free models** — हर एक को test करके देखा गया कि वाकई चलता है (deepseek-v4-*, qwen3.8-max, glm-5.2, kimi-k3, minimax-m3 vision, और भी), provider pool + live health checks के साथ।
-- **647 passing tests** पूरे plugin suite में।
+- **677 passing tests** पूरे plugin suite में।
 - **कमाते हुए काम करें**: 50/50 impression-share sponsorship payouts, receipts, escrow caps, second-price auctions।
 
 > Design rule: **compose करो, merge मत करो।** सात codebases का literal merge (Python + Go + Rust) एक टूटा हुआ monolith बनाएगा। XOMNI एक host है (Hermes — सातों में सबसे rich framework, MIT, और इकलौता जिसमें skills/memory/cron/plugins/gateway हैं) और बाकी agents की सिग्नेचर ताकतें edge modules के रूप में port की गई हैं।
@@ -67,10 +67,10 @@ hermes plugins enable waitperk perkline repomap
 ```bash
 cd plugins/waitperk && python -m unittest tests.test_core -v
 cd plugins/repomap  && python -m unittest tests.test_core -v
-# ... पूरे suite में 647 tests
+# ... पूरे suite में 677 tests
 ```
 
-Live verified (2026-08-12): **647/647 tests pass, 0 failures.**
+Live verified (2026-08-12): **677/677 tests pass, 0 failures.**
 
 | Plugin | Tests | Plugin | Tests |
 |---|---|---|---|

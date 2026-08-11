@@ -10,7 +10,7 @@ the only claims we make in marketing:
 - **7 merged agents** out of the box (Hermes, OpenCode, jcode, Codex, Aider, Goose, OpenClaw)
 - **17 plugins**, **25 verified free models** (verified = tested to actually work, not scraped from a list)
 - **Sponsorship engine**: sponsor line, 50/50 impression share, capped payouts, CPM/CPC/CPA tiers, receipts, escrow, auction
-- Works on **Windows**, **one-command install**, sources MIT/Apache, **647 passing tests**
+- Works on **Windows**, **one-command install**, sources MIT/Apache, **677 passing tests**
 
 ---
 
@@ -50,7 +50,7 @@ XOMNI exists yet). The plan below is mostly a discovery-and-trust plan.
 ### Open core: the agent is the free bait (and it's genuinely good)
 
 - Agent itself: **free forever, MIT/Apache sources** — no license key, no "pro" wall on core features.
-- 7 merged agents, 17 plugins, 25 verified free models, Windows support, one-command install, 647 tests.
+- 7 merged agents, 17 plugins, 25 verified free models, Windows support, one-command install, 677 tests.
 - "Free forever" is a strategic choice, not charity: we need **installed base**, because the installed base *is* the product we sell to sponsors.
 
 ### The moat: the sponsorship NETWORK
@@ -92,7 +92,7 @@ Every channel has concrete actions, not vibes.
 
 ### 1. GitHub — stars via README + Show HN
 
-- **README is the landing page.** One-command install at the very top, then a 10-second demo GIF, then the facts table (7 agents / 17 plugins / 25 verified free models / 647 tests). Screenshot of the sponsor line in action.
+- **README is the landing page.** One-command install at the very top, then a 10-second demo GIF, then the facts table (7 agents / 17 plugins / 25 verified free models / 677 tests). Screenshot of the sponsor line in action.
 - **Show HN post** ("Show HN: XOMNI — one CLI, 6 agents, 25 free models, devs earn 50% on sponsored impressions"). HN is the single highest-leverage audience for solo devs and AI tinkerers. Post on a Tuesday/Wednesday morning US time.
 - `hackernews` launch support: answer every comment, fix every legitimate gripe within 48h, log all feedback.
 - Star-for-star / giveaway tactics: no. Organic only — a gamed star count dies in one HN comment thread.
@@ -100,7 +100,7 @@ Every channel has concrete actions, not vibes.
 ### 2. X/Twitter — launch thread, build in public
 
 - **Launch thread** (10–15 posts): hook = "I built a free open-source CLI that merges 6 AI agents, verified 25 free models actually work, and pays you 50% of sponsor revenue for installing it. Thread: how it works ↓". Demo GIF, the sponsor line, the numbers.
-- **Build-in-public cadence** after launch: 3×/week — shipping updates, model-verification wins, sponsor-engine progress, test-count screenshots (647 and climbing).
+- **Build-in-public cadence** after launch: 3×/week — shipping updates, model-verification wins, sponsor-engine progress, test-count screenshots (677 and climbing).
 - Reply to every AI-agent tweet from accounts >10k followers with something genuinely useful, not a pitch.
 
 ### 3. Product Hunt
@@ -193,7 +193,7 @@ community seeding, 22–30 PH + sponsor outreach.** Everything is single-person-
 - [ ] Verify one-command install on a **clean Windows machine** (fresh VM if needed)
 - [ ] License headers / LICENSE files present (MIT/Apache story is a selling point)
 - [ ] CONTRIBUTING.md + issue templates (signals a real project)
-- [ ] All 647 tests green on a clean clone; note the count in README
+- [ ] All 677 tests green on a clean clone; note the count in README
 
 ### Days 6–8 — Demo video
 - [ ] Shoot 90-second video (install → `/models` → sponsor line)
@@ -227,7 +227,7 @@ community seeding, 22–30 PH + sponsor outreach.** Everything is single-person-
 |---|---|---|---|
 | **No sponsors yet = zero revenue** | Critical | Revenue model depends entirely on a two-sided network; until a sponsor pays, dev earnings are $0 and the "earn 50%" hook is hollow | Demo sponsors before marketing the earnings hook; sponsor waitlist from day 1; honest messaging ("sponsors are coming") instead of fake earnings screenshots; 90-day go/no-go on the business case |
 | **Competition (Claude Code, Codex CLI, etc. — free-ish)** | High | Big players give away powerful agents; our 7 merged agents are a convenience, not a moat; their brand trust dwarfs ours | Compete on what they won't do: free-model verification (25 verified), Windows-first support, and a dev-earning sponsor model they can't copy without changing their own business; free forever core means we never lose on price |
-| **Trust (third-party client)** | High | Devs will be asked to install a CLI that runs their coding sessions and shows them ads; "why should I trust this?" is the #1 objection | Open source (MIT/Apache — everything inspectable); signed releases/updates; **no telemetry** (state it in the README); 647 tests as visible proof of care; sponsor engine with receipts/escrow so money handling is auditable; never sell "the ads will go away" — they won't |
+| **Trust (third-party client)** | High | Devs will be asked to install a CLI that runs their coding sessions and shows them ads; "why should I trust this?" is the #1 objection | Open source (MIT/Apache — everything inspectable); signed releases/updates; **no telemetry** (state it in the README); 677 tests as visible proof of care; sponsor engine with receipts/escrow so money handling is auditable; never sell "the ads will go away" — they won't |
 | Sponsor fraud / impression gaming | Medium | Capped payouts + a dev farming impressions | Already mitigated in engine design: caps, verification, receipts — keep hardening before scaling spend |
 | Single-founder burnout / distribution ceiling | Medium | One person cannot be on HN, X, YouTube, WhatsApp, Discords, and sponsors simultaneously | The checklist is deliberately small; cut channels that don't convert by day 21; India channels are cheap volume, not time sinks |
 | Brand damage from ads inside a dev tool | Medium | Devs hate ads; the sponsor line could be the thing that makes people *not* install | Sponsor line is opt-in-visible, clearly labeled, and pays the dev — the ad *is* the feature; keep the line tasteful and capped in frequency |

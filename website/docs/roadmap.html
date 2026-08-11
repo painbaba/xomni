@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#050607">
+<title>Roadmap — Docs</title>
+<meta name="description" content="XOMNI's P0–P2 roadmap: what's shipped, in design, and planned — from the competitive shortlist.">
+<link rel="icon" type="image/svg+xml" href="../favicon.svg">
+<link rel="stylesheet" href="../css/style.css">
+<style>
+/* ===== flagship void/emerald token aliases (map to css/style.css palette) ===== */
+:root{
+  --font-sans:var(--sans);--font-mono:var(--mono);
+  --radius-1:6px;--dur-fast:150ms;--dur-med:300ms;--ease-out-expo:cubic-bezier(.16,1,.3,1);
+  --surface-1:var(--bg-soft);--surface-2:var(--panel);--elevated:var(--card);
+  --ink:var(--text);--faint:#7B828A;
+  --accent-hover:#00FFB0;--accent-dim:var(--accent2);--success:var(--green);--danger:var(--red);--warning:var(--amber);
+}
+/* ===== flagship nav ===== */
+html{scroll-behavior:smooth}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+::selection{background:color-mix(in srgb,var(--accent) 35%,transparent)}
+.skip-link{position:absolute;left:-999px;top:0;background:var(--accent);color:#000;padding:10px 16px;z-index:100;border-radius:0 0 var(--radius-1) 0}
+.skip-link:focus{left:0}
+header.site-nav{display:block;position:sticky;top:0;z-index:50;background:var(--bg);border-bottom:1px solid var(--border);transition:box-shadow var(--dur-med),border-color var(--dur-med)}
+header.site-nav.scrolled{box-shadow:0 8px 24px rgba(0,0,0,.5)}
+.nav-inner{max-width:1200px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;gap:24px}
+.wordmark{font-family:var(--font-mono);font-weight:700;font-size:17px;letter-spacing:.12em;color:var(--accent)}
+.wordmark:hover{text-decoration:none}
+.wordmark span{color:var(--ink)}
+.nav-links{display:flex;gap:4px;margin-left:auto;align-items:center;flex-wrap:wrap}
+.nav-links a{padding:8px 12px;border-radius:var(--radius-1);color:var(--muted);font-size:14px;position:relative;transition:color var(--dur-fast)}
+.nav-links a::after{content:"";position:absolute;left:12px;right:12px;bottom:4px;height:1px;background:var(--accent);transform:scaleX(0);transform-origin:left;transition:transform var(--dur-med) var(--ease-out-expo)}
+.nav-links a:hover{color:var(--ink)}
+.nav-links a:hover::after{transform:scaleX(1)}
+.nav-links a[aria-current="page"]{color:var(--accent)}
+.nav-links a[aria-current="page"]::after{transform:scaleX(1)}
+.nav-links .nav-cta{margin-left:0;padding:8px 16px!important;min-height:36px}
+.btn-primary{background:var(--accent);border-color:var(--accent);color:#000;font-weight:600}
+.btn-primary:hover{background:var(--accent-hover);box-shadow:0 0 24px var(--accent-dim);color:#000;text-decoration:none}
+.bg-grid{position:fixed;inset:0;z-index:-1;pointer-events:none;background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);background-size:56px 56px;opacity:.35;mask-image:radial-gradient(ellipse 80% 60% at 50% 0%,#000 40%,transparent 75%)}
+/* ===== docs polish (emerald, no legacy blues) ===== */
+.docs-body h2{scroll-margin-top:96px}
+.docs-link.active{background:color-mix(in srgb,var(--accent) 8%,transparent)}
+/* ===== roadmap: status chips + table polish ===== */
+.chip{display:inline-block;font-family:var(--font-mono);font-size:.7rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:3px 10px;border-radius:999px;border:1px solid var(--border);white-space:nowrap;line-height:1.5}
+.chip-shipped{color:var(--green);border-color:color-mix(in srgb,var(--green) 45%,transparent);background:color-mix(in srgb,var(--green) 10%,transparent)}
+.chip-design{color:var(--amber);border-color:color-mix(in srgb,var(--amber) 45%,transparent);background:color-mix(in srgb,var(--amber) 10%,transparent)}
+.chip-planned{color:var(--accent2);border-color:var(--border);background:var(--panel)}
+.legend{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;margin:0 0 22px;color:var(--muted);font-size:.9rem}
+.legend .chip{margin-right:6px}
+.tbl .chip{font-size:.68rem}
+.roadmap-note{color:var(--muted);font-size:.9rem;margin-top:12px}
+.roadmap-note a{color:var(--accent)}
+@media(max-width:860px){
+  header.site-nav{display:block;position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--border);padding:0}
+  .nav-inner{flex-wrap:wrap;padding:12px 20px}
+  .nav-links .nav-cta{margin:0}
+}
+@media(max-width:600px){.nav-links{display:none}}
+@media (prefers-reduced-motion: reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}.bg-grid{display:none}}
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<div class="bg-grid" aria-hidden="true"></div>
+<header class="site-nav" id="siteNav">
+  <div class="nav-inner">
+    <a class="wordmark" href="../index.html">XOMNI<span>.</span></a>
+    <nav class="nav-links" aria-label="Primary">
+      <a href="../index.html">Home</a>
+      <a href="../skills.html">Skills</a>
+      <a href="../mcp.html">MCP Catalog</a>
+      <a href="install.html" aria-current="page">Docs</a>
+      <a href="sponsorship.html">Sponsorship</a>
+      <a href="https://github.com/painbaba/xomni">GitHub</a>
+      <a class="nav-cta btn-primary" href="install.html">Install</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+  <div class="container page">
+    <aside class="docs-side" aria-label="Docs navigation">
+      <p class="docs-h">Docs</p>
+      <a href="install.html" class="docs-link">Install</a>
+      <a href="byo-provider.html" class="docs-link">BYO Provider</a>
+      <a href="sponsorship.html" class="docs-link">Sponsorship</a>
+      <a href="faq.html" class="docs-link">FAQ</a>
+      <a href="security.html" class="docs-link">Security</a>
+      <a href="roadmap.html" class="docs-link active" aria-current="page">Roadmap</a>
+      <p class="docs-h">Site</p>
+      <a href="../skills.html" class="docs-link">Skills</a>
+      <a href="../index.html" class="docs-link">Home</a>
+    </aside>
+
+    <article class="docs-body">
+      <h1>Roadmap</h1>
+      <p class="lead">Where XOMNI is going: the P0–P2 build plan distilled from <a href="https://github.com/painbaba/xomni/blob/main/docs/COMPETITIVE.md">docs/COMPETITIVE.md</a> — the consolidated shortlist of the five-track competitive scan (verified 2026-08-12). Every item below carries a live status: <span class="chip chip-shipped">SHIPPED</span> means it ships in this repo today, <span class="chip chip-design">DESIGN</span> means it has a written design proposal, <span class="chip chip-planned">PLANNED</span> means it is queued.</p>
+
+      <div class="legend" aria-label="Status legend">
+        <span><span class="chip chip-shipped">SHIPPED</span> live in the repo, tested</span>
+        <span><span class="chip chip-design">DESIGN</span> written proposal, not built</span>
+        <span><span class="chip chip-planned">PLANNED</span> queued, design before code</span>
+      </div>
+
+      <h2 id="p0">P0 — foundation moats</h2>
+      <div class="table-wrap">
+        <table class="tbl">
+          <thead>
+            <tr><th>Priority</th><th>Item</th><th>Status</th><th>What it gives XOMNI</th><th>Lands in</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>P0</td>
+              <td>Capability-declared model registry (kosong design)</td>
+              <td><span class="chip chip-design">DESIGN</span></td>
+              <td>25-model pool becomes self-describing: per-model ctx/thinking/vision/tool-use; models.dev sync; honest capability display on the site.</td>
+              <td>provider-pool upgrade</td>
+            </tr>
+            <tr>
+              <td>P0</td>
+              <td>SKILL.md interop loader + marketplace installer</td>
+              <td><span class="chip chip-shipped">SHIPPED</span></td>
+              <td>Ecosystem unlock — install anthropics/skills + wshobson/agents + claude-plugins content into the Hermes skills surface; XOMNI's 170 skills become cross-harness installable.</td>
+              <td>new plugin (<span class="mono">omni-skills</span>)</td>
+            </tr>
+            <tr>
+              <td>P0</td>
+              <td>Hybrid codebase index (BM25 + embeddings, incremental)</td>
+              <td><span class="chip chip-planned">PLANNED</span></td>
+              <td>The core moat both Cursor (2026 indexing) and Claude (codegraph) converge on; repomap on-demand scan → persistent incremental index.</td>
+              <td>repomap upgrade</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2 id="p1">P1 — scale &amp; safety</h2>
+      <div class="table-wrap">
+        <table class="tbl">
+          <thead>
+            <tr><th>Priority</th><th>Item</th><th>Status</th><th>What it gives XOMNI</th><th>Lands in</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>P1</td>
+              <td>Tool-search pattern (on-demand tool loading)</td>
+              <td><span class="chip chip-planned">PLANNED</span></td>
+              <td>17 plugins + 311 MCP servers will blow the 30–50-tool accuracy ceiling; catalog-in-context, load-on-use.</td>
+              <td>host-level pattern + mcp-catalog</td>
+            </tr>
+            <tr>
+              <td>P1</td>
+              <td>Sandbox abstraction (LocalKaos/E2B-style)</td>
+              <td><span class="chip chip-planned">PLANNED</span></td>
+              <td>sandbox-gate grows from classifier to execution sandbox — a win/lateral move vs Codex.</td>
+              <td>sandbox-gate v2</td>
+            </tr>
+            <tr>
+              <td>P1</td>
+              <td>Model routing with budget alerts (Cursor Router style)</td>
+              <td><span class="chip chip-planned">PLANNED</span></td>
+              <td>Cost-aware Auto mode over the 25-model pool; budget caps per session.</td>
+              <td>provider-pool</td>
+            </tr>
+            <tr>
+              <td>P1</td>
+              <td>Fail-closed hooks / guardrails</td>
+              <td><span class="chip chip-planned">PLANNED</span></td>
+              <td>Kimi's guardrails are fail-open (documented weakness) — our posture is already stricter; formalize the hook bus + blocking semantics.</td>
+              <td>sandbox-gate + docs</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2 id="p2">P2 — incremental moat</h2>
+      <div class="table-wrap">
+        <table class="tbl">
+          <thead>
+            <tr><th>Priority</th><th>Item</th><th>Status</th><th>What it gives XOMNI</th><th>Lands in</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>P2</td>
+              <td>Structured outputs (schema-validated JSON)</td>
+              <td><span class="chip chip-planned">PLANNED</span></td>
+              <td>Guaranteed-shape model output for machine consumers.</td>
+              <td>various</td>
+            </tr>
+            <tr>
+              <td>P2</td>
+              <td>Repo-native memory files (CLAUDE.md-style)</td>
+              <td><span class="chip chip-planned">PLANNED</span></td>
+              <td>Per-repo persistent context that travels with the codebase.</td>
+              <td>various</td>
+            </tr>
+            <tr>
+              <td>P2</td>
+              <td>AGENTS.md rules + rules marketplace</td>
+              <td><span class="chip chip-planned">PLANNED</span></td>
+              <td>Seed content from 40k+ awesome-cursorrules rules; rules marketplace.</td>
+              <td>various</td>
+            </tr>
+            <tr>
+              <td>P2</td>
+              <td>Headless stream-json wire surface</td>
+              <td><span class="chip chip-planned">PLANNED</span></td>
+              <td>Machine-consumable agent loop for CI and external harnesses.</td>
+              <td>various</td>
+            </tr>
+            <tr>
+              <td>P2</td>
+              <td>claude-code-action-style CI</td>
+              <td><span class="chip chip-planned">PLANNED</span></td>
+              <td>Package verify-runner + gh-ops as a drop-in GitHub Action (CI surface); <span class="mono">.github/</span> currently PENDING.</td>
+              <td>CI surface</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2 id="notes">Status notes</h2>
+      <ul class="check-list">
+        <li><strong>SHIPPED</strong> — SKILL.md interop shipped as the <span class="mono">omni-skills</span> plugin (12 tests, verified in <span class="mono">docs/FEATURES.md</span> §1).</li>
+        <li><strong>DESIGN</strong> — capability registry has a written proposal: <a href="https://github.com/painbaba/xomni/blob/main/docs/PROPOSALS/provider-capability-registry.md">docs/PROPOSALS/provider-capability-registry.md</a> (DRAFT, 2026-08-12, additive to provider-pool).</li>
+        <li><strong>PLANNED</strong> — queued; several need a design pass before code (hybrid index, sandbox v2, budget routing per the registry proposal's scope guard).</li>
+        <li>Source of truth: <a href="https://github.com/painbaba/xomni/blob/main/docs/COMPETITIVE.md">docs/COMPETITIVE.md</a> §B (build recommendations) + §D (immediate next steps); counts verified 2026-08-12.</li>
+      </ul>
+      <p class="roadmap-note">Nothing is dropped by silence — every competitive-scan candidate is either merged, borrowed, shipped, or parked with a named reason.</p>
+    </article>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <div>
+      <p class="footer-brand"><span class="logo-x">X</span>OMNI</p>
+      <p class="muted">one agent. every feature. every free model.</p>
+    </div>
+    <div class="footer-cols">
+      <div class="footer-col">
+        <p class="footer-h">Docs</p>
+        <a href="install.html">Install</a>
+        <a href="byo-provider.html">BYO Provider</a>
+        <a href="sponsorship.html">Sponsorship</a>
+        <a href="roadmap.html">Roadmap</a>
+      </div>
+      <div class="footer-col">
+        <p class="footer-h">More</p>
+        <a href="faq.html">FAQ</a>
+        <a href="security.html">Security</a>
+        <a href="../skills.html">Skills</a>
+      </div>
+      <div class="footer-col">
+        <p class="footer-h">Project</p>
+        <a href="https://github.com/painbaba/xomni" target="_blank" rel="noopener">GitHub</a>
+        <a href="../index.html">Home</a>
+      </div>
+    </div>
+  </div>
+  <p class="footer-bottom muted">© <span data-year>2026</span> XOMNI · compose, don't merge.</p>
+</footer>
+
+<script src="../js/site.js"></script>
+</body>
+</html>
