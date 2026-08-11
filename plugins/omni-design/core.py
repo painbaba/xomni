@@ -91,10 +91,12 @@ def _is_neutral(hex6: str) -> bool:
 
 def _generic_indigo(html: str) -> bool:
     """Tell 2: a generic indigo/violet/blue accent — but NOT neutral grays."""
-    for m in re.finditer(r"#(?:[6-9][0-9a-f]{2})[0-9a-f]{3}", html):
+    for m in re.finditer(r"#(?:[6-9][0-9a-f]{2})[0-9a-f]{3}", html, re.IGNORECASE):
         h = m.group(0)
-        if h.lower() in ("#7b828a", "#8b96b0", "#a6adb5", "#565e66", "#5e7590", "#8fa8c4"):
-            continue  # known token grays
+        if h.lower() in ("#7b828a", "#8b96b0", "#a6adb5", "#565e66", "#5e7590", "#8fa8c4",
+                         "#5cc8ff", "#00e5a0", "#00ff9d", "#00b87e",
+                         "#8fdfff", "#7fb89b", "#5cffbe", "#55ffff", "#8fdbff"):
+            continue  # known token colors (grays + the presets' own accent families)
         if _is_neutral(h):
             continue
         # indigo/violet family: B clearly above R (blue-dominant, not cyan-green)
