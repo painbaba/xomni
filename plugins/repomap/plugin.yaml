@@ -1,0 +1,3 @@
+name: repomap
+version: "0.1.0"
+description: "Aider-style symbol-level repo map: classes/functions per file, stack tags"

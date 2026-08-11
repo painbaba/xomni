@@ -1,0 +1,3 @@
+name: local-models
+version: "0.1.0"
+description: "Local LLM endpoints: detect and manage local OpenAI-compatible model servers (Ollama :11434/v1, LM Studio :1234/v1) and wire them into Hermes/opencode"

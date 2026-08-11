@@ -1,0 +1,22 @@
+[
+  {
+    "name": "filesystem",
+    "command": "npx",
+    "args": [
+      "-y",
+      "@modelcontextprotocol/server-filesystem",
+      "C:/Users/HP"
+    ],
+    "env": {},
+    "description": "Reference MCP filesystem server: read, write, search and list files and directories on the local machine (official @modelcontextprotocol/server-filesystem)."
+  },
+  {
+    "name": "fetch",
+    "command": "uvx",
+    "args": [
+      "mcp-server-fetch"
+    ],
+    "env": {},
+    "description": "Reference MCP fetch server: fetch a URL, convert it to Markdown, and extract readable content for the agent (official mcp-server-fetch from the MCP reference servers repo)."
+  }
+]

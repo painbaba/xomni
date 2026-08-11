@@ -1,0 +1,3 @@
+name: context-compact
+version: "0.1.0"
+description: "Long-session context/RAM discipline (jcode P1 port): pre_llm_call compacts older history into a summary injected cache-safe into the current turn; /compact status|on|off|now|threshold <n>|reset"

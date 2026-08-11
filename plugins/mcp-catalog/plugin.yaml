@@ -1,0 +1,3 @@
+name: mcp-catalog
+version: "1.0.0"
+description: "MCP catalog layer (Goose P3a port): discover, validate, and manage MCP servers as agent tools. Catalog store: ~/.hermes-mcp/catalogs/ (override HERMES_MCP_CATALOG_DIR). Commands: /mcp list | tools [server] | add <path> | status | validate <path>. Model tool: mcp_call(server, tool, args) — dispatches through the host registry (mcp__<server>__<tool>) when the server is registered in config.yaml mcp_servers."

@@ -1,0 +1,3 @@
+name: provider-pool
+version: "0.1.0"
+description: "Free-model pool: opencode Zen gateway catalog (25 models), live health, per-agent config gen"

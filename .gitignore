@@ -1,0 +1,16 @@
+# vendored full sources (2.8GB, kept on disk, licenses retained — not committed)
+vendor/
+
+# python
+__pycache__/
+*.pyc
+*.pyo
+
+# plugin runtime state (per-user, never committed)
+# NOTE: ~/.waitperk and ~/.perkline live OUTSIDE the repo (user home) — no
+# pattern needed; git does not expand ~, so tilde patterns are dead weight.
+state.json
+
+# os
+.DS_Store
+Thumbs.db

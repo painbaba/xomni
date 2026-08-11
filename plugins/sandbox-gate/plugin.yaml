@@ -1,0 +1,3 @@
+name: sandbox-gate
+version: "0.1.0"
+description: "Pre-execution terminal sandbox: blocks high-risk commands (rm -rf /, dd to block devices, mkfs/format, pipe-to-shell, chmod -R 777 on system paths, shutdown/reboot/halt, fork bombs, raw-device writes) unless allowlisted; escalates warn-tier risks (force-push, reset --hard on shared branches, exfiltration) to human approval"

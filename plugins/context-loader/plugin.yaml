@@ -1,0 +1,3 @@
+name: context-loader
+version: "1.0.0"
+description: "Aider-style context loader: fetch_page(url) pulls any web page as clean readable text (title/headings/links kept, 512KB cap, 20s timeout); describe_image(path) sends a local jpg/png to the opencode Zen vision gateway (model minimax-m3, browser UA) and returns the model's description. Tools: fetch_page (web), describe_image (file). Commands: /fetch <url>, /describe <image path>."

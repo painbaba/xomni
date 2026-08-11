@@ -1,0 +1,3 @@
+name: title-statusline
+version: "0.1.0"
+description: "OpenCode-style statusline: sponsor line visible in the terminal title bar (Windows-native)"
