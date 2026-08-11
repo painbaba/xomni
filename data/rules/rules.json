@@ -1,0 +1,706 @@
+{
+  "catalog": "xomni/rules-catalog/v1",
+  "title": "XOMNI Rules Seed Catalog",
+  "description": "Curated subset of general-purpose agent coding rules from PatrickJS/awesome-cursorrules (Apache-2.0), for the AGENTS.md/.cursor/rules-style rules feature.",
+  "source": "PatrickJS/awesome-cursorrules",
+  "source_url": "https://github.com/PatrickJS/awesome-cursorrules",
+  "source_license": "Apache-2.0",
+  "source_stars": 40500,
+  "fetched_at": "2026-08-12",
+  "count": 99,
+  "rules": [
+    {
+      "name": "Angular (TypeScript)",
+      "description": "Angular development with TypeScript integration.",
+      "category": "frontend",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/angular-typescript-cursorrules-prompt-file.mdc",
+      "stars": null
+    },
+    {
+      "name": "Astro (TypeScript)",
+      "description": "Astro development with TypeScript integration.",
+      "category": "frontend",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/astro-typescript-cursorrules-prompt-file.mdc",
+      "stars": null
+    },
+    {
+      "name": "Cursor AI (React, TypeScript, shadcn/ui)",
+      "description": "Cursor AI development with React, TypeScript, and shadcn/ui integration.",
+      "category": "frontend",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/cursor-ai-react-typescript-shadcn-ui-cursorrules-p.mdc",
+      "stars": null
+    },
+    {
+      "name": "Next.js 15 (React 19, Vercel AI, Tailwind)",
+      "description": "Next.js development with React 19, Vercel AI, and Tailwind CSS integration.",
+      "category": "frontend",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/nextjs15-react19-vercelai-tailwind-cursorrules-prompt-file.mdc",
+      "stars": null
+    },
+    {
+      "name": "Next.js 15 (Supabase, TypeScript, Security)",
+      "description": "27 architecture rules preventing AI hallucinations: insecure auth (getSession vs getUser), synchronous params, deprecated imports, missing RLS, and Stripe key exposure. Built for Cursor Agent and Claude Code.",
+      "category": "frontend",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/nextjs15-supabase-cursorrules-prompt-file.mdc",
+      "stars": null
+    },
+    {
+      "name": "Next.js 14 (Tailwind, SEO)",
+      "description": "Next.js development with Tailwind CSS and SEO optimization.",
+      "category": "frontend",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/cursorrules-cursor-ai-nextjs-14-tailwind-seo-setup.mdc",
+      "stars": null
+    },
+    {
+      "name": "Next.js (React, Tailwind)",
+      "description": "Next.js development with React and Tailwind CSS integration.",
+      "category": "frontend",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/nextjs-react-tailwind-cursorrules-prompt-file.mdc",
+      "stars": null
+    },
+    {
+      "name": "Next.js (React, TypeScript)",
+      "description": "Next.js development with React and TypeScript integration.",
+      "category": "frontend",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/nextjs-react-typescript-cursorrules-prompt-file.mdc",
+      "stars": null
+    },
+    {
+      "name": "Next.js (TanStack Query v5)",
+      "description": "Next.js App Router with TanStack Query v5, covering the HydrationBoundary pattern, Server Actions as mutations, and optimistic updates.",
+      "category": "frontend",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/nextjs-tanstack-query-cursorrules-prompt-file.mdc",
+      "stars": null
+    },
+    {
+      "name": "Next.js (App Router)",
+      "description": "Next.js development with App Router integration.",
+      "category": "frontend",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/nextjs-app-router-cursorrules-prompt-file.mdc",
+      "stars": null
+    },
+    {
+      "name": "Qwik (Basic Setup with TypeScript and Vite)",
+      "description": "Qwik development with TypeScript and Vite integration.",
+      "category": "frontend",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/qwik-basic-cursorrules-prompt-file.mdc",
+      "stars": null
+    },
+    {
+      "name": "React Components Creation",
+      "description": "React component creation and development.",
+      "category": "frontend",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/react-components-creation-cursorrules-prompt-file.mdc",
+      "stars": null
+    },
+    {
+      "name": "React Router v7",
+      "description": "Framework mode, data routers, loaders, actions, route modules, and progressive enhancement.",
+      "category": "frontend",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/react-router-v7.mdc",
+      "stars": null
+    },
+    {
+      "name": "React (TypeScript, Next.js, Node.js)",
+      "description": "React development with TypeScript, Next.js, and Node.js integration.",
+      "category": "frontend",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/react-typescript-nextjs-nodejs-cursorrules-prompt-.mdc",
+      "stars": null
+    },
+    {
+      "name": "Solid.js (TypeScript)",
+      "description": "Solid.js development with TypeScript integration.",
+      "category": "frontend",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/solidjs-typescript-cursorrules-prompt-file.mdc",
+      "stars": null
+    },
+    {
+      "name": "Svelte 5 vs Svelte 4",
+      "description": "Comparing Svelte 5 and Svelte 4 development.",
+      "category": "frontend",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/svelte-5-vs-svelte-4-cursorrules-prompt-file.mdc",
+      "stars": null
+    },
+    {
+      "name": "SvelteKit (RESTful API, Tailwind CSS)",
+      "description": "SvelteKit development with RESTful API and Tailwind CSS integration.",
+      "category": "frontend",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/sveltekit-restful-api-tailwind-css-cursorrules-pro.mdc",
+      "stars": null
+    },
+    {
+      "name": "SvelteKit (TypeScript Guide)",
+      "description": "SvelteKit development with TypeScript integration.",
+      "category": "frontend",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/sveltekit-typescript-guide-cursorrules-prompt-file.mdc",
+      "stars": null
+    },
+    {
+      "name": "TanStack Router (React)",
+      "description": "TanStack Router v1 with file-based routing, typed params, search validation, loaders, auth guards, and route preloading.",
+      "category": "frontend",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/tanstack-router-react-cursorrules-prompt-file.mdc",
+      "stars": null
+    },
+    {
+      "name": "Vue 3 (Nuxt 3 Development)",
+      "description": "Vue 3 development with Nuxt 3 integration.",
+      "category": "frontend",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/vue-3-nuxt-3-development-cursorrules-prompt-file.mdc",
+      "stars": null
+    },
+    {
+      "name": "Vue 3 (Composition API)",
+      "description": "Vue 3 development with Composition API integration.",
+      "category": "frontend",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/vue3-composition-api-cursorrules-prompt-file.mdc",
+      "stars": null
+    },
+    {
+      "name": "Cloudflare Workers (Hono, Angular)",
+      "description": "Full-stack SaaS applications on Cloudflare Workers with Hono APIs, Angular frontends, typed RPC, D1/Neon, and production observability.",
+      "category": "backend",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/cloudflare-workers-hono-angular-saas-cursorrules-prompt-file.mdc",
+      "stars": null
+    },
+    {
+      "name": "Convex Best Practices",
+      "description": "Convex development with best practices.",
+      "category": "backend",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/convex-cursorrules-prompt-file.mdc",
+      "stars": null
+    },
+    {
+      "name": "Deno Integration",
+      "description": "Deno development with integration techniques.",
+      "category": "backend",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/deno-integration-techniques-cursorrules-prompt-fil.mdc",
+      "stars": null
+    },
+    {
+      "name": "Elixir Engineer Guidelines",
+      "description": "Elixir development with engineer guidelines.",
+      "category": "backend",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/elixir-engineer-guidelines-cursorrules-prompt-file.mdc",
+      "stars": null
+    },
+    {
+      "name": "Elixir (Phoenix, Docker)",
+      "description": "Elixir development with Phoenix and Docker integration.",
+      "category": "backend",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/elixir-phoenix-docker-setup-cursorrules-prompt-fil.mdc",
+      "stars": null
+    },
+    {
+      "name": "ES Module (Node.js)",
+      "description": "ES Module development with Node.js guidelines.",
+      "category": "backend",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/es-module-nodejs-guidelines-cursorrules-prompt-fil.mdc",
+      "stars": null
+    },
+    {
+      "name": "Go Backend Scalability",
+      "description": "Go development with backend scalability.",
+      "category": "backend",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/go-backend-scalability-cursorrules-prompt-file.mdc",
+      "stars": null
+    },
+    {
+      "name": "Go ServeMux REST API",
+      "description": "Go development with ServeMux REST API integration.",
+      "category": "backend",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/go-servemux-rest-api-cursorrules-prompt-file.mdc",
+      "stars": null
+    },
+    {
+      "name": "Go with Fiber",
+      "description": "Go development with Fiber integration.",
+      "category": "backend",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/htmx-go-fiber-cursorrules-prompt-file.mdc",
+      "stars": null
+    },
+    {
+      "name": "Google ADK",
+      "description": "Google Agent Development Kit agents, tools, sessions, memory, artifacts, evaluation, and deployment.",
+      "category": "backend",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/google-adk.mdc",
+      "stars": null
+    },
+    {
+      "name": "HTMX (Basic Setup)",
+      "description": "HTMX development with basic setup.",
+      "category": "backend",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/htmx-basic-cursorrules-prompt-file.mdc",
+      "stars": null
+    },
+    {
+      "name": "HTMX (Flask)",
+      "description": "HTMX development with Flask integration.",
+      "category": "backend",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/htmx-flask-cursorrules-prompt-file.mdc",
+      "stars": null
+    },
+    {
+      "name": "HTMX (Django)",
+      "description": "HTMX development with Django integration.",
+      "category": "backend",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/htmx-django-cursorrules-prompt-file.mdc",
+      "stars": null
+    },
+    {
+      "name": "Java (Spring Boot, JPA)",
+      "description": "Java development with Spring Boot and JPA integration.",
+      "category": "backend",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/java-springboot-jpa-cursorrules-prompt-file.mdc",
+      "stars": null
+    },
+    {
+      "name": "Kotlin Ktor Development",
+      "description": "Kotlin development with Ktor integration.",
+      "category": "backend",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/kotlin-ktor-development-cursorrules-prompt-file.mdc",
+      "stars": null
+    },
+    {
+      "name": "Laravel (PHP 8.3)",
+      "description": "Laravel development with PHP 8.3 integration.",
+      "category": "backend",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/laravel-php-83-cursorrules-prompt-file.mdc",
+      "stars": null
+    },
+    {
+      "name": "Node.js (MongoDB)",
+      "description": "Node.js development with MongoDB integration.",
+      "category": "backend",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/nodejs-mongodb-cursorrules-prompt-file-tutorial.mdc",
+      "stars": null
+    },
+    {
+      "name": "Rails 8 (Basic Setup)",
+      "description": "Rails development with basic setup.",
+      "category": "backend",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/rails-cursorrules-prompt-file.mdc",
+      "stars": null
+    },
+    {
+      "name": "Python (FastAPI)",
+      "description": "Python FastAPI backend development and best practices.",
+      "category": "backend",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/py-fast-api.mdc",
+      "stars": null
+    },
+    {
+      "name": "Python 3.12 (FastAPI Best Practices)",
+      "description": "Python FastAPI development with best practices.",
+      "category": "backend",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/python-312-fastapi-best-practices-cursorrules-prom.mdc",
+      "stars": null
+    },
+    {
+      "name": "Python (Django Best Practices)",
+      "description": "Python Django development with best practices.",
+      "category": "backend",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/python-django-best-practices-cursorrules-prompt-fi.mdc",
+      "stars": null
+    },
+    {
+      "name": "Python (FastAPI Production Architecture)",
+      "description": "FastAPI services with router/service/repository boundaries, typed provider adapters, bulkhead isolation, idempotency, and domain exceptions.",
+      "category": "backend",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/fastapi-production-architecture-cursorrules-prompt-file.mdc",
+      "stars": null
+    },
+    {
+      "name": "Python LLM & ML Workflow",
+      "description": "Python LLM & ML development with workflow integration.",
+      "category": "backend",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/python-llm-ml-workflow-cursorrules-prompt-file.mdc",
+      "stars": null
+    },
+    {
+      "name": "TypeScript (NestJS Anti-Hallucination)",
+      "description": "Rules that block deprecated, phantom, or incorrect NestJS imports, decorators, providers, modules, and testing patterns.",
+      "category": "backend",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/nestjs-anti-hallucination-cursorrules-prompt-file.mdc",
+      "stars": null
+    },
+    {
+      "name": "TypeScript (NestJS Best Practices)",
+      "description": "TypeScript development with NestJS best practices.",
+      "category": "backend",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/typescript-nestjs-best-practices-cursorrules-promp.mdc",
+      "stars": null
+    },
+    {
+      "name": "Android Native (Jetpack Compose)",
+      "description": "Android development with Jetpack Compose integration.",
+      "category": "mobile",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/android-jetpack-compose-cursorrules-prompt-file.mdc",
+      "stars": null
+    },
+    {
+      "name": "Flutter Expert",
+      "description": "Flutter development with expert integration.",
+      "category": "mobile",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/flutter-app-expert-cursorrules-prompt-file.mdc",
+      "stars": null
+    },
+    {
+      "name": "React Native Expo",
+      "description": "Expo-based mobile app development.",
+      "category": "mobile",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/react-native-expo-cursorrules-prompt-file.mdc",
+      "stars": null
+    },
+    {
+      "name": "SwiftUI Guidelines",
+      "description": "SwiftUI development guidelines.",
+      "category": "mobile",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/swiftui-guidelines-cursorrules-prompt-file.mdc",
+      "stars": null
+    },
+    {
+      "name": "Landing Page Image Quality",
+      "description": "Avoiding placeholder or broken image URLs, using stable visual assets, and checking alt text, dimensions, licensing, and responsive behavior.",
+      "category": "css-styling",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/landing-page-image-quality-cursorrules-prompt-file.mdc",
+      "stars": null
+    },
+    {
+      "name": "Tailwind CSS (Next.js Guide)",
+      "description": "Tailwind CSS development with Next.js integration.",
+      "category": "css-styling",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/tailwind-css-nextjs-guide-cursorrules-prompt-file.mdc",
+      "stars": null
+    },
+    {
+      "name": "Tailwind (shadcn/ui Integration)",
+      "description": "Tailwind development with shadcn/ui integration.",
+      "category": "css-styling",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/tailwind-shadcn-ui-integration-cursorrules-prompt-.mdc",
+      "stars": null
+    },
+    {
+      "name": "RTL / Right-to-Left (i18n, Tailwind, React Native)",
+      "description": "RTL development with logical CSS properties, Tailwind logical classes, bidirectional text, and automated auditing via rtlify-ai.",
+      "category": "css-styling",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/rtl-right-to-left-i18n-cursorrules-prompt-file.mdc",
+      "stars": null
+    },
+    {
+      "name": "Toss-Style Design System",
+      "description": "Disciplined product UI with restrained color, grayscale hierarchy, typography, cards, metrics, dark mode, and accessibility.",
+      "category": "css-styling",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/toss-style-design-system.mdc",
+      "stars": null
+    },
+    {
+      "name": "React (Redux, TypeScript)",
+      "description": "React development with Redux and TypeScript integration.",
+      "category": "state-management",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/react-redux-typescript-cursorrules-prompt-file.mdc",
+      "stars": null
+    },
+    {
+      "name": "React (MobX)",
+      "description": "React development with MobX integration.",
+      "category": "state-management",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/react-mobx-cursorrules-prompt-file.mdc",
+      "stars": null
+    },
+    {
+      "name": "React (React Query)",
+      "description": "React development with React Query integration.",
+      "category": "state-management",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/react-query-cursorrules-prompt-file.mdc",
+      "stars": null
+    },
+    {
+      "name": "TanStack Query v5",
+      "description": "Query options, query key factories, mutations, optimistic updates, infinite queries, Suspense, and prefetching.",
+      "category": "state-management",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/tanstack-query-v5-cursorrules-prompt-file.mdc",
+      "stars": null
+    },
+    {
+      "name": "Vue (Pinia)",
+      "description": "Vue 3 state management with Pinia stores, Composition API usage, SSR, persistence, and testing.",
+      "category": "state-management",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/vue-pinia-cursorrules-prompt-file.mdc",
+      "stars": null
+    },
+    {
+      "name": "GraphQL (Apollo Client)",
+      "description": "GraphQL development with Apollo Client integration.",
+      "category": "database-api",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/react-graphql-apollo-client-cursorrules-prompt-file.mdc",
+      "stars": null
+    },
+    {
+      "name": "TypeScript (Axios)",
+      "description": "TypeScript development with Axios integration.",
+      "category": "database-api",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/typescript-axios-cursorrules-prompt-file.mdc",
+      "stars": null
+    },
+    {
+      "name": "Cypress API Testing",
+      "description": "Cypress development with API testing.",
+      "category": "testing",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/cypress-api-testing-cursorrules-prompt-file.mdc",
+      "stars": null
+    },
+    {
+      "name": "Cypress Accessibility Testing",
+      "description": "Cypress development with accessibility testing.",
+      "category": "testing",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/cypress-accessibility-testing-cursorrules-prompt-file.mdc",
+      "stars": null
+    },
+    {
+      "name": "Cypress E2E Testing",
+      "description": "Cypress development with E2E testing.",
+      "category": "testing",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/cypress-e2e-testing-cursorrules-prompt-file.mdc",
+      "stars": null
+    },
+    {
+      "name": "Jest Unit Testing",
+      "description": "Jest development with unit testing.",
+      "category": "testing",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/jest-unit-testing-cursorrules-prompt-file.mdc",
+      "stars": null
+    },
+    {
+      "name": "Playwright API Testing",
+      "description": "Playwright development with API testing.",
+      "category": "testing",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/playwright-api-testing-cursorrules-prompt-file.mdc",
+      "stars": null
+    },
+    {
+      "name": "Playwright Accessibility Testing",
+      "description": "Playwright development with accessibility testing.",
+      "category": "testing",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/playwright-accessibility-testing-cursorrules-prompt-file.mdc",
+      "stars": null
+    },
+    {
+      "name": "Playwright E2E Testing",
+      "description": "Playwright development with E2E testing.",
+      "category": "testing",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/playwright-e2e-testing-cursorrules-prompt-file.mdc",
+      "stars": null
+    },
+    {
+      "name": "PR Review (security / performance / tests / architecture)",
+      "description": "Focused PR reviews with severity ranking, file and line citations, and separate review angles for security, performance, tests, and architecture.",
+      "category": "testing",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/pr-review-cursorrules-prompt-file.mdc",
+      "stars": null
+    },
+    {
+      "name": "QA Bug Report",
+      "description": "QA development with bug report integration.",
+      "category": "testing",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/qa-bug-report-cursorrules-prompt-file.mdc",
+      "stars": null
+    },
+    {
+      "name": "Vitest Unit Testing",
+      "description": "Vitest development with unit testing.",
+      "category": "testing",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/vitest-unit-testing-cursorrules-prompt-file.mdc",
+      "stars": null
+    },
+    {
+      "name": "Netlify",
+      "description": "Official deployment platform integration.",
+      "category": "hosting-deployments",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/netlify-official-cursorrules-prompt-file.mdc",
+      "stars": null
+    },
+    {
+      "name": "Vercel",
+      "description": "Deployment with serverless functions, Edge Runtime, middleware, caching, CI/CD, and production-ready configuration.",
+      "category": "hosting-deployments",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/vercel-deployment-cursorrules-prompt-file.mdc",
+      "stars": null
+    },
+    {
+      "name": "AI Agent Specialist",
+      "description": "TypeScript, React, Node.js, clean architecture, testing, and WHY-oriented engineering guidance.",
+      "category": "build-tools",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/ai-agent-specialist.mdc",
+      "stars": null
+    },
+    {
+      "name": "Anti-Over-Engineering",
+      "description": "Keeping changes scoped, simple, and directly tied to the user's request.",
+      "category": "build-tools",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/anti-overengineering.mdc",
+      "stars": null
+    },
+    {
+      "name": "Anti-Sycophancy Code Discipline",
+      "description": "17 directives blocking the most common LLM coding honesty failures: hallucinated APIs, invented signatures, false-confidence validation, manufactured-urgency capitulation, authority-driven softening, and self-referential comments. Drop the `.mdc` in `.cursor/rules/`.",
+      "category": "build-tools",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/anti-sycophancy-code-discipline-cursorrules-prompt-file.mdc",
+      "stars": null
+    },
+    {
+      "name": "Code Guidelines",
+      "description": "Code development with guidelines integration.",
+      "category": "build-tools",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/code-guidelines-cursorrules-prompt-file.mdc",
+      "stars": null
+    },
+    {
+      "name": "Code Style Consistency",
+      "description": "Code development with style consistency integration.",
+      "category": "build-tools",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/code-style-consistency-cursorrules-prompt-file.mdc",
+      "stars": null
+    },
+    {
+      "name": "Engineering Ticket Template",
+      "description": "Engineering development with ticket template integration.",
+      "category": "build-tools",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/engineering-ticket-template-cursorrules-prompt-file.mdc",
+      "stars": null
+    },
+    {
+      "name": "GitHub Code Quality",
+      "description": "GitHub development with code quality integration.",
+      "category": "build-tools",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/github-code-quality-cursorrules-prompt-file.mdc",
+      "stars": null
+    },
+    {
+      "name": "Git Commit Messages",
+      "description": "Git development with conventional commit messages integration.",
+      "category": "build-tools",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/git-conventional-commit-messages.mdc",
+      "stars": null
+    },
+    {
+      "name": "Network Troubleshooting",
+      "description": "Safety-first diagnostics for developer network failures with target-scoped checks, TLS and proxy guardrails, and user-approved remediation.",
+      "category": "build-tools",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/network-troubleshoot.mdc",
+      "stars": null
+    },
+    {
+      "name": "Optimize (DRY, SOLID Principles)",
+      "description": "Optimization development with DRY and SOLID principles integration.",
+      "category": "build-tools",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/optimize-dry-solid-principles-cursorrules-prompt-f.mdc",
+      "stars": null
+    },
+    {
+      "name": "TypeScript Code Convention",
+      "description": "TypeScript development with code convention integration.",
+      "category": "build-tools",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/typescript-code-convention-cursorrules-prompt-file.mdc",
+      "stars": null
+    },
+    {
+      "name": "Web App Optimization",
+      "description": "Web app development with optimization integration.",
+      "category": "build-tools",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/web-app-optimization-cursorrules-prompt-file.mdc",
+      "stars": null
+    },
+    {
+      "name": "JavaScript/TypeScript Code Quality",
+      "description": "JavaScript and TypeScript development with code quality integration.",
+      "category": "language-specific",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/javascript-typescript-code-quality-cursorrules-pro.mdc",
+      "stars": null
+    },
+    {
+      "name": "Pandas (scikit-learn Guide)",
+      "description": "Pandas development with scikit-learn guide integration.",
+      "category": "language-specific",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/pandas-scikit-learn-guide-cursorrules-prompt-file.mdc",
+      "stars": null
+    },
+    {
+      "name": "Python Best Practices",
+      "description": "Python development with best practices integration.",
+      "category": "language-specific",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/python-cursorrules-prompt-file-best-practices.mdc",
+      "stars": null
+    },
+    {
+      "name": "Python Projects Guide",
+      "description": "Python development with projects guide integration.",
+      "category": "language-specific",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/python-projects-guide-cursorrules-prompt-file.mdc",
+      "stars": null
+    },
+    {
+      "name": "PySpark ETL Best Practices",
+      "description": "PySpark ETL development with code style, joins, window functions, map operations, and Iceberg patterns.",
+      "category": "language-specific",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/pyspark-etl-best-practices-cursorrules-prompt-file.mdc",
+      "stars": null
+    },
+    {
+      "name": "R Best Practices",
+      "description": "R development with best practices integration.",
+      "category": "language-specific",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/r-cursorrules-prompt-file-best-practices.mdc",
+      "stars": null
+    },
+    {
+      "name": "Rust",
+      "description": "Safe, idiomatic Rust application and library development.",
+      "category": "language-specific",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/rust-general.mdc",
+      "stars": null
+    },
+    {
+      "name": "C++ Programming Guidelines",
+      "description": "C++ development with programming guidelines integration.",
+      "category": "language-specific",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/cpp-programming-guidelines-cursorrules-prompt-file.mdc",
+      "stars": null
+    },
+    {
+      "name": "TensorFlow and Deep Learning",
+      "description": "TensorFlow model development, training, evaluation, export, and deployment.",
+      "category": "language-specific",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/tensorflow-deep-learning.mdc",
+      "stars": null
+    },
+    {
+      "name": "DevSecOps, SSDLC, and AppSec",
+      "description": "Secure coding, secret handling, dependency hygiene, authentication, authorization, security testing, and compliance documentation.",
+      "category": "security",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/security-devsecops-ssdls-appsec.mdc",
+      "stars": null
+    },
+    {
+      "name": "Gherkin Style Testing",
+      "description": "Behavior-driven scenarios and acceptance criteria.",
+      "category": "documentation",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/gherkin-style-testing-cursorrules-prompt-file.mdc",
+      "stars": null
+    },
+    {
+      "name": "How-To Documentation",
+      "description": "Task-oriented guides and procedural documentation.",
+      "category": "documentation",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/how-to-documentation-cursorrules-prompt-file.mdc",
+      "stars": null
+    },
+    {
+      "name": "README Best Practices",
+      "description": "README documentation with best practices integration.",
+      "category": "documentation",
+      "source_url": "https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/readme-best-practices-cursorrules-prompt-file.mdc",
+      "stars": null
+    }
+  ]
+}

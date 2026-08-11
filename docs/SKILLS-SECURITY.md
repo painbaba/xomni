@@ -1,4 +1,4 @@
-# XOMNI External Skills — Security Scan Report (2026-08-11 23:34)
+# XOMNI External Skills — Security Scan Report (2026-08-12 01:34)
 
 Database: `data/skills.db` — integrity_check: **ok**
 
@@ -8,11 +8,11 @@ Every SKILL.md harvested from external sources is scanned statically (never exec
 
 ## Totals
 
-- Total skills in DB: **519**
-- Sources merged: 6 (`scrape1.json, scrape2.json, scrape3.json, scrape4.json, scrape5.json, scrape6.json`)
-- PASS: **458**
-- REVIEW: **61**
-- Ranked (from curated-skills.json): **201** / 519 (38.7% coverage)
+- Total skills in DB: **544**
+- Sources merged: 7 (`scrape1.json, scrape2.json, scrape3.json, scrape4.json, scrape5.json, scrape6.json, scrape7.json`)
+- PASS: **481**
+- REVIEW: **63**
+- Ranked (from curated-skills.json): **201** / 544 (36.9% coverage)
 - Curated entries: 180 loaded from `data/curated-skills.json` (matched by sha256)
 - Ranked by verdict: PASS 198, REVIEW 3
 
@@ -25,8 +25,8 @@ Every SKILL.md harvested from external sources is scanned statically (never exec
 | microsoft/skills | 69 |
 | anthropics/skills | 47 |
 | google/skills | 45 |
+| obra/superpowers | 43 |
 | awesome-claude-code | 36 |
-| obra/superpowers | 18 |
 | SnailSploit/Claude-Red | 8 |
 | sudokar/openspec-plus | 6 |
 | gadievron/raptor | 6 |
@@ -104,10 +104,10 @@ None.
 - **oxylabs_universal_scraper_tool** (crewai-tools): ['review:oxylabs_universal_scraper_tool:109 eval/exec/subprocess', 'info:oxylabs_universal_scraper_tool:130 reads-env-vars']
 - **scaffold** (microsoft/skills): ['REVIEW:suspicious-url:148 suspicious-url']
 - **entra-agent-id** (microsoft/skills): ['REVIEW:exec:133 exec']
+- **opencode-methodology** (obra/superpowers): ['review:opencode-methodology:132 suspicious-url']
+- **porting-to-a-new-harness** (obra/superpowers): ['review:porting-to-a-new-harness:745 suspicious-url']
 - **auto-qa** (openclaw): ["SKILL.md:42 [mislead_md/misleading-instructions] 'Do not disclose'"]
 - **autoreview** (openclaw): ["SKILL.md:41 [exec_subproc/code-exec] 'subprocess'", "SKILL.md:44 [exec_subproc/code-exec] 'subprocess'"]
-- **discord-user-post** (openclaw): ["SKILL.md:41 [exfil_send/exfiltration] 'send result'", "SKILL.md:3 [net_hosts/network] 'webhook'", "SKILL.md:47 [net_hosts/network] 'webhook'"]
-- **discrawl** (openclaw): ["SKILL.md:91 [net_fetch/network] 'requests.'"]
 
 ## Raw source files
 
@@ -117,3 +117,4 @@ None.
 - `scrape4.json`: 41 items, 41 unique (sha256) -> C:\Users\HP\xomni\data\raw\scrape4.json
 - `scrape5.json`: 120 items, 120 unique (sha256) -> C:\Users\HP\xomni\data\raw\scrape5.json
 - `scrape6.json`: 110 items, 110 unique (sha256) -> C:\Users\HP\xomni\data\raw\scrape6.json
+- `scrape7.json`: 25 items, 25 unique (sha256) -> C:\Users\HP\xomni\data\raw\scrape7.json
