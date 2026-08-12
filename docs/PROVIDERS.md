@@ -71,6 +71,22 @@ Three India-resident channels round out the catalog (research:
 
 ## How to connect (any provider)
 
+One-command connect (XOMNI CLI):
+
+```
+xomni providers add my-provider https://api.example.com/v1 \
+    --key-env MY_PROVIDER_API_KEY --api-type openai --models m1,m2 --yes
+```
+
+Writes the `providers.<id>` block into config.yaml (YAML-validated, idempotent,
+preserves the rest of the file) and adds the `KEY=` placeholder line to `.env`
+(never overwrites an existing key, never writes a value — you paste the secret
+in). `--dry-run` previews; failures are loud (bad name/URL/env-var, read-only
+config, missing config). Then: paste the key into `.env` and run `xomni doctor`
+or `/models` to verify.
+
+Manual path (equivalent):
+
 1. Put the key in `~/AppData/Local/hermes/.env` (secrets live only in `.env`):
    ```
    OPENROUTER_API_KEY=sk-or-...

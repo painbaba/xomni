@@ -10,6 +10,9 @@ Installed via ``pip install .`` from the repo root. Commands:
   xomni skill search <q>     search skills (DB in checkout, else installed tree)
   xomni skill install <dir>  install a SKILL.md skill/marketplace (fail-closed)
   xomni providers            provider coverage table (all Hermes providers)
+  xomni providers add <n> <u> connect an LLM provider in one shot: writes the
+                             providers.<id> config block + .env key placeholder
+                             (--key-env VAR, --api-type, --models, --yes, --dry-run)
   xomni doctor               environment health check
   xomni stacks               list one-command vertical stacks
   xomni add <stack>          install a stack's MCPs by appending host config
@@ -345,6 +348,175 @@ def cmd_providers() -> int:
         print(f"  {name:<40} {env:<26} {base}")
     print("\nHow to connect: set the key in ~/AppData/Local/hermes/.env, then add a")
     print("providers.<id> block in config.yaml (see docs/PROVIDERS.md).")
+    print("\nOne-command connect:  xomni providers add <name> <base_url> --key-env VAR [--yes]")
+    return 0
+
+
+# ---------------------------------------------------------------------------
+# xomni providers add — one-command LLM-provider connect (U-gap closure)
+# ---------------------------------------------------------------------------
+_ID_RE = re.compile(r"^[a-z0-9][a-z0-9_-]{1,31}$")
+_ENV_RE = re.compile(r"^[A-Z][A-Z0-9_]{2,63}$")
+_API_TYPES = ("openai", "anthropic")
+
+
+def _existing_provider_names(text: str) -> set:
+    """Names already defined under the providers: block (indent-2 keys)."""
+    names, in_block = set(), False
+    for line in text.splitlines():
+        if not in_block:
+            if re.match(r"^providers:", line):
+                in_block = True
+            continue
+        if line and not line[0].isspace():
+            break  # next top-level key
+        m = re.match(r"^ {2}(\S[^:]*):", line)
+        if m:
+            names.add(m.group(1).strip().strip("\"'\n"))
+    return names
+
+
+def _provider_block(name: str, base_url: str, env_key: str,
+                    api_type: str, models: list[str]) -> str:
+    """Render one providers.<id> entry as YAML text at indent 2 (host schema)."""
+    import yaml
+
+    def scalar(v):
+        return yaml.safe_dump(v, default_flow_style=False).split("\n...")[0].strip()
+
+    lines = [f"  {scalar(name)}:"]
+    if models:
+        lines.append("    models:")
+        for m in models:
+            lines.append(f"      - {scalar(m)}")
+    for k, v in (("base_url", base_url), ("api_type", api_type),
+                 ("env_key", env_key)):
+        lines.append(f"    {k}: {scalar(v)}")
+    return "\n".join(lines)
+
+
+def _append_provider(config_path: str, block: str) -> None:
+    """Append a providers.<id> block under the existing providers: section."""
+    text = open(config_path, encoding="utf-8").read()
+    lines = text.splitlines()
+    idx = next((i for i, l in enumerate(lines) if re.match(r"^providers:", l)), None)
+    if idx is None:
+        new_text = text.rstrip("\n") + "\n\nproviders:\n" + block + "\n"
+    else:
+        if re.search(r":\s*(\{\s*\}|\[\s*\])\s*(#.*)?$", lines[idx]):
+            lines[idx] = "providers:"
+        new_text = "\n".join(lines[:idx + 1] + [block] + lines[idx + 1:]) \
+            + ("\n" if text.endswith("\n") else "")
+    try:
+        with open(config_path, "w", encoding="utf-8") as f:
+            f.write(new_text)
+    except (PermissionError, OSError) as exc:
+        raise OSError(
+            f"config.yaml is not writable: {config_path} ({exc}).\n"
+            f"Fix: uncheck Read-only in the file's properties (or run as administrator), "
+            f"then re-run `xomni providers add`.") from exc
+    # parse validation — the file must stay valid YAML after our insert
+    import yaml
+    yaml.safe_load(open(config_path, encoding="utf-8"))
+
+
+def _env_path() -> str:
+    return os.path.join(HERMES_HOME, ".env")
+
+
+def _touch_env_key(env_path: str, env_key: str, dry_run: bool) -> str:
+    """Add `KEY=` placeholder if missing; never overwrite or fabricate values."""
+    if not os.path.isfile(env_path):
+        if dry_run:
+            return f"would create {env_path} with {env_key}="
+        open(env_path, "a", encoding="utf-8").close()
+    lines = open(env_path, encoding="utf-8").read().splitlines()
+    for line in lines:
+        if line.strip().startswith(env_key + "="):
+            return f"already present in {env_path} (fill the value there)"
+    if dry_run:
+        return f"would append {env_key}= to {env_path}"
+    with open(env_path, "a", encoding="utf-8") as f:
+        f.write(f"\n{env_key}=\n")
+    return f"appended {env_key}= to {env_path} (fill the value there)"
+
+
+def cmd_providers_add(args: list[str]) -> int:
+    """xomni providers add <name> <base_url> [--key-env VAR] [--api-type T]
+    [--models m1,m2] [--yes] [--dry-run] — connect an LLM provider in one shot."""
+    import urllib.parse
+
+    dry_run = "--dry-run" in args
+    yes = "--yes" in args or "-y" in args
+    args = [a for a in args if a not in ("--dry-run", "--yes", "-y")]
+    api_type, models, key_env = "openai", [], None
+    rest = []
+    i = 0
+    while i < len(args):
+        a = args[i]
+        if a == "--key-env" and i + 1 < len(args):
+            key_env = args[i + 1]; i += 2
+        elif a == "--api-type" and i + 1 < len(args):
+            api_type = args[i + 1].lower(); i += 2
+        elif a == "--models" and i + 1 < len(args):
+            models = [m.strip() for m in args[i + 1].split(",") if m.strip()]
+            i += 2
+        else:
+            rest.append(a); i += 1
+    if len(rest) != 2:
+        print("usage: xomni providers add <name> <base_url> --key-env VAR "
+              "[--api-type openai|anthropic] [--models m1,m2] [--yes] [--dry-run]")
+        return 1
+    name, base_url = rest
+    if not _ID_RE.match(name):
+        print(f"FAILED — invalid provider name {name!r}: use 2-32 chars, "
+              f"lowercase letters/digits/-/_ (e.g. my-openai)")
+        return 1
+    parsed = urllib.parse.urlparse(base_url)
+    if parsed.scheme not in ("http", "https") or not parsed.netloc:
+        print(f"FAILED — invalid base_url {base_url!r}: must be http(s)://host[:port][/path]")
+        return 1
+    if key_env is None:
+        key_env = name.replace("-", "_").upper() + "_API_KEY"
+    if not _ENV_RE.match(key_env):
+        print(f"FAILED — invalid env var name {key_env!r}: uppercase letters/digits/_ only")
+        return 1
+    if api_type not in _API_TYPES:
+        print(f"FAILED — api_type must be one of {_API_TYPES} (got {api_type!r})")
+        return 1
+
+    config_path = _config_path()
+    if not os.path.isfile(config_path):
+        print(f"FAILED — config.yaml not found at {config_path}. "
+              f"Fix: run `hermes setup` once, then re-run `xomni providers add`.")
+        return 1
+    existing = _existing_provider_names(open(config_path, encoding="utf-8").read())
+    if name in existing:
+        print(f"ALREADY PRESENT — providers.{name} exists in {config_path} "
+              f"(idempotent: nothing written). Set the key in .env and run "
+              f"`hermes config set providers.{name}.*` to tweak.")
+        return 0
+
+    block = _provider_block(name, base_url, key_env, api_type, models)
+    print(f"PROVIDER ADD — {name}")
+    print(f"  base_url : {base_url}")
+    print(f"  api_type : {api_type}")
+    print(f"  env_key  : {key_env}" + (f"  models: {', '.join(models)}" if models else ""))
+    print(f"  config   : {config_path}")
+    if dry_run:
+        print("  DRY-RUN — block below would be appended (no write):")
+        print(block)
+        print(f"  env: {_touch_env_key(_env_path(), key_env, True)}")
+        return 0
+    try:
+        _append_provider(config_path, block)
+    except OSError as exc:
+        print(f"FAILED — {exc}")
+        return 1
+    env_note = _touch_env_key(_env_path(), key_env, False)
+    print(f"  wrote providers.{name} block -> {config_path} (YAML validated)")
+    print(f"  .env: {env_note}")
+    print("NEXT: paste the key value into .env, then `xomni doctor` or /models to verify.")
     return 0
 
 
@@ -697,6 +869,8 @@ def main(argv=None) -> int:
     if cmd == "skill":
         print("usage: xomni skill search <query> | install <dir>")
         return 1
+    if cmd == "providers" and args and args[0] == "add":
+        return cmd_providers_add(args[1:])
     if cmd == "providers":
         return cmd_providers()
     if cmd == "doctor":
