@@ -7,10 +7,12 @@ Commands:
                                   install every skill from a git marketplace
                                   URL (https:// or git://, shallow clone) or a
                                   local repo dir
-  /skills publish <dir> [--author=NAME] [--repo=<target>]
-                                  credit-stamp + copy a skill into a repo's
-                                  skills/ tree (skills.sh market), print the
-                                  push steps + submission note + receipt
+  /skills publish <dir> [--yes] [--author=NAME] [--repo=<target-repo-dir>]
+                                  [--to=github|clawhub] [--dry-run]
+                                  credit-stamp (idempotent) then DELEGATE the
+                                  publish to the host `hermes skills publish
+                                  --to <target>`; repo-copy fallback only when
+                                  the host CLI is missing
 Tool:     skills_import(dir, target, dry_run)
 No hooks registered — zero per-turn cost.
 """
@@ -219,32 +221,50 @@ def _handle_marketplace(raw: str) -> str:
 
 
 def _handle_publish(raw: str) -> str:
-    """/skills publish <dir> [--author=NAME] [--repo=<target-repo-dir>] —
-    credit-stamp a skill (author/source/published_at/origin) and copy it into
-    a repo's skills/ tree for the skills.sh market (push + index + install)."""
+    """/skills publish <dir> [--yes] [--author=NAME] [--repo=<target-repo-dir>]
+    [--to=github|clawhub] [--dry-run] — credit-stamp a skill
+    (author/source/published_at/origin, idempotent) then DELEGATE the actual
+    publish to the host CLI `hermes skills publish --to <target>` (single
+    publish path). Falls back to the repo-copy path only when the host CLI is
+    missing, with a loud note that host publish is preferred."""
     parts = (raw or "").split()
-    author, repo = None, ""
+    author, repo, target, dry = None, "", "github", False
     keep = []
     for p in parts:
         if p.startswith("--author="):
             author = p.split("=", 1)[1].strip() or None
         elif p.startswith("--repo="):
             repo = p.split("=", 1)[1].strip()
+        elif p.startswith("--to="):
+            target = p.split("=", 1)[1].strip().lower() or "github"
+        elif p == "--dry-run":
+            dry = True
+        elif p in ("--yes", "-y"):
+            # U3 — non-interactive: accepted and stripped; /skills publish
+            # never prompts, and the flag guarantees no confirmation is ever
+            # requested (must never be misread as the skill dir).
+            continue
         else:
             keep.append(p)
     path = " ".join(keep).strip().strip('"')
     if not path:
-        return ("/skills publish <dir> [--author=NAME] [--repo=<target-repo-dir>] — "
-                "credit-stamp + copy a skill into a repo's skills/ tree for the "
-                "skills.sh market (https://skills.sh).")
-    if not repo:
-        repo = core.find_xomni_home() or os.getcwd()
-    r = core.publish_skill(path, repo, author=author)
+        return ("/skills publish <dir> [--yes] [--author=NAME] "
+                "[--repo=<target-repo-dir>] [--to=github|clawhub] [--dry-run] "
+                "— credit-stamp then delegate publish to the host "
+                "(`hermes skills publish --to <target>`); repo-copy fallback "
+                "only when the host CLI is missing.")
+    if target not in core.HOST_PUBLISH_TARGETS:
+        return (f"/skills publish: unknown --to target '{target}' — use one "
+                f"of {', '.join(core.HOST_PUBLISH_TARGETS)}")
+    fallback_repo = repo or core.find_xomni_home() or os.getcwd()
+    r = core.publish_via_host(path, target=target, author=author,
+                              fallback_repo=fallback_repo, dry_run=dry)
     if not r["ok"]:
         detail = ""
         if r.get("issues"):
             detail = " (" + "; ".join(f for f, _ in r["issues"][:3]) + ")"
         return f"/skills publish: FAILED — {r.get('reason', 'see details')}{detail}"
+    mode = "DRY-RUN " if dry else ""
     credit_lines = [f"  author       : {r['author']}",
                     f"  source       : {r['source']}",
                     f"  published_at : {r['published_at']}"]
@@ -252,31 +272,51 @@ def _handle_publish(raw: str) -> str:
         credit_lines.append(f"  origin       : {r['origin']}")
     if r.get("original_author"):
         credit_lines.append(f"  original_author (preserved): {r['original_author']}")
-    git = r["git"]
-    target_origin = core.detect_origin(git["repo"]) or r.get("origin")
-    npx_target = target_origin or "<owner/repo>"
-    return "\n".join([
-        f"/skills publish: OK — {r['name']} "
-        f"(credit {'stamped' if r['stamped'] else 'already present, untouched'})",
-        "CREDIT",
-        *credit_lines,
-        f"copied to : {r['path']}",
-        "",
-        "PUSH (from the target repo):",
-        f"  cd {git['repo']}",
-        f"  git add {git['add']}",
-        f"  git commit -m '{git['commit']}'",
-        "  git push",
-        "",
-        "SKILLS.SH SUBMISSION: once the repo is public and indexed by the",
-        "directory (https://skills.sh — 'The Agent Skills Directory'), anyone",
-        "installs it via:",
-        f"  npx skills add {npx_target}",
-        "  or XOMNI: /skills-marketplace <git-url>  (shallow clone, fail-closed)",
-        "",
-        f"RECEIPT: name={r['name']} sha256={r['sha256']} "
-        f"path={r['path']} author={r['author']}",
-    ])
+    lines = [f"/skills publish: {mode}OK — {r['name']} "
+             f"(credit {'stamped' if r['stamped'] else 'already present, untouched'})",
+             "CREDIT", *credit_lines]
+    if r.get("delegated"):
+        lines += ["",
+                  f"DELEGATED to host ({r.get('host', 'hermes')}) — single publish path:",
+                  f"  {' '.join(r['command'])}"]
+        if r.get("host_output"):
+            lines += ["host output:",
+                      *[f"  {ln}" for ln in r["host_output"].splitlines()[:6]]]
+        target_origin = r.get("origin")
+        npx_target = target_origin or "<owner/repo>"
+        lines += ["",
+                  "SKILLS.SH SUBMISSION: once the host publish lands and the repo is",
+                  "indexed by the directory (https://skills.sh), anyone installs via:",
+                  f"  npx skills add {npx_target}",
+                  "  or XOMNI: /skills-marketplace <git-url>  (shallow clone, fail-closed)"]
+        receipt = (f"RECEIPT: name={r['name']} delegated={r['delegated']} "
+                   f"target={r.get('target', 'github')} "
+                   f"author={r['author']} stamped={r['stamped']}")
+    else:
+        lines += ["",
+                  f"NOTE: host publish ({r.get('host', 'hermes')} skills publish) "
+                  "unavailable — used repo-copy fallback. HOST PUBLISH IS PREFERRED.",
+                  f"copied to : {r['path']}"]
+        git = r["git"]
+        target_origin = core.detect_origin(git["repo"]) or r.get("origin")
+        npx_target = target_origin or "<owner/repo>"
+        lines += ["",
+                  "PUSH (from the target repo):",
+                  f"  cd {git['repo']}",
+                  f"  git add {git['add']}",
+                  f"  git commit -m '{git['commit']}'",
+                  "  git push",
+                  "",
+                  "SKILLS.SH SUBMISSION: once the repo is public and indexed by the",
+                  "directory (https://skills.sh — 'The Agent Skills Directory'), anyone",
+                  "installs it via:",
+                  f"  npx skills add {npx_target}",
+                  "  or XOMNI: /skills-marketplace <git-url>  (shallow clone, fail-closed)"]
+        receipt = (f"RECEIPT: name={r['name']} sha256={r['sha256']} "
+                   f"path={r['path']} author={r['author']} "
+                   f"delegated={r['delegated']}")
+    lines += ["", receipt]
+    return "\n".join(lines)
 
 
 def _tool_skills_import(params: dict) -> str:
@@ -331,8 +371,8 @@ def register(ctx) -> None:
                          description="Install every skill from a git marketplace URL (https/git, shallow clone, cached) or a local repo dir.",
                          args_hint="<url-or-dir> [--yes] [--target=...] [--dry-run]")
     ctx.register_command("skills-publish", handler=_handle_publish,
-                         description="Credit-stamp (author/source/published_at/origin) a skill and copy it into a repo's skills/ tree for the skills.sh market, with push steps + receipt.",
-                         args_hint="<dir> [--author=NAME] [--repo=<target-repo-dir>]")
+                         description="Credit-stamp (author/source/published_at/origin, idempotent) a skill then delegate the publish to the host CLI (hermes skills publish --to github|clawhub); repo-copy fallback only when the host CLI is missing.",
+                         args_hint="<dir> [--yes] [--author=NAME] [--repo=<target-repo-dir>] [--to=github|clawhub] [--dry-run]")
     ctx.register_tool("skills_import", toolset="skills", schema=TOOL_SCHEMA,
                       handler=_tool_skills_import,
                       description="Import SKILL.md skills (single dir or marketplace) into the Hermes skills surface, fail-closed.")

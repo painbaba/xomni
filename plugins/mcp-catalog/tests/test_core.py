@@ -315,6 +315,15 @@ class InstallServerTests(unittest.TestCase):
                 "verified": False,
                 "source": "reddit:top-15",
             },
+            {
+                "name": "PolymarketScan",
+                "install_command": "npx -y @smithery/cli mcp add https://polymarketscan--jordan-s648.run.tools",
+                "connect_steps": ["hosted remote endpoint"],
+                "description": "polymarket analytics",
+                "stars": 39501,
+                "verified": True,
+                "source": "smithery",
+            },
         ]
 
     def tearDown(self):
@@ -417,6 +426,42 @@ class InstallServerTests(unittest.TestCase):
         self.assertIn("see repo", msg)
         self.assertIn("read the repo README", msg)  # connect_steps surfaced
 
+    def test_launch_config_smithery_remote_writes_url(self):
+        """Smithery-hosted remotes (`npx -y @smithery/cli mcp add <url>`) are
+        HTTP servers — resolve to a `url:` block, never a stdio npx launcher."""
+        self.assertEqual(
+            core.launch_config(self.catalog[5]),
+            {"url": "https://polymarketscan--jordan-s648.run.tools"},
+        )
+
+    def test_install_server_writes_url_block_for_hosted_remote(self):
+        """Full install loop for a hosted remote: `url:` block written inside
+        mcp_servers, `mcp_servers: {}` expanded so the file stays valid YAML,
+        and the rest of the config preserved."""
+        self._write_cfg(
+            "session_reset:\n  at_hour: 4\n"
+            "mcp_servers: {}\n"
+            "plugins:\n  enabled: []\n"
+        )
+        result = core.install_server("PolymarketScan", self.cfg, self.catalog)
+        self.assertTrue(result["written"])
+        self.assertEqual(
+            result["block"], {"url": "https://polymarketscan--jordan-s648.run.tools"}
+        )
+        with open(self.cfg, encoding="utf-8") as f:
+            text = f.read()
+        self.assertIn("url: 'https://polymarketscan--jordan-s648.run.tools'", text)
+        self.assertNotIn("command:", text)
+        self.assertIn("session_reset:\n  at_hour: 4", text)
+        self.assertIn("plugins:\n  enabled: []", text)
+        import yaml
+        with open(self.cfg, encoding="utf-8") as f:
+            data = yaml.safe_load(f)
+        self.assertEqual(
+            data["mcp_servers"]["PolymarketScan"]["url"],
+            "https://polymarketscan--jordan-s648.run.tools",
+        )
+
     def test_launch_config_derives_command_args_url_and_none(self):
         self.assertEqual(
             core.launch_config(self.catalog[0]),
@@ -461,7 +506,7 @@ class InstallServerTests(unittest.TestCase):
         self.assertIn("★-", no_stars)
         self.assertIn("UNVERIFIED", no_stars)
         listing = core.list_catalog_badged(self.catalog)
-        self.assertIn("5 server(s)", listing)
+        self.assertIn(f"{len(self.catalog)} server(s)", listing)
         self.assertIn("mcp-yfinance  [", listing)
         self.assertIn("install: uvx mcp-yfinance", listing)
 

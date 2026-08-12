@@ -5,8 +5,23 @@ chooses. Routing reads REAL capability data from
 [`omni-registry`](../omni-registry/) (`context_window`, `capabilities`,
 `capability_sources`, `latency_ms`, `status`) enriched with
 [`provider-pool`](../provider-pool/) `GATEWAY_MODELS` tags
-(`fast`/`reasoning`/`vision`/`heavy`/`default`). Pure stdlib, zero hooks, zero
+(`fast`/`reasoning`/`vision`/`heavy`/`default`). Pure stdlib, zero
 Hermes imports, zero network.
+
+## Automatic routing hook (pre_llm_call)
+
+One deterministic `pre_llm_call` hook (legacy-style, ci_gate-legal): it
+classifies the user prompt task type with **keywords only** (no model-API
+call, no network, no subprocess, no disk I/O — well under 1ms) and, when
+`model-router.auto_route` is enabled (default `true`) and the classified
+model differs from the configured model, records the suggestion in memory
+(`core.last_suggestion()` + a pending-telemetry queue) and annotates
+`ctx.model_router_suggestion`. The host may apply the override if its
+per-call API allows it; otherwise the annotation is visible to the host's
+model selection. The hook itself **never switches the model** — `/route`
+remains advisory. The ledger write is deferred to the next `/route`
+command (`core.flush_pending_telemetry()`), so the hook hot path is pure CPU.
+Disable with `hermes config set model-router.auto_route false`.
 
 ## Task types (auto-detected from the prompt)
 
@@ -22,12 +37,14 @@ Detection precedence: **vision > reasoning > heavy > quick > default**
 (a "summarize this screenshot" is a vision task, not a quick one). Keyword sets
 live in `core.KEYWORDS` (prefix-anchored word matches).
 
-## Commands (zero hooks — nothing wired to agent events)
+## Commands
 
 ```
 /route <prompt>      chosen model + task type + reason + switch command
                      ('hermes config set model <id>') + provider hint
+                     (ADVISORY — prints what the hook would do)
 /route telemetry     last 10 routed calls: model, ms, $, task type
+                     (auto-includes every call the hook classified)
 /route record <model> <ms> [est_cost] [task_type]
                      manually log a routed call into the ledger
 ```

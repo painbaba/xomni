@@ -37,7 +37,62 @@ commands/tool. Per-turn cost: 0ms.
 | cmd | `/skills-scan <dir>` | inventory + validate |
 | cmd | `/skills-install <dir> [--target=…] [--dry-run]` | install skill/marketplace |
 | cmd | `/skills-marketplace <dir>` | install marketplace alias |
+| cmd | `/skills publish <dir> [--author=NAME] [--repo=<target-repo-dir>] [--to=github\|clawhub] [--dry-run]` | credit-stamp then delegate publish to the host CLI |
 | tool | `skills_import(dir, target, dry_run)` | model-facing import |
+
+## Publishing (host-first — the plugin is the credit layer)
+
+`/skills publish` is **one** publish path: validate → credit-stamp → **delegate
+to the host**. The plugin never runs a second, parallel publish — it stamps
+CREDIT into `SKILL.md` (author/source/published_at/origin, **idempotent** —
+never double-stamps, never rewrites `published_at`) and hands the stamped
+skill dir to the host CLI, which owns the actual registry push:
+
+```
+/skills publish skills/<category>/<name> --to=github
+```
+
+Flow:
+
+1. **Stamp** — validate (fail-closed; REJECT refused) + stamp CREDIT.
+2. **Delegate** — if `hermes skills publish` is available (PATH check + a
+   smoke `--help` call), run:
+   `hermes skills publish --to <target> <skill_dir>` (`--to` ∈ github|clawhub,
+   default github). The plugin prints the exact delegated command, the host
+   output, and a receipt.
+3. **Fallback** — only when the host CLI is missing: copy into a repo's
+   `skills/` tree (`core.publish_skill`, the skills.sh content model), with a
+   loud NOTE that host publish is preferred. Push steps + skills.sh
+   submission note are printed.
+4. **Index** — once published, https://skills.sh indexes the repo; anyone
+   installs via `npx skills add <owner/repo>` or `/skills-marketplace <git-url>`.
+
+`--dry-run` stamps the skill and prints the exact delegated command **without
+publishing** — safe to preview. `--repo=<target-repo-dir>` is used by the
+fallback copy path only. The host CLI's `--repo` flag (a GitHub repo slug) is
+a separate, host-side option.
+
+### Captured host help (`hermes skills publish --help`, 2026-08-12)
+
+```
+usage: hermes skills publish [-h] [--to {github,clawhub}] [--repo REPO]
+                             skill_path
+
+positional arguments:
+  skill_path            Path to skill directory
+
+options:
+  -h, --help            show this help message and exit
+  --to {github,clawhub}
+                        Target registry
+  --repo REPO           Target GitHub repo (e.g. openai/skills)
+```
+
+Python API: `publish_via_host(skill_dir, target="github", repo=None, author=None,
+published_at=None, env=None, git_config=None, runner=None, dry_run=False,
+fallback_repo=None)` — the single publish path (stamp → delegate → fallback).
+`publish_skill` remains the repo-copy fallback; `build_publish_command` /
+`host_publish_available` / `stamp_credit` are exposed for tests and tooling.
 
 ## Security model
 

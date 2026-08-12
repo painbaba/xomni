@@ -11,8 +11,13 @@ rendering (model, ms, $, task type).
 Run: cd plugins/model-router && python -m unittest tests.test_core -q
 """
 import datetime
+import importlib.util
+import inspect
 import os
+import statistics
+import sys
 import tempfile
+import time
 import unittest
 
 import core
@@ -227,6 +232,167 @@ class TelemetryTests(unittest.TestCase):
         # newest first: deepseek-chat row on top
         self.assertLess(text.index("deepseek-chat"),
                         text.index("minimax-m3"))
+
+
+class AutoRouteHookTests(unittest.TestCase):
+    """pre_llm_call automatic-routing hook — deterministic, config-gated,
+    I/O-free (<1ms), telemetry auto-record; /route stays advisory."""
+
+    @classmethod
+    def setUpClass(cls):
+        # Load plugins/model-router/__init__.py as an isolated package (same
+        # loader ci_gate/bench use) so `from . import core` resolves to its
+        # own module instance (mr.core) — hook state lives there.
+        plugin_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        spec = importlib.util.spec_from_file_location(
+            "model_router_pkg", os.path.join(plugin_dir, "__init__.py"),
+            submodule_search_locations=[plugin_dir])
+        cls.mr = importlib.util.module_from_spec(spec)
+        cls.mr.__package__ = "model_router_pkg"
+        cls.mr.__path__ = [plugin_dir]
+        sys.modules["model_router_pkg"] = cls.mr
+        spec.loader.exec_module(cls.mr)
+
+    def setUp(self):
+        self.mr._CTX = None
+        self.mr.core._PENDING_TELEMETRY.clear()
+        self.mr.core._LAST_SUGGESTION = None
+
+    def test_hook_classifies_each_task_type(self):
+        # deterministic keyword-only classification for every task type
+        cases = [
+            ("summarize this article quickly", "quick", "minimax-m2.5"),
+            ("debug why this fails", "reasoning", "deepseek-v4-pro"),
+            ("ocr this screenshot", "vision", "minimax-m3"),
+            ("process the entire repo", "heavy", "gpt-5.6-luna"),
+            ("hello there", "default", "deepseek-v4-flash"),
+        ]
+        for prompt, ttype, model in cases:
+            ctx = _HookCtx({"model-router": {"auto_route": True}}, model="some-model")
+            self.mr.register(ctx)
+            out = self.mr._on_pre_llm_call(user_message=prompt)
+            sug = self.mr.core.last_suggestion()
+            self.assertEqual(sug["task_type"], ttype, prompt)
+            self.assertEqual(sug["suggested_model"], model, prompt)
+            self.assertTrue(sug["differs"], prompt)
+            self.assertIsNotNone(out, prompt)  # override hint returned
+            self.assertEqual(out["model_router"]["suggested_model"], model, prompt)
+            self.assertEqual(ctx.model_router_suggestion["task_type"], ttype, prompt)
+
+    def test_auto_route_disabled_records_nothing(self):
+        ctx = _HookCtx({"model-router": {"auto_route": False}}, model="some-model")
+        self.mr.register(ctx)
+        out = self.mr._on_pre_llm_call(user_message="debug why this fails")
+        self.assertIsNone(out)
+        self.assertIsNone(self.mr.core.last_suggestion())
+        self.assertEqual(self.mr.core._PENDING_TELEMETRY, [])
+        self.assertIsNone(ctx.model_router_suggestion)
+
+    def test_matching_model_returns_no_override_hint(self):
+        # configured model already == suggested: no hint, but telemetry still
+        # records the classified call ("keep" decision)
+        ctx = _HookCtx({"model-router": {"auto_route": True}}, model="minimax-m2.5")
+        self.mr.register(ctx)
+        out = self.mr._on_pre_llm_call(user_message="summarize this quickly")
+        self.assertIsNone(out)
+        sug = self.mr.core.last_suggestion()
+        self.assertFalse(sug["differs"])
+        self.assertEqual(sug["action"], "keep")
+        self.assertEqual(len(self.mr.core._PENDING_TELEMETRY), 1)
+
+    def test_hook_never_calls_llm(self):
+        # (a) source scan: handler must be free of ci_gate's forbidden tokens
+        src = inspect.getsource(self.mr._on_pre_llm_call)
+        for token in (".complete(", "requests.", "subprocess"):
+            self.assertNotIn(token, src)
+        # (b) mock: a ctx whose llm.complete raises must never be hit
+        ctx = _HookCtx({"model-router": {"auto_route": True}}, model="some-model")
+        self.mr.register(ctx)
+        for _ in range(3):
+            self.mr._on_pre_llm_call(user_message="summarize quickly")
+        self.assertEqual(len(self.mr.core._PENDING_TELEMETRY), 3)
+
+    def test_hook_under_1ms_budget(self):
+        ctx = _HookCtx({"model-router": {"auto_route": True}}, model="some-model")
+        self.mr.register(ctx)
+        samples = []
+        for _ in range(200):
+            t0 = time.perf_counter()
+            self.mr._on_pre_llm_call(
+                user_message="debug why my backtest loses money")
+            samples.append((time.perf_counter() - t0) * 1000)
+        med = statistics.median(samples)
+        self.assertLess(med, 1.0,
+                        f"hook median {med:.4f}ms >= 1ms budget")
+
+    def test_telemetry_auto_records_classified_calls(self):
+        # hook classifications are recorded in memory, flushed into the
+        # cost-tracker ledger on the next /route telemetry read
+        ctx = _HookCtx({"model-router": {"auto_route": True}}, model="some-model")
+        self.mr.register(ctx)
+        self.mr._on_pre_llm_call(user_message="debug why this fails")
+        self.mr._on_pre_llm_call(user_message="ocr the screenshot")
+        self.assertEqual(len(self.mr.core._PENDING_TELEMETRY), 2)
+        with tempfile.TemporaryDirectory() as tmp:
+            db = os.path.join(tmp, "route.db")
+            orig = self.mr.core.RouteTelemetry
+
+            class _TmpTel(orig):
+                def __init__(self, db_path=None):
+                    super().__init__(db_path or db)
+
+            self.mr.core.RouteTelemetry = _TmpTel
+            try:
+                text = self.mr.core.route_telemetry_text()
+            finally:
+                self.mr.core.RouteTelemetry = orig
+            # pending queue drained into the ledger + rendered by /route
+            self.assertEqual(self.mr.core._PENDING_TELEMETRY, [])
+            rows = orig(db).recent_calls()
+            self.assertEqual(len(rows), 2)
+            self.assertEqual(rows[0]["task_type"], "vision")
+            self.assertEqual(rows[0]["model"], "minimax-m3")
+            self.assertEqual(rows[1]["task_type"], "reasoning")
+            self.assertEqual(rows[1]["model"], "deepseek-v4-pro")
+            self.assertIn("minimax-m3", text)
+            self.assertIn("reasoning", text)
+
+    def test_route_command_stays_advisory(self):
+        ctx = _HookCtx({"model-router": {"auto_route": True}}, model="some-model")
+        self.mr.register(ctx)
+        self.assertIn("pre_llm_call", ctx.hooks)  # hook registered
+        self.assertIn("route", ctx.commands)      # /route still registered
+        text = ctx.commands["route"]("summarize this quickly")
+        self.assertIn("model:", text)
+        self.assertIn("switch:", text)  # prints the config command — advisory
+        self.assertIn("config set model", text)
+        # advisory: /route <prompt> records nothing and switches nothing
+        self.assertEqual(self.mr.core._PENDING_TELEMETRY, [])
+        self.assertIsNone(ctx.model_router_suggestion)
+
+
+class _HookCtx:
+    """Minimal host ctx for hook tests: config + model + hook/command capture.
+    llm.complete raises on any call — a hook touching the LLM fails the test."""
+
+    def __init__(self, config=None, model=None):
+        self.config = config or {}
+        self.model = model
+        self.hooks = {}
+        self.commands = {}
+        self.model_router_suggestion = None
+        self.llm = _FailingLlm()
+
+    def register_hook(self, name, fn):
+        self.hooks.setdefault(name, []).append(fn)
+
+    def register_command(self, name, handler, description="", args_hint=""):
+        self.commands[name] = handler
+
+
+class _FailingLlm:
+    def complete(self, *a, **k):
+        raise AssertionError("a hook called the LLM — forbidden")
 
 
 if __name__ == "__main__":

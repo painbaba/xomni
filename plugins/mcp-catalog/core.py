@@ -486,6 +486,14 @@ def launch_config(entry: dict) -> Optional[dict]:
         if match:
             return {"url": match.group(1).strip("\"'")}
         return None
+    # Smithery-hosted remotes register via `npx -y @smithery/cli mcp add
+    # <https-url>` — those are HTTP servers, not stdio launchers; write the
+    # hosted `url:` block (mirrors xomni_cli._parse_install_command).
+    if "@smithery/cli" in raw.lower():
+        match = re.search(r"https?://\S+", raw)
+        if match:
+            return {"url": match.group(0).strip("\"'")}
+        return None
     cmd = _SHELL_INSTALL_RE.sub("", raw)
     cmd = cmd.split("&&")[0].split(";")[0].strip()
     tokens = [t for t in cmd.split() if t not in ("&&", ";", "|", "||")]

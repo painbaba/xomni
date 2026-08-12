@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#050607">
-<title>Install XOMNI — Docs</title>
-<meta name="description" content="Install XOMNI on Windows with run.cmd or on macOS/Linux with run.sh.">
+<title>MCP Catalog &amp; Stacks — Docs</title>
+<meta name="description" content="Install any of 311 MCP servers: /mcp add &lt;name&gt; --yes in chat, or xomni add &lt;stack&gt; for one-command vertical stacks.">
 <link rel="icon" type="image/svg+xml" href="../favicon.svg">
 <link rel="stylesheet" href="../css/style.css">
 <style>
@@ -78,7 +78,7 @@ header.site-nav.scrolled{box-shadow:0 8px 24px rgba(0,0,0,.5)}
       <a href="../mcp.html">MCP Catalog</a>
       <a href="../features.html">Features</a>
       <a href="../gallery.html">Gallery</a>
-      <a href="install.html" aria-current="page">Docs</a>
+      <a href="install.html">Docs</a>
       <a href="sponsorship.html">Sponsorship</a>
       <a href="https://github.com/painbaba/xomni">GitHub</a>
       <a class="nav-cta btn-primary" href="install.html">Install</a>
@@ -90,8 +90,8 @@ header.site-nav.scrolled{box-shadow:0 8px 24px rgba(0,0,0,.5)}
   <div class="container page">
     <aside class="docs-side" aria-label="Docs navigation">
       <p class="docs-h">Docs</p>
-      <a href="install.html" class="docs-link active" aria-current="page">Install</a>
-      <a href="mcp.html" class="docs-link">MCP Catalog &amp; Stacks</a>
+      <a href="install.html" class="docs-link">Install</a>
+      <a href="mcp.html" class="docs-link active" aria-current="page">MCP Catalog &amp; Stacks</a>
       <a href="byo-provider.html" class="docs-link">BYO Provider</a>
       <a href="noninteractive.html" class="docs-link">Non-Interactive</a>
       <a href="sponsorship.html" class="docs-link">Sponsorship</a>
@@ -105,63 +105,43 @@ header.site-nav.scrolled{box-shadow:0 8px 24px rgba(0,0,0,.5)}
     <article class="docs-body">
       <div class="docs-search" id="docsSearch">
         <label for="docsSearchInput">Search docs</label>
-        <input type="search" id="docsSearchInput" placeholder="e.g. windows, provider, sponsor, update…" autocomplete="off" aria-controls="docsResults">
+        <input type="search" id="docsSearchInput" placeholder="e.g. mcp, stack, coingecko, polymarket…" autocomplete="off" aria-controls="docsResults">
         <div role="status" id="docsSearchStatus" aria-live="polite"></div>
         <ul class="docs-results" id="docsResults"></ul>
       </div>
-      <h1>Install XOMNI</h1>
-      <p class="lead">XOMNI is a single repository with two launchers: <span class="mono">run.cmd</span> for Windows and <span class="mono">run.sh</span> for POSIX systems. The only runtime requirement is a recent <span class="mono">node</span>.</p>
+      <h1>MCP Catalog &amp; Stacks</h1>
+      <p class="lead">Install any of <strong>311 MCP servers</strong>: <span class="mono">/mcp add &lt;name&gt; --yes</span> in chat, or <span class="mono">xomni add &lt;stack&gt;</span> for one-command vertical stacks.</p>
 
-      <h2 id="requirements">Requirements</h2>
-      <ul class="check-list">
-        <li><span class="mono">node</span> ≥ 20 (any recent LTS works).</li>
-        <li><span class="mono">git</span> for cloning the repository.</li>
-        <li>An internet connection on first run — XOMNI verifies its free-model pool on startup.</li>
-      </ul>
+      <h2 id="catalog">The 311-server catalog</h2>
+      <p>XOMNI ships a curated marketplace of <a href="../mcp.html">311 MCP servers</a> — searchable and filterable, with install commands, connect steps, stars, verified/source badges and a keyless/needs-key security hint per server. The same data drives the in-chat <span class="mono">/mcp list</span> command and lives in <span class="mono">data/mcp/catalog.json</span> (markdown mirror: <span class="mono">docs/MCP-CATALOG.md</span>).</p>
 
-      <h2 id="windows">Windows (run.cmd)</h2>
-      <p>From a terminal (cmd or PowerShell):</p>
-      <div class="code-block">
-        <div class="code-head"><span class="dot dot-green"></span><span class="code-title">cmd.exe</span><button class="copy-btn" data-copy="git clone https://github.com/painbaba/xomni.git&#10;cd xomni&#10;run.cmd">copy</button></div>
-        <pre><code><span class="prompt">C:\&gt;</span> git clone https://github.com/painbaba/xomni.git
-<span class="prompt">C:\&gt;</span> cd xomni
-<span class="prompt">C:\xomni&gt;</span> run.cmd</code></pre>
-      </div>
-      <p>You can also double-click <span class="mono">run.cmd</span> in Explorer — the launcher opens a terminal, installs dependencies on first run, and starts XOMNI.</p>
+      <h2 id="install-single">Install a single server</h2>
+      <p>In chat, ask the agent to add a server — the <span class="mono">--yes</span> flag makes it non-interactive:</p>
+<pre><code>/mcp add coingecko-mcp --yes</code></pre>
+      <p>This resolves the catalog entry into a host config block (stdio servers → <span class="mono">command</span>/<span class="mono">args</span>, hosted/Smithery remotes → <span class="mono">url</span>), appends it to <span class="mono">config.yaml</span> under <span class="mono">mcp_servers</span>, and reports the launch line. Re-adding an existing server is a no-op (idempotent). Restart the host or run <span class="mono">/reload-mcp</span> to load the tools (they appear as <span class="mono">mcp__&lt;server&gt;__&lt;tool&gt;</span>).</p>
 
-      <h2 id="posix">macOS / Linux (run.sh)</h2>
-      <div class="code-block">
-        <div class="code-head"><span class="dot dot-green"></span><span class="code-title">bash</span><button class="copy-btn" data-copy="git clone https://github.com/painbaba/xomni.git&#10;cd xomni&#10;chmod +x run.sh&#10;./run.sh">copy</button></div>
-        <pre><code><span class="prompt">$</span> git clone https://github.com/painbaba/xomni.git
-<span class="prompt">$</span> cd xomni
-<span class="prompt">$</span> chmod +x run.sh
-<span class="prompt">$</span> ./run.sh</code></pre>
-      </div>
+      <h2 id="stacks">Install a whole stack</h2>
+      <p>Vertical stacks bundle a curated set of MCP servers + skills behind one command:</p>
+<pre><code>xomni stacks                      # list available stacks
+xomni add trading-stack           # install: appends 5 MCPs to config.yaml
+xomni add trading-stack --dry-run # preview the plan, write nothing
+xomni add web-dev --smoke         # install + run the stack's live smoke test</code></pre>
+      <table>
+        <thead><tr><th>Stack</th><th>Skills</th><th>MCP servers</th><th>Smoke test (live)</th></tr></thead>
+        <tbody>
+          <tr><td><span class="mono">trading-stack</span></td><td>4</td><td>yfinance, TradingView, CoinGecko, AlphaVantage, Polymarket</td><td>CoinGecko BTC price API → 200</td></tr>
+          <tr><td><span class="mono">data-science</span></td><td>6</td><td>arXiv, DuckDuckGo, Fetch, chroma, time</td><td>Crossref API → 200</td></tr>
+          <tr><td><span class="mono">web-dev</span></td><td>6</td><td>Playwright, Chrome DevTools, Cloudflare, Supabase, Neon</td><td>npm registry → 200</td></tr>
+          <tr><td><span class="mono">home-automation</span></td><td>4</td><td>Home Assistant (ha-mcp), Windows, mobile, time, memory</td><td>PyPI ha-mcp → 200</td></tr>
+        </tbody>
+      </table>
+      <p>The write is a surgical textual insert into the existing <span class="mono">mcp_servers:</span> block — comments, ordering and every other config section are preserved byte-for-byte (including empty-inline <span class="mono">mcp_servers: {}</span> forms). Missing or read-only config fails loudly with the exact fix. Stack definitions live in <span class="mono">data/stacks/*.json</span>.</p>
 
-      <h2 id="first-run">First run</h2>
-      <p>On first launch XOMNI:</p>
-      <ol>
-        <li>Installs any missing dependencies.</li>
-        <li>Verifies the 25 free models in the pool against <span class="mono">opencode.ai/zen/go/v1</span>.</li>
-        <li>Enables the default plugin set (<span class="mono">waitperk</span>, <span class="mono">perkline</span>, <span class="mono">provider-pool</span>, <span class="mono">title-statusline</span>, and friends).</li>
-        <li>Starts the agent with the statusline and sponsor line visible.</li>
-      </ol>
+      <h2 id="smoke">Smoke tests</h2>
+      <p>Every stack carries a live <span class="mono">smoke_test</span> (public API call + expected status). <span class="mono">xomni add &lt;stack&gt; --smoke</span> installs and runs it. Verified live for <span class="mono">trading-stack</span>: CoinGecko <span class="mono">/simple/price?ids=bitcoin</span> returns <span class="mono">HTTP_STATUS:200</span> with the current BTC/USD price; the PolymarketScan hosted remote answers (auth-gated edge) at <span class="mono">https://polymarketscan--jordan-s648.run.tools</span>.</p>
 
-      <h2 id="update">Updating</h2>
-      <div class="code-block">
-        <div class="code-head"><span class="dot"></span><span class="code-title">bash</span><button class="copy-btn" data-copy="git pull --ff-only&#10;run.cmd  # or ./run.sh">copy</button></div>
-        <pre><code><span class="prompt">$</span> git pull --ff-only
-<span class="prompt">$</span> run.cmd   <span class="cmt"># or ./run.sh on POSIX</span></code></pre>
-      </div>
-      <p>Your config, keys, and memory live outside the repo checkout, so updates never clobber them.</p>
-
-      <h2 id="next">Next steps</h2>
-      <ul class="check-list">
-        <li><a href="byo-provider.html">Bring your own provider</a> — add your own API keys to the pool.</li>
-        <li><a href="noninteractive.html">Non-interactive mode</a> — how every mutating command works with <span class="mono">--yes</span>.</li>
-        <li><a href="sponsorship.html">Understand sponsorship</a> — how the sponsor line earns you money.</li>
-        <li><a href="../skills.html">Browse the 170 skills</a> — everything the agent can already do.</li>
-      </ul>
+      <h2 id="verify">Verify an install</h2>
+      <p>Run <span class="mono">hermes mcp list</span> (or <span class="mono">/mcp list</span>) to confirm each server is registered, then make a read-only tool call. The catalog validation (<span class="mono">/mcp validate &lt;path&gt;</span>) checks command resolvability, duplicate names and required fields.</p>
     </article>
   </div>
 </main>

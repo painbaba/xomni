@@ -188,6 +188,82 @@ class ExportTests(unittest.TestCase):
         self.assertEqual(draft["success_calls"], 6)
 
 
+class DraftLastTests(unittest.TestCase):
+    def test_draft_last_session_drafts_from_newest_session(self):
+        fake = transcript(calls=6)
+        with mock.patch.object(core, "list_session_ids",
+                               return_value=["20260812_999999_000000"]), \
+             mock.patch.object(core, "export_session",
+                               return_value={"ok": True, "transcript": fake,
+                                             "session_id": "20260812_999999_000000"}):
+            result = core.draft_last_session()
+        self.assertTrue(result["ok"])
+        self.assertEqual(result["session_id"], "20260812_999999_000000")
+        self.assertEqual(result["name"], "set-up-python-package")
+        self.assertEqual(result["success_calls"], 6)
+
+    def test_list_session_ids_parses_both_id_shapes(self):
+        def fake(argv, **kw):
+            return type("P", (), {"returncode": 0, "stderr": "",
+                                  "stdout": ("Title  Workspace  Last Active  ID\n"
+                                             "─────────────────────────────────\n"
+                                             "top10-watch  —  7m ago  cron_49e3701733e8_20260812_151256\n"
+                                             "—  Temp  4h ago  20260812_103607_b7524f\n")})()
+
+        ids = core.list_session_ids(runner=fake)
+        self.assertEqual(ids, ["cron_49e3701733e8_20260812_151256",
+                               "20260812_103607_b7524f"])
+        with mock.patch.object(core.shutil, "which", return_value=None):
+            self.assertEqual(core.list_session_ids(), [])
+
+    def test_draft_last_no_sessions_loud_error(self):
+        with mock.patch.object(core, "list_session_ids", return_value=[]):
+            result = core.draft_last_session()
+        self.assertFalse(result["ok"])
+        self.assertIn("no host sessions", result["reason"])
+
+    def test_draft_last_skips_inflight_sessions(self):
+        fake = transcript(calls=6)
+
+        def fake_export(sid, **kw):
+            if sid == "cron_20260812_153030_aaa":
+                return {"ok": False, "session_id": sid,
+                        "reason": "hermes sessions export returned no transcript entries for cron_20260812_153030_aaa"}
+            return {"ok": True, "transcript": fake, "session_id": sid}
+
+        with mock.patch.object(core, "list_session_ids",
+                               return_value=["cron_20260812_153030_aaa",
+                                             "cron_20260812_151256_bbb"]), \
+             mock.patch.object(core, "export_session", side_effect=fake_export):
+            result = core.draft_last_session()
+        self.assertTrue(result["ok"])
+        self.assertEqual(result["session_id"], "cron_20260812_151256_bbb")
+        self.assertEqual(result["skipped"], ["cron_20260812_153030_aaa"])
+
+    def test_draft_last_respects_limit_messages(self):
+        big = []
+        for i in range(110):
+            big.append({"role": "assistant", "content": f"step {i}",
+                        "tool_calls": [{"name": "terminal",
+                                        "arguments": {"command": f"echo {i}"}}]})
+            big.append({"role": "tool", "name": "terminal",
+                        "content": "exit_code: 0"})
+        captured = {}
+        real = core.draft_skill_checked
+
+        def spy(transcript, *a, **k):
+            captured["n"] = len(transcript)
+            return real(transcript, *a, **k)
+
+        with mock.patch.object(core, "list_session_ids", return_value=["s1"]), \
+             mock.patch.object(core, "export_session",
+                               return_value={"ok": True, "transcript": big,
+                                             "session_id": "s1"}), \
+             mock.patch.object(core, "draft_skill_checked", side_effect=spy):
+            core.draft_last_session(limit_messages=200)
+        self.assertEqual(captured["n"], 200)
+
+
 class HandlerTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -211,6 +287,22 @@ class HandlerTests(unittest.TestCase):
             self.assertIn("saved: set-up-python-package", saved)
             self.assertTrue(os.path.isfile(os.path.join(
                 tmp, "devops", "set-up-python-package", "SKILL.md")))
+        finally:
+            shutil.rmtree(tmp, ignore_errors=True)
+
+    def test_handler_save_yes_writes_host_skills_dir_flat(self):
+        tmp = tempfile.mkdtemp(prefix="skill-drafter-yes-")
+        try:
+            fixture = os.path.join(HERE, os.pardir, "examples",
+                                   "session-6calls.jsonl")
+            self.mod._handle_draft(fixture)
+            with mock.patch.object(self.mod.core, "DEFAULT_SKILLS_ROOT", tmp):
+                out = self.mod._handle_save("set-up-python-package --yes")
+            self.assertIn("saved: set-up-python-package", out)
+            self.assertIn("host skills dir", out)
+            dest = os.path.join(tmp, "set-up-python-package", "SKILL.md")
+            self.assertTrue(os.path.isfile(dest))
+            self.assertFalse(os.path.isdir(os.path.join(tmp, "auto-drafted")))
         finally:
             shutil.rmtree(tmp, ignore_errors=True)
 

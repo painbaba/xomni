@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "xomni"
-version = "1.0.0"
+version = "1.1.0"
 description = "One agent. Every feature. Every free model. — XOMNI composes 7 agents on one host with plugins, skills, free-model routing and a sponsorship engine."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -30,3 +30,8 @@ exclude = ["data*", "skills*", "website*", "docs*", "tmp*", ".tmp*", ".bench*",
 
 [tool.setuptools.package-data]
 "*" = ["*.yaml", "*.md", "*.txt", "*.html", "templates/*", "references/*", "examples/*", "*.json"]
+
+[tool.setuptools.data-files]
+"xomni/data/stacks" = ["data/stacks/*.json"]
+"xomni/data/mcp" = ["data/mcp/catalog.json"]
+"xomni/data" = ["data/curated-skills.json"]

@@ -1,7 +1,17 @@
 {
   "generated": "2026-08-12",
-  "count": 8,
+  "count": 9,
   "pages": [
+    {
+      "path": "noninteractive.html",
+      "title": "Non-Interactive Mode",
+      "headings": [
+        "The policy",
+        "Command-by-command",
+        "Verification"
+      ],
+      "summary": "XOMNI is non-interactive everywhere: every mutating command — CLI and plugin — accepts --yes, failures are loud and name their cause, and there are zero silent cancels."
+    },
     {
       "path": "architecture.html",
       "title": "Architecture",

@@ -4,6 +4,7 @@ import shutil
 import sys
 import tempfile
 import unittest
+from unittest import mock
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import core  # noqa: E402
@@ -321,8 +322,10 @@ class SearchListStatusTests(unittest.TestCase):
 
 
 class PublishTests(unittest.TestCase):
-    """U11 — cross-session skill market: publish_skill credit-stamps and
-    copies a skill into a repo's skills/ tree; REJECT skills are refused."""
+    """U11 — cross-session skill market: publish_skill (the repo-copy
+    FALLBACK, used only when the host CLI is missing) credit-stamps and
+    copies a skill into a repo's skills/ tree; REJECT skills are refused.
+    The host-delegation path is covered by HostPublishTests."""
 
     NO_GIT = lambda self, key, cwd=None: None  # noqa: E731
     FAKE_GIT = lambda self, key, cwd=None: (  # noqa: E731
@@ -452,6 +455,182 @@ class PublishTests(unittest.TestCase):
         fm = self._fm(os.path.join(self.repo, "skills", "general", "preauth-tool"))
         self.assertEqual(fm["original_author"], "Original Creator")
         self.assertEqual(fm["author"], "publisher-a")
+
+
+class _FakeHostRunner:
+    """Records argv; answers the --help smoke call and the --to publish call.
+
+    Simulates `hermes skills publish`: --help advertises skill_path (ok),
+    the publish call returns ok unless constructed with ok=False.
+    """
+
+    def __init__(self, ok=True, help_ok=True, stdout="published: skill registered"):
+        self.calls = []
+        self.ok = ok
+        self.help_ok = help_ok
+        self.stdout = stdout
+
+    def __call__(self, argv):
+        self.calls.append(list(argv))
+        if "--help" in argv:
+            return {"ok": self.help_ok,
+                    "stdout": ("usage: hermes skills publish [-h] "
+                               "[--to {github,clawhub}] [--repo REPO] "
+                               "skill_path" if self.help_ok else ""),
+                    "stderr": "" if self.help_ok else "unknown command"}
+        return {"ok": self.ok, "stdout": self.stdout, "stderr": ""}
+
+
+class HostPublishTests(unittest.TestCase):
+    """U11 wrap (#11): publish_via_host stamps credit FIRST (idempotent),
+    then DELEGATES the actual publish to `hermes skills publish --to
+    github|clawhub`; the repo-copy path is only the fallback when the host
+    CLI is missing — no duplicate parallel path."""
+
+    NO_GIT = lambda self, key, cwd=None: None  # noqa: E731
+    HERMES = "C:/bin/hermes.exe"
+
+    def _write(self, root, name, content):
+        d = os.path.join(root, name)
+        os.makedirs(d)
+        with open(os.path.join(d, "SKILL.md"), "w", encoding="utf-8") as f:
+            f.write(content)
+        return d
+
+    def _fm(self, skill_dir):
+        with open(os.path.join(skill_dir, "SKILL.md"), encoding="utf-8") as f:
+            return core.parse_frontmatter(f.read())
+
+    def setUp(self):
+        self.src = tempfile.mkdtemp(prefix="omni-skills-host-src-")
+        self.repo = tempfile.mkdtemp(prefix="omni-skills-host-repo-")
+        self.plain = self._write(self.src, "plain", SKILL_PLAIN)
+        self.bad = self._write(self.src, "bad", SKILL_BAD)
+        with open(os.path.join(self.bad, "run.sh"), "w", encoding="utf-8") as f:
+            f.write("rm -rf /tmp/x\ncat ../secret\n")
+
+    def tearDown(self):
+        shutil.rmtree(self.src, ignore_errors=True)
+        shutil.rmtree(self.repo, ignore_errors=True)
+
+    @mock.patch("core.shutil.which", return_value=HERMES)
+    def test_delegate_constructs_hermes_command(self, _w):
+        runner = _FakeHostRunner()
+        r = core.publish_via_host(self.plain, author="publisher-a",
+                                  git_config=self.NO_GIT, runner=runner)
+        self.assertTrue(r["ok"])
+        self.assertTrue(r["delegated"])
+        self.assertEqual(r["command"][1:],
+                         ["skills", "publish", "--to", "github", self.plain])
+        self.assertTrue(os.path.basename(r["command"][0]).lower().startswith("hermes"))
+        self.assertEqual(r["author"], "publisher-a")
+        self.assertEqual(r["target"], "github")
+        # smoke --help first, then the publish call — exactly one publish argv
+        self.assertEqual(len(runner.calls), 2)
+        self.assertIn("--help", runner.calls[0])
+        self.assertEqual(runner.calls[1][1:],
+                         ["skills", "publish", "--to", "github", self.plain])
+
+    @mock.patch("core.shutil.which", return_value=HERMES)
+    def test_delegate_clawhub_target(self, _w):
+        runner = _FakeHostRunner()
+        r = core.publish_via_host(self.plain, target="clawhub", runner=runner)
+        self.assertTrue(r["delegated"])
+        self.assertEqual(r["command"][1:],
+                         ["skills", "publish", "--to", "clawhub", self.plain])
+        self.assertEqual(r["target"], "clawhub")
+
+    @mock.patch("core.shutil.which", return_value=HERMES)
+    def test_delegate_host_repo_passthrough(self, _w):
+        runner = _FakeHostRunner()
+        r = core.publish_via_host(self.plain, repo="openai/skills", runner=runner)
+        self.assertEqual(r["command"][1:],
+                         ["skills", "publish", "--to", "github", "--repo",
+                          "openai/skills", self.plain])
+
+    @mock.patch("core.shutil.which", return_value=HERMES)
+    def test_delegate_stamps_credit_idempotent(self, _w):
+        runner = _FakeHostRunner()
+        first = core.publish_via_host(self.plain, author="publisher-a",
+                                      git_config=self.NO_GIT, runner=runner)
+        second = core.publish_via_host(self.plain, author="publisher-a",
+                                       git_config=self.NO_GIT, runner=runner)
+        self.assertTrue(first["stamped"])
+        self.assertFalse(second["stamped"])  # already stamped, untouched
+        self.assertTrue(second["delegated"])  # still delegated
+        fm = self._fm(self.plain)
+        self.assertEqual(fm["published_at"], first["published_at"])
+        self.assertEqual(fm["source"], "xomni")
+
+    def test_dry_run_returns_command_without_executing(self):
+        def boom(argv):
+            raise AssertionError("dry-run must never execute the host command")
+        r = core.publish_via_host(self.plain, author="publisher-a",
+                                  git_config=self.NO_GIT, runner=boom,
+                                  dry_run=True)
+        self.assertTrue(r["ok"])
+        self.assertTrue(r["dry_run"])
+        self.assertTrue(r["delegated"])
+        self.assertEqual(r["command"][1:],
+                         ["skills", "publish", "--to", "github", self.plain])
+        self.assertEqual(r["author"], "publisher-a")  # stamp still happened
+        self.assertEqual(os.listdir(self.repo), [])   # fallback untouched
+
+    @mock.patch("core.shutil.which", return_value=None)
+    def test_fallback_when_host_missing(self, _w):
+        r = core.publish_via_host(self.plain, author="publisher-a",
+                                  git_config=self.NO_GIT,
+                                  fallback_repo=self.repo)
+        self.assertTrue(r["ok"])
+        self.assertFalse(r["delegated"])
+        self.assertIn("unavailable", r["note"])
+        self.assertIn("preferred", r["note"])  # loud note
+        fm = self._fm(os.path.join(self.repo, "skills", "general", "plain-tool"))
+        self.assertEqual(fm["author"], "publisher-a")
+        self.assertEqual(fm["source"], "xomni")
+
+    @mock.patch("core.shutil.which", return_value=HERMES)
+    def test_delegate_host_failure_loud(self, _w):
+        runner = _FakeHostRunner(ok=False)  # smoke passes, publish fails
+        r = core.publish_via_host(self.plain, runner=runner)
+        self.assertFalse(r["ok"])
+        self.assertTrue(r["delegated"])
+        self.assertIn("failed", r["reason"])
+
+    @mock.patch("core.shutil.which", return_value=HERMES)
+    def test_host_publish_available_smoke(self, _w):
+        ok_runner = _FakeHostRunner()
+        self.assertTrue(core.host_publish_available(runner=ok_runner)[0])
+        bad_help = _FakeHostRunner(help_ok=False)  # help advertises nothing
+        avail, why = core.host_publish_available(runner=bad_help)
+        self.assertFalse(avail)
+        self.assertTrue(why)
+
+    def test_host_publish_available_missing_exe(self):
+        with mock.patch("core.shutil.which", return_value=None):
+            avail, why = core.host_publish_available(runner=_FakeHostRunner())
+        self.assertFalse(avail)
+        self.assertIn("not found", why)
+
+    def test_build_publish_command_clamps_bad_target(self):
+        cmd = core.build_publish_command("/tmp/s", target="weird")
+        self.assertEqual(cmd[1:], ["skills", "publish", "--to", "github", "/tmp/s"])
+        self.assertTrue(os.path.basename(cmd[0]).lower().startswith("hermes"))
+
+    def test_publish_via_host_refuses_reject(self):
+        r = core.publish_via_host(self.bad, author="publisher-a",
+                                  git_config=self.NO_GIT)
+        self.assertFalse(r["ok"])
+        self.assertEqual(r["reason"], "REJECT")
+        self.assertTrue(r["issues"])
+        self.assertEqual(os.listdir(self.repo), [])  # nothing written
+
+    def test_publish_via_host_missing_dir(self):
+        missing = os.path.join(self.src, "does-not-exist")
+        r = core.publish_via_host(missing)
+        self.assertFalse(r["ok"])
+        self.assertIn("not found", r["reason"])
+        self.assertEqual(os.listdir(self.repo), [])
 
 
 if __name__ == "__main__":

@@ -48,8 +48,13 @@ and the plugin-command handlers.
 |---|---|---|
 | `xomni plugins install [--yes] [names…]` | yes | per-name `! failed: <name>: <cause>`; exit 1 if any failed |
 | `xomni skill install [--yes] <dir>` | yes | `FAILED — <reason>` + issues; exit 1 |
+| `xomni add <stack> [--yes]` | yes (accepted) | `ERROR: <cause>` (unknown stack / MCP / missing-or-unwritable config.yaml); exit 1 |
 | `/mcp add [--yes] <path>` | yes | `/mcp add: no such file: <path>` / `rejected — <cause>` / `failed to copy: <exc>` |
 | `/mcp add <name> [--yes]` (host install) | yes | plan without `--yes` → `confirm by re-running: /mcp add <name> --yes` (no mutation); on any error → `/mcp add: FAILED — <cause>` |
 | `/skills-install [--yes] <dir>` | yes | `/skills-install: FAILED — <reason>` |
 | `/skills-marketplace [--yes] <url-or-dir>` | yes | `/skills-marketplace: FAILED — <reason>` |
+| `/skills publish [--yes] <dir>` | yes | `/skills publish: FAILED — <reason>` (+ first 3 issues) |
+| `/skill save [--yes] <name>` | yes | `/skill save: FAILED — <reason>` (unknown draft, REJECT/REVIEW, write error) |
 | `skills_import` tool | (n/a) | `skills_import failed: <exc>` |
+
+Full policy + behavior-without-`--yes` column: docs/NONINTERACTIVE.md.

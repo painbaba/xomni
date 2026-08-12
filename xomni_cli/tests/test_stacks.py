@@ -207,6 +207,69 @@ class TestCliBehavior(unittest.TestCase):
             servers = yaml.safe_load(f)["mcp_servers"]
         self.assertTrue(servers["PolymarketScan"]["url"].startswith("https://"))
 
+    def test_e2e_trading_stack_temp_config_install_parse(self):
+        """E2E: install trading-stack into a temp host config -> parse the
+        result -> assert all 5 servers with the right launch shape, the hosted
+        PolymarketScan remote as a url: entry, and every pre-existing section
+        (model / ffmpeg / gateways) preserved byte-for-byte semantics."""
+        cfg = self._config()
+        rc, out = _run_add("trading-stack", config=cfg)
+        self.assertEqual(rc, 0, out)
+        self.assertIn("wrote 5 MCP server(s)", out)
+        import yaml
+        with open(cfg, encoding="utf-8") as f:
+            data = yaml.safe_load(f)
+        servers = data["mcp_servers"]
+        # the 5 stack servers appended, pre-existing ffmpeg untouched
+        self.assertEqual(
+            sorted(servers),
+            ["PolymarketScan", "alphavantage-mcp", "coingecko-mcp", "ffmpeg",
+             "mcp-yfinance", "tradingview-mcp"],
+        )
+        # stdio launch lines derived from install_command
+        self.assertEqual(servers["mcp-yfinance"]["command"], "uvx")
+        self.assertEqual(servers["mcp-yfinance"]["args"], ["mcp-yfinance"])
+        self.assertEqual(servers["coingecko-mcp"]["command"], "npx")
+        self.assertEqual(servers["coingecko-mcp"]["args"],
+                         ["-y", "@coingecko/coingecko-mcp"])
+        self.assertEqual(servers["tradingview-mcp"]["command"], "uvx")
+        self.assertEqual(servers["alphavantage-mcp"]["command"], "uvx")
+        # hosted remote -> url entry only, enabled by default
+        self.assertTrue(servers["PolymarketScan"]["url"].startswith("https://"))
+        self.assertNotIn("command", servers["PolymarketScan"])
+        for name in ("mcp-yfinance", "tradingview-mcp", "coingecko-mcp",
+                     "alphavantage-mcp", "PolymarketScan"):
+            self.assertTrue(servers[name]["enabled"])
+        # pre-existing sections preserved
+        self.assertEqual(data["model"]["model"], "deepseek-v4-flash")
+        self.assertEqual(servers["ffmpeg"]["enabled"], False)
+        self.assertEqual(data["gateways"]["telegram"], ["hermes-telegram"])
+        # second install is a no-op (idempotent), config unchanged
+        rc2, out2 = _run_add("trading-stack", config=cfg)
+        self.assertEqual(rc2, 0, out2)
+        self.assertIn("wrote 0", out2)
+        self.assertIn("skipped 5", out2)
+        with open(cfg, encoding="utf-8") as f:
+            self.assertEqual(yaml.safe_load(f), data)
+
+    def test_add_expands_empty_inline_mcp_servers(self):
+        """`mcp_servers: {}` / `mcp_servers: []` (valid YAML idioms) must stay
+        valid YAML after `xomni add` — the inline container is expanded to a
+        block mapping instead of producing a ParserError."""
+        import yaml
+        for empty in ("mcp_servers: {}", "mcp_servers: []"):
+            cfg = self._config(
+                "model:\n  provider: opencode-go\n" + empty + "\n"
+                "gateways:\n  telegram:\n    - hermes-telegram\n"
+            )
+            rc, out = _run_add("web-dev", config=cfg)
+            self.assertEqual(rc, 0, out)
+            with open(cfg, encoding="utf-8") as f:
+                data = yaml.safe_load(f)
+            self.assertGreaterEqual(len(data["mcp_servers"]), 4)
+            self.assertEqual(data["model"]["provider"], "opencode-go")
+            self.assertEqual(data["gateways"]["telegram"], ["hermes-telegram"])
+
     def test_parse_install_command_forms(self):
         self.assertEqual(xomni_cli._parse_install_command("uvx mcp-yfinance"),
                          {"command": "uvx", "args": ["mcp-yfinance"]})

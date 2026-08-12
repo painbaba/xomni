@@ -40,8 +40,16 @@ print("\n=== idempotency: publish the SAME skill again ===")
 r2 = omni.core.publish_skill(os.path.join(src, "huggingface-hub"), tgt)
 print(f"  stamped={r2['stamped']} (must be False)  published_at={r2['published_at']} (must be unchanged)")
 
-print("\n=== /skills publish command output (push steps + skills.sh note + receipt) ===")
-print(omni._handle_publish(f'"{os.path.join(src, "huggingface-hub")}" --repo={tgt}'))
+print("\n=== /skills publish: DELEGATED command (--dry-run — stamped, NOT executed) ===")
+print(omni._handle_publish(f'"{os.path.join(src, "huggingface-hub")}" --to=github --dry-run'))
+
+print("\n=== /skills publish: fallback when host CLI missing (repo-copy + loud note) ===")
+_saved_which = omni.core.shutil.which
+omni.core.shutil.which = lambda name: None  # simulate host `hermes` absent
+try:
+    print(omni._handle_publish(f'"{os.path.join(src, "huggingface-hub")}" --repo={tgt}'))
+finally:
+    omni.core.shutil.which = _saved_which
 
 print("\n=== REJECT refusal: destructive skill -> loud error, repo untouched ===")
 bad = os.path.join(src, "evil")

@@ -421,11 +421,12 @@ def env_status() -> dict:
 
 
 # ------------------------------------------------------------------ publish
-# U11 — cross-session skill market. publish_skill validates, credit-stamps,
-# and copies a skill into a repo's skills/ tree — the content model of the
-# skills.sh directory ('The Agent Skills Directory', https://skills.sh):
-# git repos containing SKILL.md files, source = owner/repo, installable via
-# `npx skills add <owner/repo>` or XOMNI's /skills-marketplace.
+# U11 — cross-session skill market. The publish flow validates, credit-stamps,
+# and then DELEGATES the actual publish to the host (`hermes skills publish
+# --to github|clawhub`, see the host-publish section at the end of this file).
+# publish_skill below (stamp + copy into a repo's skills/ tree — the content
+# model of the skills.sh directory, https://skills.sh) is the FALLBACK when
+# the host CLI is missing.
 CREDIT_SOURCE = "xomni"
 
 
@@ -655,3 +656,145 @@ def publish_skill(skill_dir: str, target_repo_dir: str,
                 "add": f"skills/{category}/{name}",
                 "commit": f"publish skill: {name}"},
     }
+
+
+# ------------------------------------------------------------------ host publish
+# U11 wrap (#11): the actual publish is DELEGATED to the host CLI
+# (`hermes skills publish --to github|clawhub`), which owns pushing to the
+# registry. This plugin is the CREDIT layer only: validate + stamp, then hand
+# the stamped skill dir to the host. The repo-copy path (publish_skill above)
+# survives solely as the FALLBACK when the host CLI is missing — there is no
+# second, parallel publish path.
+HOST_PUBLISH_EXE = "hermes"
+HOST_PUBLISH_TARGETS = ("github", "clawhub")
+
+
+def build_publish_command(skill_dir: str, target: str = "github",
+                          repo: str | None = None) -> list[str]:
+    """argv for `hermes skills publish --to <target> [--repo <repo>] <dir>`.
+
+    target is clamped to the host's registry choices (github|clawhub) —
+    anything else falls back to github. repo (an owner/repo slug, e.g.
+    openai/skills) is optional host-side and passed through when given.
+    """
+    target = (target or "github").strip().lower()
+    if target not in HOST_PUBLISH_TARGETS:
+        target = "github"
+    argv = [_resolve_exe(HOST_PUBLISH_EXE), "skills", "publish",
+            "--to", target]
+    if repo and str(repo).strip():
+        argv += ["--repo", str(repo).strip()]
+    argv.append(skill_dir)
+    return argv
+
+
+def _run_host(argv: list[str], timeout: int = 180) -> dict:
+    """Run the host publish command — returns {ok, ...}, never raises."""
+    try:
+        proc = subprocess.run(argv, capture_output=True, text=True,
+                              timeout=timeout)
+    except Exception as exc:  # FileNotFoundError, TimeoutExpired, ...
+        return {"ok": False, "error": f"host publish exec error: {exc}"}
+    if proc.returncode != 0:
+        err = (proc.stderr or "").strip() or (proc.stdout or "").strip()
+        return {"ok": False, "returncode": proc.returncode, "error": err[:300]}
+    return {"ok": True, "returncode": 0,
+            "stdout": (proc.stdout or "").strip(),
+            "stderr": (proc.stderr or "").strip()}
+
+
+def host_publish_available(runner=None) -> tuple[bool, str]:
+    """Is `hermes skills publish` usable? shutil.which + a smoke --help call.
+
+    The smoke call asserts the help advertises the ``skill_path`` positional
+    — guards against a hermes build that predates the publish subcommand.
+    runner is injected for tests. Returns (available, why-not).
+    """
+    exe = shutil.which(HOST_PUBLISH_EXE)
+    if not exe:
+        return False, f"{HOST_PUBLISH_EXE} CLI not found on PATH"
+    try:
+        r = (runner or _run_host)([exe, "skills", "publish", "--help"])
+    except Exception as exc:
+        return False, f"host publish smoke check failed: {exc}"
+    if not r.get("ok"):
+        return False, r.get("error", "hermes skills publish --help failed")
+    if "skill_path" not in (r.get("stdout", "") + r.get("stderr", "")):
+        return False, "hermes skills publish --help did not advertise skill_path"
+    return True, ""
+
+
+def publish_via_host(skill_dir: str, target: str = "github",
+                     repo: str | None = None, author: str | None = None,
+                     published_at: str | None = None, env: dict | None = None,
+                     git_config=None, runner=None, dry_run: bool = False,
+                     fallback_repo: str | None = None) -> dict:
+    """Single publish path: validate → credit-stamp → host delegate.
+
+    Always stamps CREDIT first (idempotent — never double-stamps, never
+    rewrites published_at). The actual publish is delegated to the host
+    (`hermes skills publish --to <target> <dir>`); the repo-copy path
+    (publish_skill) is used ONLY when the host CLI is missing, and the
+    receipt then carries a loud note that host publish is preferred.
+
+    dry_run=True returns the exact delegated command without executing it
+    (and without touching the fallback repo). runner is injected for tests.
+    """
+    if not os.path.isdir(skill_dir):
+        return {"ok": False, "reason": f"skill dir not found: {skill_dir}"}
+    check = validate_skill(skill_dir)
+    if check["verdict"] == "REJECT":
+        return {"ok": False, "reason": "REJECT", "verdict": "REJECT",
+                "issues": check["issues"]}
+    meta = skill_meta(skill_dir)
+    if meta is None:
+        return {"ok": False, "reason": "no SKILL.md"}
+    if not meta["has_frontmatter"]:
+        return {"ok": False, "reason": "no frontmatter to stamp"}
+    st = stamp_credit(skill_dir, author=author, published_at=published_at,
+                      env=env, git_config=git_config)
+    if not st["ok"]:
+        return {"ok": False, "reason": st["reason"]}
+    name = re.sub(r"[^a-z0-9._-]", "-", meta["name"].lower())
+    category = _category_from_meta(meta)
+    cmd = build_publish_command(skill_dir, target=target, repo=repo)
+    target_used = cmd[cmd.index("--to") + 1]
+    if dry_run:
+        return {"ok": True, "dry_run": True, "delegated": True,
+                "host": HOST_PUBLISH_EXE, "target": target_used,
+                "command": cmd, "name": name, "category": category,
+                "author": st["credit"]["author"],
+                "source": st["credit"]["source"],
+                "published_at": st["credit"]["published_at"],
+                "origin": st["credit"].get("origin"),
+                "original_author": st["credit"].get("original_author"),
+                "stamped": st["stamped"]}
+    avail, why = host_publish_available(runner=runner)
+    if avail:
+        r = (runner or _run_host)(cmd)
+        if not r.get("ok"):
+            return {"ok": False,
+                    "reason": f"hermes skills publish failed: "
+                              f"{r.get('error', 'see output')}",
+                    "delegated": True, "host": HOST_PUBLISH_EXE,
+                    "command": cmd, "name": name, "category": category,
+                    "stamped": st["stamped"]}
+        return {"ok": True, "delegated": True, "host": HOST_PUBLISH_EXE,
+                "command": cmd, "target": target_used, "name": name,
+                "category": category, "author": st["credit"]["author"],
+                "source": st["credit"]["source"],
+                "published_at": st["credit"]["published_at"],
+                "origin": st["credit"].get("origin"),
+                "original_author": st["credit"].get("original_author"),
+                "stamped": st["stamped"],
+                "host_output": r.get("stdout", "") or r.get("stderr", "")}
+    # fallback: repo-copy (publish_skill) — host publish is preferred
+    fb = fallback_repo or find_xomni_home() or os.getcwd()
+    r = publish_skill(skill_dir, fb, author=author, published_at=published_at,
+                      env=env, git_config=git_config)
+    r["delegated"] = False
+    r["host"] = HOST_PUBLISH_EXE
+    r["note"] = (f"host publish ({HOST_PUBLISH_EXE} skills publish) "
+                 f"unavailable ({why or 'not found'}) — used repo-copy "
+                 "fallback; host publish is preferred")
+    return r

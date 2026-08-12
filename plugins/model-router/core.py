@@ -539,5 +539,102 @@ def recent_calls(limit: int = 10) -> list[dict]:
 
 
 def route_telemetry_text(limit: int = 10) -> str:
-    """/route telemetry — renders the last 10 routed calls from the ledger."""
+    """/route telemetry — renders the last 10 routed calls from the ledger.
+
+    Auto-telemetry: suggestions recorded in memory by the pre_llm_call hook
+    are flushed into the ledger first, so the report always includes every
+    classified call (not just explicit /route record entries).
+    """
+    flush_pending_telemetry()
     return RouteTelemetry().telemetry_text(limit)
+
+
+# ---------------------------------------------------------------------------
+# automatic routing hook support — deterministic, in-memory, ZERO I/O
+# ---------------------------------------------------------------------------
+#
+# The pre_llm_call hook (wired in plugins/model-router/__init__.py) classifies
+# the user prompt with KEYWORDS ONLY and records the suggestion IN MEMORY. It
+# never calls the model API, never touches the network, never spawns a
+# process, and never writes to disk — that keeps the hot path under 1ms and
+# satisfies ci_gate's FORBIDDEN_IN_HOOK_RE (no .complete( / requests. /
+# subprocess in hook handlers). The ledger write is deferred to the next
+# command call (flush_pending_telemetry), which is allowed to do I/O.
+
+# config key: model-router.auto_route (read by __init__._auto_route_enabled)
+AUTO_ROUTE_DEFAULT = True
+
+_PENDING_TELEMETRY: list[dict] = []
+_LAST_SUGGESTION: dict | None = None
+
+
+def classify_suggestion(prompt: str,
+                        configured_model: str | None = None) -> dict:
+    """Deterministic keyword-only classification + tier-table suggestion.
+
+    Pure CPU: detect_task_type() (regex over KEYWORDS) + a FALLBACK_MODELS
+    dict lookup. No registry load, no I/O, no LLM — safe for the pre_llm_call
+    hot path. The tier table is the same deterministic pick set /route falls
+    back to; /route additionally consults the live omni-registry (command
+    path only). An unknown configured model counts as differing (suggest).
+    """
+    task_type, keywords = detect_task_type(prompt)
+    suggested = FALLBACK_MODELS.get(task_type, FALLBACK_MODELS["default"])
+    configured = (configured_model or "").strip().lower()
+    differs = (not configured) or configured != suggested
+    return {
+        "task_type": task_type,
+        "keywords": keywords,
+        "suggested_model": suggested,
+        "configured_model": configured or None,
+        "differs": differs,
+        "action": "switch" if differs else "keep",
+    }
+
+
+def record_suggestion(sug: dict) -> None:
+    """Record one classification IN MEMORY (pending telemetry + last hint).
+
+    ZERO I/O — the ledger write is deferred to flush_pending_telemetry() so
+    the hook never touches disk and stays well under 1ms.
+    """
+    global _LAST_SUGGESTION
+    _LAST_SUGGESTION = dict(sug)
+    _PENDING_TELEMETRY.append({
+        "model": sug["suggested_model"],
+        "task_type": sug["task_type"],
+        "configured_model": sug.get("configured_model"),
+        "differs": bool(sug.get("differs")),
+        "action": sug.get("action", "keep"),
+        "ts": time.time(),
+    })
+
+
+def last_suggestion() -> dict | None:
+    """Last classification recorded by the hook (None before the first call)."""
+    return _LAST_SUGGESTION
+
+
+def flush_pending_telemetry() -> int:
+    """Write pending hook classifications into the cost-tracker ledger.
+
+    Command-path only (never called from the hook — the hook is I/O-free):
+    drains the in-memory queue into route.db via RouteTelemetry.record_call
+    (cost-tracker math when available). Returns the number of rows written.
+    On failure the pending rows are restored and the error propagates
+    (fail-loud, no data loss).
+    """
+    if not _PENDING_TELEMETRY:
+        return 0
+    pending = list(_PENDING_TELEMETRY)
+    _PENDING_TELEMETRY.clear()
+    try:
+        tel = RouteTelemetry()
+        for row in pending:
+            tel.record_call(
+                row["model"], latency_ms=0, est_cost=None,
+                task_type=row["task_type"], provider="", ts=row["ts"])
+    except Exception:
+        _PENDING_TELEMETRY[:0] = pending  # restore on failure
+        raise
+    return len(pending)

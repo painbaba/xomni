@@ -122,11 +122,24 @@ xomni add web-dev --smoke         # install + run the stack's live smoke test
 ```
 
 The write is a textual insert into the existing `mcp_servers:` block — comments,
-ordering, and every other config section are preserved byte-for-byte. If
+ordering, and every other config section are preserved byte-for-byte (empty
+inline forms like `mcp_servers: {}` are expanded, never corrupted). If
 `config.yaml` is missing or read-only the command fails loudly with the exact
 fix. Stack definitions live in `data/stacks/*.json` (skills must exist in
 `data/curated-skills.json`, MCPs in `data/mcp/catalog.json`). Restart the host
 (or `/reload-mcp`) after installing.
+
+## MCP catalog — install any of 311 servers
+
+The full marketplace (`data/mcp/catalog.json`, 311 servers, searchable at
+[website/docs/mcp.html](website/docs/mcp.html) and rendered in
+[docs/MCP-CATALOG.md](docs/MCP-CATALOG.md)) installs two ways:
+
+- **In chat:** `/mcp add <name> --yes` — non-interactive install of one server
+  (stdio → `command`/`args`, hosted/Smithery remote → `url`), appended to
+  `config.yaml` `mcp_servers`. Idempotent; `/mcp list` to browse.
+- **As a stack:** `xomni add <stack>` — a curated vertical bundle of MCPs +
+  skills (see table above), optionally with a live smoke test via `--smoke`.
 
 ## Verify
 

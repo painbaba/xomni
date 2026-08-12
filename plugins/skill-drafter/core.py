@@ -20,9 +20,12 @@ patterns, >= 3 procedure steps) and FAILS LOUD on REJECT — nothing is written
 unless the verdict is PASS.
 
 Host sessions: :func:`export_session` shells out to ``hermes sessions export
-<id>`` when the hermes CLI is available; otherwise it returns a loud error
-naming the exact export command to run by hand (the plugin never hooks the
-host).
+--session-id <id>`` when the hermes CLI is available; otherwise it returns a
+loud error naming the exact export command to run by hand (the plugin never
+hooks the host). :func:`draft_last_session` bridges the NEWEST host session
+(``hermes sessions list`` -> export -> draft) in one call, and
+:func:`save_skill` with ``flat=True`` writes straight into the host skills
+root (``skills/<name>/SKILL.md``) for the host curator to govern.
 """
 from __future__ import annotations
 
@@ -103,11 +106,22 @@ def _author() -> str:
 def parse_transcript_text(text: str) -> list[dict]:
     """Parse exported session text: a JSON array or JSONL lines -> [entries].
 
-    Non-JSON lines are skipped; non-dict entries are dropped. Never raises.
+    Non-JSON lines are skipped; non-dict entries are dropped. Session
+    envelopes (hermes ``sessions export`` JSONL: one object per session with a
+    ``messages`` list) are unwrapped into their messages. Never raises.
     """
     text = (text or "").strip()
     if not text:
         return []
+
+    def _flatten(item, out):
+        if (isinstance(item, dict) and not item.get("role")
+                and isinstance(item.get("messages"), list)):
+            for sub in item["messages"]:
+                _flatten(sub, out)
+        elif isinstance(item, dict):
+            out.append(item)
+
     entries = []
     if text.startswith("["):
         try:
@@ -115,8 +129,7 @@ def parse_transcript_text(text: str) -> list[dict]:
         except ValueError:
             data = []
         for item in data:
-            if isinstance(item, dict):
-                entries.append(item)
+            _flatten(item, entries)
         return entries
     for line in text.splitlines():
         line = line.strip()
@@ -126,8 +139,7 @@ def parse_transcript_text(text: str) -> list[dict]:
             item = json.loads(line)
         except ValueError:
             continue
-        if isinstance(item, dict):
-            entries.append(item)
+        _flatten(item, entries)
     return entries
 
 
@@ -150,6 +162,7 @@ def _goal_line(transcript: list[dict]) -> str:
             content = str(content)
         content = re.sub(r"(?i)^\s*(please|hey|hi|hello)[\s,!:]*", "", content)
         content = re.sub(r"\s+", " ", content).strip()
+        content = re.sub(r"^\[[^\]]*\]\s*", "", content)  # "[IMPORTANT: ...]" wrappers
         if content:
             return content[:200]
     return ""
@@ -161,11 +174,14 @@ def _iter_tool_calls(transcript: list[dict]):
 
     Handles three shapes:
       * assistant entries with a ``tool_calls`` list
+        — incl. the hermes export shape (``function: {name, arguments}`` with
+        arguments as a JSON string, tool outcomes carrying ``tool_call_id``)
       * flattened standalone entries {role, name, content, is_error}
-      * tool-role outcome entries are matched by name to their call
+      * tool-role outcome entries, matched to their call by tool_call_id
+        first, then by name, then positionally
     """
-    calls = []          # (name, arguments)
-    outcomes = []       # outcome entries, matched positionally by name
+    calls = []          # (name, arguments, call_id)
+    outcomes = []       # outcome entries
     for entry in transcript:
         if not isinstance(entry, dict):
             continue
@@ -174,37 +190,62 @@ def _iter_tool_calls(transcript: list[dict]):
             for tc in entry["tool_calls"]:
                 if not isinstance(tc, dict):
                     continue
-                name = tc.get("name") or tc.get("tool") or "tool"
-                args = tc.get("arguments") or tc.get("input") or tc.get("inputs") or {}
+                fn = tc.get("function") if isinstance(tc.get("function"), dict) else {}
+                name = (tc.get("name") or tc.get("tool")
+                        or fn.get("name") or "tool")
+                args = (tc.get("arguments") or tc.get("input")
+                        or tc.get("inputs") or fn.get("arguments") or {})
+                if isinstance(args, str):
+                    try:
+                        parsed = json.loads(args)
+                    except ValueError:
+                        parsed = None
+                    args = parsed if isinstance(parsed, dict) else {"raw": args}
                 if not isinstance(args, dict):
                     args = {"raw": str(args)}
-                calls.append((name, args))
-        elif role == "tool" and entry.get("name"):
+                calls.append((name, args, tc.get("id") or tc.get("call_id")))
+        elif role == "tool":
             outcomes.append(entry)
-        elif entry.get("name") and role in ("assistant", "tool", ""):
+        elif entry.get("name") and role in ("assistant", ""):
             # flattened standalone call: it is its own outcome
             name = entry.get("name")
             args = {"content": (entry.get("content") or "")[:120]}
-            calls.append((name, args))
+            calls.append((name, args, None))
             outcomes.append(entry)
-    # pair each call with the first unused outcome of the same tool name
+    # pair each call with its outcome: tool_call_id, then name, then position
     used = set()
     paired = []
-    for name, args in calls:
-        outcome = None
-        for i, o in enumerate(outcomes):
-            if i in used:
-                continue
-            if (o.get("name") or o.get("tool")) == name:
-                outcome = o
-                used.add(i)
+    for name, args, call_id in calls:
+        outcome, idx = None, None
+        if call_id:
+            for i, o in enumerate(outcomes):
+                if i in used:
+                    continue
+                if (o.get("tool_call_id") or o.get("call_id")) == call_id:
+                    outcome, idx = o, i
+                    break
+        if outcome is None:
+            for i, o in enumerate(outcomes):
+                if i in used:
+                    continue
+                if (o.get("name") or o.get("tool_name") or o.get("tool")) == name:
+                    outcome, idx = o, i
+                    break
+        if outcome is None:
+            for i, o in enumerate(outcomes):
+                if i in used:
+                    continue
+                outcome, idx = o, i
                 break
+        if idx is not None:
+            used.add(idx)
         paired.append((name, args, outcome))
     return paired
 
 
 def _is_failure(outcome: dict | None) -> bool:
-    """Successful-outcome markers: explicit flags win, else content markers."""
+    """Successful-outcome markers: explicit flags win, then JSON fields
+    (exit_code/error/success), then content markers."""
     if outcome is None:
         return False
     if outcome.get("is_error") in (True, "true", "True", 1):
@@ -216,6 +257,20 @@ def _is_failure(outcome: dict | None) -> bool:
     content = outcome.get("content") or outcome.get("text") or ""
     if not isinstance(content, str):
         content = str(content)
+    if content.lstrip().startswith(("{", "[")):
+        try:
+            parsed = json.loads(content)
+        except ValueError:
+            parsed = None
+        if isinstance(parsed, dict):
+            code = parsed.get("exit_code")
+            if isinstance(code, int) and code != 0:
+                return True
+            err = parsed.get("error")
+            if err not in (None, "", False, "null"):
+                return True
+            if parsed.get("success") is False:
+                return True
     return bool(_FAIL_MARKERS.search(content))
 
 
@@ -387,9 +442,11 @@ def validate_draft(skill_md: str, expected_name: str | None = None) -> dict:
 
 # ------------------------------------------------------------------ save
 def save_skill(name: str, skill_md: str, skills_root: str | None = None,
-               category: str = DEFAULT_CATEGORY) -> dict:
-    """Validate then write skills/<category>/<name>/SKILL.md. Fail-loud.
+               category: str = DEFAULT_CATEGORY, flat: bool = False) -> dict:
+    """Validate then write SKILL.md. Fail-loud.
 
+    Defaults to skills/<category>/<name>/SKILL.md; with ``flat=True`` writes
+    directly to skills/<name>/SKILL.md (host skills-dir layout, no category).
     Never writes on REJECT/REVIEW — returns {ok: False, reason} naming the
     issues. Returns {ok: True, dest, name, verdict} on PASS.
     """
@@ -400,8 +457,12 @@ def save_skill(name: str, skill_md: str, skills_root: str | None = None,
         return {"ok": False, "reason": f"{check['verdict']} — {detail}",
                 "verdict": check["verdict"], "issues": check["issues"], "name": name}
     root = skills_root or DEFAULT_SKILLS_ROOT
-    dest = os.path.join(root, re.sub(r"[^a-z0-9._-]", "-", (category or "").lower()) or DEFAULT_CATEGORY,
-                        name)
+    if flat:
+        dest = os.path.join(root, name)
+    else:
+        dest = os.path.join(root,
+                            re.sub(r"[^a-z0-9._-]", "-", (category or "").lower()) or DEFAULT_CATEGORY,
+                            name)
     try:
         os.makedirs(dest, exist_ok=True)
         with open(os.path.join(dest, "SKILL.md"), "w", encoding="utf-8") as f:
@@ -414,7 +475,7 @@ def save_skill(name: str, skill_md: str, skills_root: str | None = None,
 
 # ------------------------------------------------------------------ host export
 def export_session(session_id: str, runner=None, timeout: int = 60) -> dict:
-    """Export a host session via `hermes sessions export <id>`.
+    """Export a host session via `hermes sessions export --session-id <id>`.
 
     Uses the hermes CLI when available (subprocess). If hermes is missing,
     returns {ok: False, reason} naming the exact export command to run by
@@ -429,7 +490,8 @@ def export_session(session_id: str, runner=None, timeout: int = 60) -> dict:
                            f"manually and draft from the file: {command} > "
                            f"{sid or 'session'}.jsonl, then /skill draft <file>"),
                 "command": command}
-    argv = [exe, "sessions", "export", sid]
+    argv = [exe, "sessions", "export", "--session-id", sid,
+            "--format", "jsonl", "-"]
     try:
         proc = (runner or subprocess.run)(argv, capture_output=True, text=True,
                                           timeout=timeout)
@@ -448,3 +510,89 @@ def export_session(session_id: str, runner=None, timeout: int = 60) -> dict:
                 "command": command}
     return {"ok": True, "transcript": transcript, "command": command,
             "session_id": sid}
+
+
+# ------------------------------------------------------------------ newest session
+def list_session_ids(runner=None, limit: int = 20) -> list[str]:
+    """Session ids from `hermes sessions list --limit N`, newest first.
+
+    Parses the human table (the id is the last token of each row; rows that
+    do not look like session ids — header, separator — are skipped). Returns
+    [] when hermes is missing or the call fails.
+    """
+    exe = shutil.which("hermes")
+    if not exe:
+        return []
+    argv = [exe, "sessions", "list", "--limit", str(limit)]
+    try:
+        proc = (runner or subprocess.run)(argv, capture_output=True, text=True,
+                                          timeout=30)
+    except Exception:
+        return []
+    if proc.returncode != 0:
+        return []
+    ids = []
+    for line in proc.stdout.splitlines():
+        tok = line.strip().split()[-1] if line.strip() else ""
+        if (re.fullmatch(r"[A-Za-z0-9_]+", tok)
+                and re.search(r"\d{8}_\d{6}", tok)):
+            ids.append(tok)
+    return list(dict.fromkeys(ids))
+
+
+def draft_last_session(limit_messages: int = 200, runner=None,
+                       timeout: int = 60) -> dict:
+    """Draft a skill from the NEWEST host session — one-shot bridge.
+
+    Finds session ids via ``hermes sessions list`` (newest first), exports
+    each via ``hermes sessions export --session-id <id>`` (subprocess, never
+    hooks the host), truncates to the last ``limit_messages`` entries (keeping
+    the goal line), and drafts. In-flight/empty sessions (a cron still running
+    exports zero messages) are skipped in favor of the next newest. Returns
+    the draft result plus ``session_id``, or {ok: False, reason} — never
+    raises.
+    """
+    ids = list_session_ids(runner=runner)
+    if not ids:
+        return {"ok": False,
+                "reason": ("no host sessions found — `hermes sessions list` "
+                           "returned no session ids (is hermes on PATH?)")}
+    skipped, last_export_fail = [], None
+    for sid in ids:
+        exported = export_session(sid, runner=runner, timeout=timeout)
+        if not exported["ok"]:
+            if "no transcript entries" in exported["reason"]:
+                skipped.append(sid)  # in-flight / empty — nothing to draft yet
+                continue
+            last_export_fail = exported["reason"]
+            continue
+        transcript = exported["transcript"]
+        if not transcript:
+            skipped.append(sid)
+            continue
+        if limit_messages and len(transcript) > limit_messages:
+            tail = transcript[-limit_messages:]
+            if not _goal_line(tail):  # keep the session goal if truncation dropped it
+                for entry in transcript:
+                    if isinstance(entry, dict) and entry.get("role") == "user":
+                        tail.insert(0, entry)
+                        break
+            transcript = tail
+        draft = draft_skill_checked(transcript)
+        if not draft["ok"]:
+            return {"ok": False, "reason": draft["reason"], "session_id": sid}
+        draft["ok"] = True
+        draft["session_id"] = sid
+        if skipped:
+            draft["skipped"] = skipped
+        return draft
+    if skipped:
+        shown = ", ".join(skipped[:3]) + ("..." if len(skipped) > 3 else "")
+        return {"ok": False,
+                "reason": (f"no draftable host sessions — {len(skipped)} newest "
+                           f"session(s) in-flight/empty: {shown}; try again in a "
+                           f"moment or /skill draft-session <id>"),
+                "session_id": ids[0]}
+    return {"ok": False,
+            "reason": last_export_fail or "host session export failed",
+            "session_id": ids[0]}

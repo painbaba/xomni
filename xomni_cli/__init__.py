@@ -13,7 +13,8 @@ Installed via ``pip install .`` from the repo root. Commands:
   xomni doctor               environment health check
   xomni stacks               list one-command vertical stacks
   xomni add <stack>          install a stack's MCPs by appending host config
-                             (--dry-run preview, --smoke live check)
+                             (--yes/-y no-prompt guarantee; --dry-run preview,
+                             --smoke live check)
 """
 from __future__ import annotations
 
@@ -395,6 +396,38 @@ MCP_CATALOG = os.path.join(DATA_DIR, "mcp", "catalog.json")
 CURATED_SKILLS = os.path.join(DATA_DIR, "curated-skills.json")
 
 
+def _resolve_data_dir() -> str:
+    """Checkout data/ first, else the packaged site-packages copy (installed mode)."""
+    if os.path.isdir(DATA_DIR):
+        return DATA_DIR
+    # pip records where a local install came from (direct_url.json)
+    try:
+        import json
+        from importlib import metadata
+        dist = metadata.distribution("xomni")
+        for f in dist.files or ():
+            if f.name == "direct_url.json":
+                path = os.path.join(str(dist.locate_file("")), str(f))
+                info = json.load(open(path, encoding="utf-8"))
+                url = info.get("url", "")
+                if url.startswith("file://"):
+                    repo = url[len("file://"):].lstrip("/").replace("/", os.sep)
+                    if os.path.isdir(os.path.join(repo, "data")):
+                        return os.path.join(repo, "data")
+    except Exception:
+        pass
+    env = os.environ.get("XOMNI_HOME")
+    if env and os.path.isdir(os.path.join(env, "data")):
+        return os.path.join(env, "data")
+    pkg = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                       "xomni", "data")
+    return pkg if os.path.isdir(pkg) else DATA_DIR
+
+STACKS_DIR = os.path.join(_resolve_data_dir(), "stacks")
+MCP_CATALOG = os.path.join(_resolve_data_dir(), "mcp", "catalog.json")
+CURATED_SKILLS = os.path.join(_resolve_data_dir(), "curated-skills.json")
+
+
 def _config_path() -> str:
     """Host config.yaml: XOMNI_HERMES_CONFIG override, else HERMES_HOME/config.yaml."""
     return os.environ.get("XOMNI_HERMES_CONFIG",
@@ -533,6 +566,11 @@ def _append_mcp_servers(config_path: str, entries: list[tuple[str, dict]]) -> tu
     if idx is None:
         new_text = text.rstrip("\n") + "\n\nmcp_servers:\n" + "\n".join(blocks) + "\n"
     else:
+        # `mcp_servers: {}` / `mcp_servers: []` (empty inline container) is a
+        # valid YAML idiom but cannot hold block entries — expand it to a bare
+        # key first, mirroring the mcp-catalog plugin's host-config writer.
+        if re.search(r":\s*(\{\s*\}|\[\s*\])\s*(#.*)?$", lines[idx]):
+            lines[idx] = "mcp_servers:"
         new_text = "\n".join(lines[:idx + 1] + blocks + lines[idx + 1:]) \
             + ("\n" if text.endswith("\n") else "")
     try:
@@ -564,9 +602,13 @@ def _run_smoke(sdef: dict) -> int:
     return 0 if ok else 1
 
 
-def cmd_add(stack: str, dry_run: bool = False, smoke: bool = False) -> int:
+def cmd_add(stack: str, dry_run: bool = False, smoke: bool = False,
+            yes: bool = False) -> int:
     """`xomni add <stack>` — validate the stack def, print the plan, then
     install its MCP servers by appending host config (non-interactive).
+
+    --yes / -y (U3 — non-interactive): accepted and stripped; the command
+    never prompts, and the flag guarantees no confirmation is ever shown.
     --dry-run only prints the plan; --smoke also runs the stack's live smoke
     test (public API curl, expect-code match)."""
     try:
@@ -663,14 +705,15 @@ def main(argv=None) -> int:
         return cmd_stacks()
     if cmd == "add":
         if not args or args[0].startswith("-"):
-            print("usage: xomni add <stack> [--dry-run] [--smoke]   (stacks: "
+            print("usage: xomni add <stack> [--yes] [--dry-run] [--smoke]   (stacks: "
                   + ", ".join(_list_stacks()) + ")")
             return 1
         name = args.pop(0)
         flags = set(args)
         return cmd_add(name,
                        dry_run=("--dry-run" in flags or "-n" in flags),
-                       smoke=("--smoke" in flags or "-s" in flags))
+                       smoke=("--smoke" in flags or "-s" in flags),
+                       yes=("--yes" in flags or "-y" in flags))
     if cmd == "launch":
         home = os.path.expanduser("~/AppData/Local/hermes")
         env = dict(os.environ, HERMES_HOME=os.path.join(home, "profiles", "xomni"))
