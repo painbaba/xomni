@@ -73,9 +73,10 @@ PROVIDERS = [
 PLUGIN_TESTS = {  # from docs/TEST-MATRIX.md
     "context-compact": 31, "context-loader": 69, "gh-ops": 99, "local-models": 87,
     "mcp-catalog": 26, "omni-design": 8, "omni-media": 27, "omni-memory": 26,
-    "omni-parallel": 20, "omni-skills": 12, "perkline": 18, "provider-pool": 36,
-    "repomap": 42, "sandbox-gate": 42, "title-statusline": 32, "verify-runner": 38,
-    "waitperk": 34,
+    "omni-parallel": 20, "omni-skills": 17, "perkline": 27, "provider-pool": 36,
+    "repomap": 42, "sandbox-gate": 67, "title-statusline": 32, "verify-runner": 38,
+    "waitperk": 34, "omni-registry": 15, "codebase-index": 18, "omni-tools": 18,
+    "bharat-pack": 12, "cost-tracker": 14,
 }
 
 

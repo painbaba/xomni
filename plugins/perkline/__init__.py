@@ -122,9 +122,14 @@ def _handle_perkline(raw: str) -> str:
         bids = [{"sponsor_id": s["id"], "bid": float(s.get("budget", 100) * 0.1)} for s in led.config.get("sponsors", [])]
         if len(bids) < 2:
             return "need at least 2 sponsors to run an auction."
-        r = core.run_auction(led, bids)
+        # sponsorship 2.0 delta 1: the slot runs with the configured floor
+        floor = float(led.config.get("auction", {}).get("floor", 0.0))
+        r = core.run_auction(led, bids, floor=floor)
+        if r.get("house"):
+            _flush()
+            return f"auction unsold (no bid ≥ floor ${floor:.2f}) — slot filled by house campaign {r['house']}."
         _flush()
-        return f"second-price auction: winner {r['winner']} pays ${r['price']:.2f} (second-highest bid)."
+        return f"second-price auction (floor ${floor:.2f}): winner {r['winner']} pays ${r['price']:.2f}."
     if cmd == "sync":
         r = core.sync(led)
         _flush()

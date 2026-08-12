@@ -197,3 +197,103 @@ class EdgeCaseTests(unittest.TestCase):
         led = self._ledger()
         led.state["paused"] = True
         self.assertEqual(core.render_line(led), "")
+
+
+class Sponsorship2_0Tests(unittest.TestCase):
+    """Monetization V2 deltas: contextual tags (session-context slots) and
+    auction floor + house campaigns (docs/MONETIZATION-V2.md §3.3)."""
+
+    CTX_SPONSORS = [
+        {"id": "ctx-codex", "message": "m", "url": "https://x.invalid", "model": "cpm",
+         "price": 20.0, "budget": 200.0, "targeting": [], "tags": ["codex"]},
+        {"id": "ctx-media", "message": "m", "url": "https://x.invalid", "model": "cpm",
+         "price": 20.0, "budget": 200.0, "targeting": [], "tags": ["media", "omni"]},
+        {"id": "ctx-any", "message": "m", "url": "https://x.invalid", "model": "cpm",
+         "price": 20.0, "budget": 200.0, "targeting": [], "tags": []},
+    ]
+
+    def setUp(self):
+        self._tmp = tempfile.TemporaryDirectory()
+        self._patch = mock.patch.object(core, "STATE_DIR", self._tmp.name)
+        self._patch.start()
+        core.STATE_PATH = os.path.join(self._tmp.name, "state.json")
+        core.CONFIG_PATH = os.path.join(self._tmp.name, "config.json")
+        core.CURRENT_LINE_PATH = os.path.join(self._tmp.name, "current.txt")
+        self.addCleanup(self._patch.stop)
+        self.addCleanup(self._tmp.cleanup)
+
+    def _ledger(self, sponsors=None):
+        led = core.Ledger.load()
+        led.config["sponsors"] = sponsors or json.loads(json.dumps(self.CTX_SPONSORS))
+        return led
+
+    def test_context_tags_match_query_string(self):
+        led = self._ledger()
+        elig = core.eligible_sponsors(led, context="running a codex session now")
+        ids = {s["id"] for s in elig}
+        self.assertIn("ctx-codex", ids)   # "codex" appears in the context
+        self.assertNotIn("ctx-media", ids)
+        self.assertIn("ctx-any", ids)     # no tags = context-agnostic
+
+    def test_context_tags_filter_out_nonmatching(self):
+        led = self._ledger()
+        elig = core.eligible_sponsors(led, context="editing media files")
+        ids = {s["id"] for s in elig}
+        self.assertIn("ctx-media", ids)
+        self.assertNotIn("ctx-codex", ids)
+
+    def test_sponsor_without_tags_is_context_agnostic(self):
+        led = self._ledger()
+        for ctx in ("codex session", "media task", "anything at all"):
+            elig = core.eligible_sponsors(led, context=ctx)
+            self.assertIn("ctx-any", {s["id"] for s in elig})
+
+    def test_context_and_repo_targeting_both_required(self):
+        led = self._ledger([{"id": "both", "message": "m", "url": "https://x.invalid",
+                             "model": "cpm", "price": 20.0, "budget": 200.0,
+                             "targeting": ["python"], "tags": ["codex"]}])
+        # repo matches but context doesn't -> not eligible
+        self.assertEqual(core.eligible_sponsors(led, repo_tags=["python"], context="media task"), [])
+        # context matches but repo doesn't -> not eligible
+        self.assertEqual(core.eligible_sponsors(led, repo_tags=["rust"], context="codex session"), [])
+        # both match -> eligible
+        elig = core.eligible_sponsors(led, repo_tags=["python"], context="a codex session")
+        self.assertEqual([s["id"] for s in elig], ["both"])
+
+    def test_record_render_uses_context_slot(self):
+        led = self._ledger()
+        r = core.record_render(led, repo_tags=[], context="codex session", now=1000.0, write_line=False)
+        self.assertTrue(r["counted"])
+        self.assertEqual(r["sponsor"]["id"], "ctx-codex")
+
+    def test_auction_floor_discards_low_bids_house_fills(self):
+        led = self._ledger()
+        r = core.run_auction(led, [{"sponsor_id": "a", "bid": 5.0}, {"sponsor_id": "b", "bid": 3.0}],
+                             floor=10.0)
+        self.assertIsNone(r["winner"])
+        self.assertEqual(r["price"], 10.0)
+        self.assertEqual(r["house"], "house-marketplace")
+        self.assertEqual(led.state["current_sponsor_id"], "house-marketplace")
+
+    def test_auction_floor_raises_second_price(self):
+        led = self._ledger()
+        r = core.run_auction(led, [{"sponsor_id": "a", "bid": 100.0}, {"sponsor_id": "b", "bid": 80.0}],
+                             floor=90.0)
+        self.assertEqual(r["winner"], "a")
+        self.assertAlmostEqual(r["price"], 90.0)  # floor > second price
+
+    def test_auction_floor_keeps_second_price_when_above(self):
+        led = self._ledger()
+        r = core.run_auction(led, [{"sponsor_id": "a", "bid": 100.0}, {"sponsor_id": "b", "bid": 80.0}],
+                             floor=50.0)
+        self.assertEqual(r["winner"], "a")
+        self.assertAlmostEqual(r["price"], 80.0)  # second price > floor, unchanged
+
+    def test_house_fill_accrues_zero_earnings(self):
+        led = self._ledger()
+        core.run_auction(led, [], floor=10.0)  # unsold -> house on screen
+        for i in range(100):
+            core.record_render(led, repo_tags=[], now=2000.0 + i, write_line=False)
+        self.assertEqual(core.compute_earnings(led), 0.0)  # house budget 0 -> no dev share
+        self.assertTrue(core.escrow_invariant(led))
+        self.assertEqual(led.state["renders"], 100)  # but impressions ARE counted honestly

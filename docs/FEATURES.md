@@ -60,6 +60,11 @@ Status legend:
 | 15 | `omni-design` | `/design` premium self-contained HTML artifacts from a brief, `/design-audit` 10-tell slop audit — zero hooks | 8 | SHIPPED | Claude Design / Stitch |
 | 16 | `omni-parallel` | Parallel-task layer: `/swarm` task queue + context packs + multi-agent judging + PR-split merge plans | 20 | SHIPPED | Kimi / Cursor / Claude |
 | 17 | `omni-skills` | SKILL.md interop: scan/validate/install skills from any marketplace — zero hooks | 17 | SHIPPED | Claude (SKILL.md standard) |
+| 18 | `omni-registry` | Omni Registry | 15 | SHIPPED | Next-feature wave |
+| 19 | `codebase-index` | Codebase Index | 18 | SHIPPED | Next-feature wave |
+| 20 | `omni-tools` | Omni Tools | 18 | SHIPPED | Next-feature wave |
+| 21 | `bharat-pack` | Bharat Pack | 12 | SHIPPED | Next-feature wave |
+| 22 | `cost-tracker` | Cost Tracker | 14 | SHIPPED | Next-feature wave |
 
 **Totals: 17 plugins · 677 test methods · 677 passed · 0 failed** (TEST-MATRIX.md, 2026-08-12 00:27).
 Row sum check: 34+18+36+31+42+26+42+69+38+99+87+32+26+27+8+20 = 677 ✓

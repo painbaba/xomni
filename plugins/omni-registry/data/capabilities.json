@@ -1,0 +1,1386 @@
+{
+  "schema_version": "1.0.0",
+  "generated_at": "2026-08-12T00:00:00Z",
+  "sources": [
+    {
+      "name": "models.dev",
+      "url": "https://models.dev/api.json",
+      "fetched_at": "2026-08-12T00:00:00Z",
+      "sha256": "ffe72277408ee3d87eb8e40a49775c8b10622bf4b8014118d4df2335e8ce4c99",
+      "note": "limit.context/output, intent labels (reasoning/tool_call/structured_output/attachment), modalities, release/last_updated — 25/25 gateway slugs matched"
+    },
+    {
+      "name": "litellm",
+      "url": "https://raw.githubusercontent.com/BerriAI/litellm/main/model_prices_and_context_window.json",
+      "fetched_at": "2026-08-12T00:00:00Z",
+      "sha256": "c976ec1b21517aaea1b5b7e0546382fafe78644d625cd7c9fb0d7486eea79460",
+      "note": "max_input_tokens cross-check: deepseek-v4-flash=1000000 (bare + azure_ai entries); max_output conflicts flagged in origins"
+    },
+    {
+      "name": "opencode-zen-gateway",
+      "url": "https://opencode.ai/zen/go/v1/models",
+      "fetched_at": "2026-08-10T00:00:00Z",
+      "note": "25 ids verified live HTTP 200 (provider-pool GATEWAY_MODELS); /models exposes no capability fields (research F1)"
+    }
+  ],
+  "models": [
+    {
+      "id": "deepseek-v4-flash",
+      "name": "DeepSeek V4 Flash",
+      "provider": "opencode-zen",
+      "status": "active",
+      "context_window": {
+        "value": 1000000,
+        "source": "spec",
+        "origin": "models.dev limit.context=1048576 (live fetch 2026-08-12); LiteLLM max_input_tokens=1000000 (deepseek-v4-flash + azure_ai/deepseek-v4-flash entries); research F3 adopted 1000000; old curated 131072 refuted; gateway exposes no limits (F1)"
+      },
+      "max_output": {
+        "value": 1048576,
+        "source": "spec",
+        "origin": "models.dev limit.output=1048576; LiteLLM max_output_tokens=8192 (api-docs.deepseek.com) / 384000 (azure_ai) — spec conflict, flag for CI review (F3 precedent)"
+      },
+      "capabilities": [
+        "thinking",
+        "tools"
+      ],
+      "capability_sources": {
+        "thinking": "spec",
+        "tools": "spec"
+      },
+      "cost_per_1m": {
+        "input": 0.0,
+        "output": 0.0,
+        "currency": "USD",
+        "source": "verified",
+        "origin": "free gateway channel (provider-pool FREE_CHANNELS: opencode-zen); vendor list prices differ — expected channel difference (research F3)"
+      },
+      "latency_ms": {
+        "median": 4100,
+        "samples": 30,
+        "updated_at": "2026-08-12T00:00:00Z",
+        "source": "estimated",
+        "origin": "seeded from documented 2-26s envelope (proposal §5); refine via gateway_health probes"
+      },
+      "verified": {
+        "ok": true,
+        "date": "2026-08-10",
+        "method": "http200 spot-check",
+        "last_seen": "2026-08-12T00:00:00Z"
+      },
+      "provenance": {
+        "primary": "curated",
+        "updated_at": "2026-08-12T00:00:00Z"
+      }
+    },
+    {
+      "id": "deepseek-v4-pro",
+      "name": "DeepSeek V4 Pro",
+      "provider": "opencode-zen",
+      "status": "active",
+      "context_window": {
+        "value": 1048576,
+        "source": "spec",
+        "origin": "models.dev limit.context=1048576 (live fetch 2026-08-12, sha256 pinned in sources[])"
+      },
+      "max_output": {
+        "value": 1048576,
+        "source": "spec",
+        "origin": "models.dev limit.output=1048576 (live fetch 2026-08-12)"
+      },
+      "capabilities": [
+        "thinking",
+        "tools"
+      ],
+      "capability_sources": {
+        "thinking": "spec",
+        "tools": "spec"
+      },
+      "cost_per_1m": {
+        "input": 0.0,
+        "output": 0.0,
+        "currency": "USD",
+        "source": "verified",
+        "origin": "free gateway channel (provider-pool FREE_CHANNELS: opencode-zen); vendor list prices differ — expected channel difference (research F3)"
+      },
+      "latency_ms": {
+        "median": 4100,
+        "samples": 30,
+        "updated_at": "2026-08-12T00:00:00Z",
+        "source": "estimated",
+        "origin": "seeded from documented 2-26s envelope (proposal §5); refine via gateway_health probes"
+      },
+      "verified": {
+        "ok": true,
+        "date": "2026-08-10",
+        "method": "http200 spot-check",
+        "last_seen": "2026-08-12T00:00:00Z"
+      },
+      "provenance": {
+        "primary": "curated",
+        "updated_at": "2026-08-12T00:00:00Z"
+      }
+    },
+    {
+      "id": "kimi-k3",
+      "name": "Kimi K3",
+      "provider": "opencode-zen",
+      "status": "active",
+      "context_window": {
+        "value": 1048576,
+        "source": "spec",
+        "origin": "models.dev limit.context=1048576 (live fetch 2026-08-12, sha256 pinned in sources[])"
+      },
+      "max_output": {
+        "value": 1048576,
+        "source": "spec",
+        "origin": "models.dev limit.output=1048576 (live fetch 2026-08-12)"
+      },
+      "capabilities": [
+        "thinking",
+        "tools",
+        "structured_output",
+        "image_in"
+      ],
+      "capability_sources": {
+        "thinking": "spec",
+        "tools": "spec",
+        "structured_output": "spec",
+        "image_in": "spec"
+      },
+      "cost_per_1m": {
+        "input": 0.0,
+        "output": 0.0,
+        "currency": "USD",
+        "source": "verified",
+        "origin": "free gateway channel (provider-pool FREE_CHANNELS: opencode-zen); vendor list prices differ — expected channel difference (research F3)"
+      },
+      "latency_ms": {
+        "median": 4100,
+        "samples": 30,
+        "updated_at": "2026-08-12T00:00:00Z",
+        "source": "estimated",
+        "origin": "seeded from documented 2-26s envelope (proposal §5); refine via gateway_health probes"
+      },
+      "verified": {
+        "ok": true,
+        "date": "2026-08-10",
+        "method": "http200 spot-check",
+        "last_seen": "2026-08-12T00:00:00Z"
+      },
+      "provenance": {
+        "primary": "curated",
+        "updated_at": "2026-08-12T00:00:00Z"
+      }
+    },
+    {
+      "id": "kimi-k2.7-code",
+      "name": "Kimi K2.7 Code",
+      "provider": "opencode-zen",
+      "status": "active",
+      "context_window": {
+        "value": 262144,
+        "source": "spec",
+        "origin": "models.dev limit.context=262144 (live fetch 2026-08-12, sha256 pinned in sources[])"
+      },
+      "max_output": {
+        "value": 262144,
+        "source": "spec",
+        "origin": "models.dev limit.output=262144 (live fetch 2026-08-12)"
+      },
+      "capabilities": [
+        "thinking",
+        "tools",
+        "structured_output",
+        "image_in"
+      ],
+      "capability_sources": {
+        "thinking": "spec",
+        "tools": "spec",
+        "structured_output": "spec",
+        "image_in": "spec"
+      },
+      "cost_per_1m": {
+        "input": 0.0,
+        "output": 0.0,
+        "currency": "USD",
+        "source": "verified",
+        "origin": "free gateway channel (provider-pool FREE_CHANNELS: opencode-zen); vendor list prices differ — expected channel difference (research F3)"
+      },
+      "latency_ms": {
+        "median": 4100,
+        "samples": 30,
+        "updated_at": "2026-08-12T00:00:00Z",
+        "source": "estimated",
+        "origin": "seeded from documented 2-26s envelope (proposal §5); refine via gateway_health probes"
+      },
+      "verified": {
+        "ok": true,
+        "date": "2026-08-10",
+        "method": "http200 spot-check",
+        "last_seen": "2026-08-12T00:00:00Z"
+      },
+      "provenance": {
+        "primary": "curated",
+        "updated_at": "2026-08-12T00:00:00Z"
+      }
+    },
+    {
+      "id": "kimi-k2.6",
+      "name": "Kimi K2.6",
+      "provider": "opencode-zen",
+      "status": "active",
+      "context_window": {
+        "value": 262144,
+        "source": "spec",
+        "origin": "models.dev limit.context=262144 (live fetch 2026-08-12, sha256 pinned in sources[])"
+      },
+      "max_output": {
+        "value": 256000,
+        "source": "spec",
+        "origin": "models.dev limit.output=256000 (live fetch 2026-08-12)"
+      },
+      "capabilities": [
+        "thinking",
+        "tools",
+        "structured_output",
+        "image_in"
+      ],
+      "capability_sources": {
+        "thinking": "spec",
+        "tools": "spec",
+        "structured_output": "spec",
+        "image_in": "spec"
+      },
+      "cost_per_1m": {
+        "input": 0.0,
+        "output": 0.0,
+        "currency": "USD",
+        "source": "verified",
+        "origin": "free gateway channel (provider-pool FREE_CHANNELS: opencode-zen); vendor list prices differ — expected channel difference (research F3)"
+      },
+      "latency_ms": {
+        "median": 4100,
+        "samples": 30,
+        "updated_at": "2026-08-12T00:00:00Z",
+        "source": "estimated",
+        "origin": "seeded from documented 2-26s envelope (proposal §5); refine via gateway_health probes"
+      },
+      "verified": {
+        "ok": true,
+        "date": "2026-08-10",
+        "method": "http200 spot-check",
+        "last_seen": "2026-08-12T00:00:00Z"
+      },
+      "provenance": {
+        "primary": "curated",
+        "updated_at": "2026-08-12T00:00:00Z"
+      }
+    },
+    {
+      "id": "kimi-k2.5",
+      "name": "Kimi K2.5",
+      "provider": "opencode-zen",
+      "status": "active",
+      "context_window": {
+        "value": 262144,
+        "source": "spec",
+        "origin": "models.dev limit.context=262144 (live fetch 2026-08-12, sha256 pinned in sources[])"
+      },
+      "max_output": {
+        "value": 256000,
+        "source": "spec",
+        "origin": "models.dev limit.output=256000 (live fetch 2026-08-12)"
+      },
+      "capabilities": [
+        "thinking",
+        "tools",
+        "structured_output",
+        "image_in"
+      ],
+      "capability_sources": {
+        "thinking": "spec",
+        "tools": "spec",
+        "structured_output": "spec",
+        "image_in": "spec"
+      },
+      "cost_per_1m": {
+        "input": 0.0,
+        "output": 0.0,
+        "currency": "USD",
+        "source": "verified",
+        "origin": "free gateway channel (provider-pool FREE_CHANNELS: opencode-zen); vendor list prices differ — expected channel difference (research F3)"
+      },
+      "latency_ms": {
+        "median": 4100,
+        "samples": 30,
+        "updated_at": "2026-08-12T00:00:00Z",
+        "source": "estimated",
+        "origin": "seeded from documented 2-26s envelope (proposal §5); refine via gateway_health probes"
+      },
+      "verified": {
+        "ok": true,
+        "date": "2026-08-10",
+        "method": "http200 spot-check",
+        "last_seen": "2026-08-12T00:00:00Z"
+      },
+      "provenance": {
+        "primary": "curated",
+        "updated_at": "2026-08-12T00:00:00Z"
+      }
+    },
+    {
+      "id": "glm-5.2",
+      "name": "GLM 5.2",
+      "provider": "opencode-zen",
+      "status": "active",
+      "context_window": {
+        "value": 1048576,
+        "source": "spec",
+        "origin": "models.dev limit.context=1048576 (live fetch 2026-08-12, sha256 pinned in sources[])"
+      },
+      "max_output": {
+        "value": 1048576,
+        "source": "spec",
+        "origin": "models.dev limit.output=1048576 (live fetch 2026-08-12)"
+      },
+      "capabilities": [
+        "thinking",
+        "tools",
+        "structured_output"
+      ],
+      "capability_sources": {
+        "thinking": "spec",
+        "tools": "spec",
+        "structured_output": "spec"
+      },
+      "cost_per_1m": {
+        "input": 0.0,
+        "output": 0.0,
+        "currency": "USD",
+        "source": "verified",
+        "origin": "free gateway channel (provider-pool FREE_CHANNELS: opencode-zen); vendor list prices differ — expected channel difference (research F3)"
+      },
+      "latency_ms": {
+        "median": 4100,
+        "samples": 30,
+        "updated_at": "2026-08-12T00:00:00Z",
+        "source": "estimated",
+        "origin": "seeded from documented 2-26s envelope (proposal §5); refine via gateway_health probes"
+      },
+      "verified": {
+        "ok": true,
+        "date": "2026-08-10",
+        "method": "http200 spot-check",
+        "last_seen": "2026-08-12T00:00:00Z"
+      },
+      "provenance": {
+        "primary": "curated",
+        "updated_at": "2026-08-12T00:00:00Z"
+      }
+    },
+    {
+      "id": "glm-5.1",
+      "name": "GLM 5.1",
+      "provider": "opencode-zen",
+      "status": "active",
+      "context_window": {
+        "value": 202752,
+        "source": "spec",
+        "origin": "models.dev limit.context=202752 (live fetch 2026-08-12, sha256 pinned in sources[])"
+      },
+      "max_output": {
+        "value": 202752,
+        "source": "spec",
+        "origin": "models.dev limit.output=202752 (live fetch 2026-08-12)"
+      },
+      "capabilities": [
+        "thinking",
+        "tools",
+        "structured_output"
+      ],
+      "capability_sources": {
+        "thinking": "spec",
+        "tools": "spec",
+        "structured_output": "spec"
+      },
+      "cost_per_1m": {
+        "input": 0.0,
+        "output": 0.0,
+        "currency": "USD",
+        "source": "verified",
+        "origin": "free gateway channel (provider-pool FREE_CHANNELS: opencode-zen); vendor list prices differ — expected channel difference (research F3)"
+      },
+      "latency_ms": {
+        "median": 4100,
+        "samples": 30,
+        "updated_at": "2026-08-12T00:00:00Z",
+        "source": "estimated",
+        "origin": "seeded from documented 2-26s envelope (proposal §5); refine via gateway_health probes"
+      },
+      "verified": {
+        "ok": true,
+        "date": "2026-08-10",
+        "method": "http200 spot-check",
+        "last_seen": "2026-08-12T00:00:00Z"
+      },
+      "provenance": {
+        "primary": "curated",
+        "updated_at": "2026-08-12T00:00:00Z"
+      }
+    },
+    {
+      "id": "glm-5",
+      "name": "GLM 5",
+      "provider": "opencode-zen",
+      "status": "active",
+      "context_window": {
+        "value": 202752,
+        "source": "spec",
+        "origin": "models.dev limit.context=202752 (live fetch 2026-08-12, sha256 pinned in sources[])"
+      },
+      "max_output": {
+        "value": 202752,
+        "source": "spec",
+        "origin": "models.dev limit.output=202752 (live fetch 2026-08-12)"
+      },
+      "capabilities": [
+        "thinking",
+        "tools",
+        "structured_output"
+      ],
+      "capability_sources": {
+        "thinking": "spec",
+        "tools": "spec",
+        "structured_output": "spec"
+      },
+      "cost_per_1m": {
+        "input": 0.0,
+        "output": 0.0,
+        "currency": "USD",
+        "source": "verified",
+        "origin": "free gateway channel (provider-pool FREE_CHANNELS: opencode-zen); vendor list prices differ — expected channel difference (research F3)"
+      },
+      "latency_ms": {
+        "median": 4100,
+        "samples": 30,
+        "updated_at": "2026-08-12T00:00:00Z",
+        "source": "estimated",
+        "origin": "seeded from documented 2-26s envelope (proposal §5); refine via gateway_health probes"
+      },
+      "verified": {
+        "ok": true,
+        "date": "2026-08-10",
+        "method": "http200 spot-check",
+        "last_seen": "2026-08-12T00:00:00Z"
+      },
+      "provenance": {
+        "primary": "curated",
+        "updated_at": "2026-08-12T00:00:00Z"
+      }
+    },
+    {
+      "id": "qwen3.8-max",
+      "name": "Qwen3.8 Max",
+      "provider": "opencode-zen",
+      "status": "active",
+      "context_window": {
+        "value": 1000000,
+        "source": "spec",
+        "origin": "models.dev limit.context=1000000 (live fetch 2026-08-12, sha256 pinned in sources[])"
+      },
+      "max_output": {
+        "value": 131072,
+        "source": "spec",
+        "origin": "models.dev limit.output=131072 (live fetch 2026-08-12)"
+      },
+      "capabilities": [
+        "thinking",
+        "tools",
+        "structured_output",
+        "image_in",
+        "video_in"
+      ],
+      "capability_sources": {
+        "thinking": "spec",
+        "tools": "spec",
+        "structured_output": "spec",
+        "image_in": "spec",
+        "video_in": "spec"
+      },
+      "cost_per_1m": {
+        "input": 0.0,
+        "output": 0.0,
+        "currency": "USD",
+        "source": "verified",
+        "origin": "free gateway channel (provider-pool FREE_CHANNELS: opencode-zen); vendor list prices differ — expected channel difference (research F3)"
+      },
+      "latency_ms": {
+        "median": 4100,
+        "samples": 30,
+        "updated_at": "2026-08-12T00:00:00Z",
+        "source": "estimated",
+        "origin": "seeded from documented 2-26s envelope (proposal §5); refine via gateway_health probes"
+      },
+      "verified": {
+        "ok": true,
+        "date": "2026-08-10",
+        "method": "http200 spot-check",
+        "last_seen": "2026-08-12T00:00:00Z"
+      },
+      "provenance": {
+        "primary": "curated",
+        "updated_at": "2026-08-12T00:00:00Z"
+      }
+    },
+    {
+      "id": "qwen3.7-max",
+      "name": "Qwen3.7 Max",
+      "provider": "opencode-zen",
+      "status": "active",
+      "context_window": {
+        "value": 1000000,
+        "source": "spec",
+        "origin": "models.dev limit.context=1000000 (live fetch 2026-08-12, sha256 pinned in sources[])"
+      },
+      "max_output": {
+        "value": 131072,
+        "source": "spec",
+        "origin": "models.dev limit.output=131072 (live fetch 2026-08-12)"
+      },
+      "capabilities": [
+        "thinking",
+        "tools",
+        "structured_output"
+      ],
+      "capability_sources": {
+        "thinking": "spec",
+        "tools": "spec",
+        "structured_output": "spec"
+      },
+      "cost_per_1m": {
+        "input": 0.0,
+        "output": 0.0,
+        "currency": "USD",
+        "source": "verified",
+        "origin": "free gateway channel (provider-pool FREE_CHANNELS: opencode-zen); vendor list prices differ — expected channel difference (research F3)"
+      },
+      "latency_ms": {
+        "median": 4100,
+        "samples": 30,
+        "updated_at": "2026-08-12T00:00:00Z",
+        "source": "estimated",
+        "origin": "seeded from documented 2-26s envelope (proposal §5); refine via gateway_health probes"
+      },
+      "verified": {
+        "ok": true,
+        "date": "2026-08-10",
+        "method": "http200 spot-check",
+        "last_seen": "2026-08-12T00:00:00Z"
+      },
+      "provenance": {
+        "primary": "curated",
+        "updated_at": "2026-08-12T00:00:00Z"
+      }
+    },
+    {
+      "id": "qwen3.7-plus",
+      "name": "Qwen3.7 Plus",
+      "provider": "opencode-zen",
+      "status": "active",
+      "context_window": {
+        "value": 1000000,
+        "source": "spec",
+        "origin": "models.dev limit.context=1000000 (live fetch 2026-08-12, sha256 pinned in sources[])"
+      },
+      "max_output": {
+        "value": 65536,
+        "source": "spec",
+        "origin": "models.dev limit.output=65536 (live fetch 2026-08-12)"
+      },
+      "capabilities": [
+        "thinking",
+        "tools",
+        "structured_output",
+        "image_in",
+        "video_in"
+      ],
+      "capability_sources": {
+        "thinking": "spec",
+        "tools": "spec",
+        "structured_output": "spec",
+        "image_in": "spec",
+        "video_in": "spec"
+      },
+      "cost_per_1m": {
+        "input": 0.0,
+        "output": 0.0,
+        "currency": "USD",
+        "source": "verified",
+        "origin": "free gateway channel (provider-pool FREE_CHANNELS: opencode-zen); vendor list prices differ — expected channel difference (research F3)"
+      },
+      "latency_ms": {
+        "median": 4100,
+        "samples": 30,
+        "updated_at": "2026-08-12T00:00:00Z",
+        "source": "estimated",
+        "origin": "seeded from documented 2-26s envelope (proposal §5); refine via gateway_health probes"
+      },
+      "verified": {
+        "ok": true,
+        "date": "2026-08-10",
+        "method": "http200 spot-check",
+        "last_seen": "2026-08-12T00:00:00Z"
+      },
+      "provenance": {
+        "primary": "curated",
+        "updated_at": "2026-08-12T00:00:00Z"
+      }
+    },
+    {
+      "id": "qwen3.6-plus",
+      "name": "Qwen3.6 Plus",
+      "provider": "opencode-zen",
+      "status": "active",
+      "context_window": {
+        "value": 1000000,
+        "source": "spec",
+        "origin": "models.dev limit.context=1000000 (live fetch 2026-08-12, sha256 pinned in sources[])"
+      },
+      "max_output": {
+        "value": 65536,
+        "source": "spec",
+        "origin": "models.dev limit.output=65536 (live fetch 2026-08-12)"
+      },
+      "capabilities": [
+        "thinking",
+        "tools",
+        "structured_output",
+        "image_in",
+        "video_in"
+      ],
+      "capability_sources": {
+        "thinking": "spec",
+        "tools": "spec",
+        "structured_output": "spec",
+        "image_in": "spec",
+        "video_in": "spec"
+      },
+      "cost_per_1m": {
+        "input": 0.0,
+        "output": 0.0,
+        "currency": "USD",
+        "source": "verified",
+        "origin": "free gateway channel (provider-pool FREE_CHANNELS: opencode-zen); vendor list prices differ — expected channel difference (research F3)"
+      },
+      "latency_ms": {
+        "median": 4100,
+        "samples": 30,
+        "updated_at": "2026-08-12T00:00:00Z",
+        "source": "estimated",
+        "origin": "seeded from documented 2-26s envelope (proposal §5); refine via gateway_health probes"
+      },
+      "verified": {
+        "ok": true,
+        "date": "2026-08-10",
+        "method": "http200 spot-check",
+        "last_seen": "2026-08-12T00:00:00Z"
+      },
+      "provenance": {
+        "primary": "curated",
+        "updated_at": "2026-08-12T00:00:00Z"
+      }
+    },
+    {
+      "id": "qwen3.5-plus",
+      "name": "Qwen3.5 Plus",
+      "provider": "opencode-zen",
+      "status": "active",
+      "context_window": {
+        "value": 1000000,
+        "source": "spec",
+        "origin": "models.dev limit.context=1000000 (live fetch 2026-08-12, sha256 pinned in sources[])"
+      },
+      "max_output": {
+        "value": 65536,
+        "source": "spec",
+        "origin": "models.dev limit.output=65536 (live fetch 2026-08-12)"
+      },
+      "capabilities": [
+        "thinking",
+        "tools",
+        "video_in"
+      ],
+      "capability_sources": {
+        "thinking": "spec",
+        "tools": "spec",
+        "video_in": "spec"
+      },
+      "cost_per_1m": {
+        "input": 0.0,
+        "output": 0.0,
+        "currency": "USD",
+        "source": "verified",
+        "origin": "free gateway channel (provider-pool FREE_CHANNELS: opencode-zen); vendor list prices differ — expected channel difference (research F3)"
+      },
+      "latency_ms": {
+        "median": 4100,
+        "samples": 30,
+        "updated_at": "2026-08-12T00:00:00Z",
+        "source": "estimated",
+        "origin": "seeded from documented 2-26s envelope (proposal §5); refine via gateway_health probes"
+      },
+      "verified": {
+        "ok": true,
+        "date": "2026-08-10",
+        "method": "http200 spot-check",
+        "last_seen": "2026-08-12T00:00:00Z"
+      },
+      "provenance": {
+        "primary": "curated",
+        "updated_at": "2026-08-12T00:00:00Z"
+      }
+    },
+    {
+      "id": "minimax-m3",
+      "name": "MiniMax M3",
+      "provider": "opencode-zen",
+      "status": "active",
+      "context_window": {
+        "value": 1048576,
+        "source": "spec",
+        "origin": "models.dev limit.context=1048576 (live fetch 2026-08-12, sha256 pinned in sources[])"
+      },
+      "max_output": {
+        "value": 1048576,
+        "source": "spec",
+        "origin": "models.dev limit.output=1048576 (live fetch 2026-08-12)"
+      },
+      "capabilities": [
+        "thinking",
+        "tools",
+        "structured_output",
+        "image_in"
+      ],
+      "capability_sources": {
+        "thinking": "spec",
+        "tools": "spec",
+        "structured_output": "spec",
+        "image_in": "verified"
+      },
+      "cost_per_1m": {
+        "input": 0.0,
+        "output": 0.0,
+        "currency": "USD",
+        "source": "verified",
+        "origin": "free gateway channel (provider-pool FREE_CHANNELS: opencode-zen); vendor list prices differ — expected channel difference (research F3)"
+      },
+      "latency_ms": {
+        "median": 4100,
+        "samples": 30,
+        "updated_at": "2026-08-12T00:00:00Z",
+        "source": "estimated",
+        "origin": "seeded from documented 2-26s envelope (proposal §5); refine via gateway_health probes"
+      },
+      "verified": {
+        "ok": true,
+        "date": "2026-08-10",
+        "method": "http200 + vision spot-check (image input)",
+        "last_seen": "2026-08-12T00:00:00Z"
+      },
+      "provenance": {
+        "primary": "curated",
+        "updated_at": "2026-08-12T00:00:00Z"
+      }
+    },
+    {
+      "id": "minimax-m2.7",
+      "name": "MiniMax M2.7",
+      "provider": "opencode-zen",
+      "status": "active",
+      "context_window": {
+        "value": 196608,
+        "source": "spec",
+        "origin": "models.dev limit.context=196608 (live fetch 2026-08-12, sha256 pinned in sources[])"
+      },
+      "max_output": {
+        "value": 196072,
+        "source": "spec",
+        "origin": "models.dev limit.output=196072 (live fetch 2026-08-12)"
+      },
+      "capabilities": [
+        "thinking",
+        "tools",
+        "structured_output"
+      ],
+      "capability_sources": {
+        "thinking": "spec",
+        "tools": "spec",
+        "structured_output": "spec"
+      },
+      "cost_per_1m": {
+        "input": 0.0,
+        "output": 0.0,
+        "currency": "USD",
+        "source": "verified",
+        "origin": "free gateway channel (provider-pool FREE_CHANNELS: opencode-zen); vendor list prices differ — expected channel difference (research F3)"
+      },
+      "latency_ms": {
+        "median": 4100,
+        "samples": 30,
+        "updated_at": "2026-08-12T00:00:00Z",
+        "source": "estimated",
+        "origin": "seeded from documented 2-26s envelope (proposal §5); refine via gateway_health probes"
+      },
+      "verified": {
+        "ok": true,
+        "date": "2026-08-10",
+        "method": "http200 spot-check",
+        "last_seen": "2026-08-12T00:00:00Z"
+      },
+      "provenance": {
+        "primary": "curated",
+        "updated_at": "2026-08-12T00:00:00Z"
+      }
+    },
+    {
+      "id": "minimax-m2.5",
+      "name": "MiniMax M2.5",
+      "provider": "opencode-zen",
+      "status": "active",
+      "context_window": {
+        "value": 196680,
+        "source": "spec",
+        "origin": "models.dev limit.context=196680 (live fetch 2026-08-12, sha256 pinned in sources[])"
+      },
+      "max_output": {
+        "value": 196608,
+        "source": "spec",
+        "origin": "models.dev limit.output=196608 (live fetch 2026-08-12)"
+      },
+      "capabilities": [
+        "thinking",
+        "tools",
+        "structured_output"
+      ],
+      "capability_sources": {
+        "thinking": "spec",
+        "tools": "spec",
+        "structured_output": "spec"
+      },
+      "cost_per_1m": {
+        "input": 0.0,
+        "output": 0.0,
+        "currency": "USD",
+        "source": "verified",
+        "origin": "free gateway channel (provider-pool FREE_CHANNELS: opencode-zen); vendor list prices differ — expected channel difference (research F3)"
+      },
+      "latency_ms": {
+        "median": 4100,
+        "samples": 30,
+        "updated_at": "2026-08-12T00:00:00Z",
+        "source": "estimated",
+        "origin": "seeded from documented 2-26s envelope (proposal §5); refine via gateway_health probes"
+      },
+      "verified": {
+        "ok": true,
+        "date": "2026-08-10",
+        "method": "http200 spot-check",
+        "last_seen": "2026-08-12T00:00:00Z"
+      },
+      "provenance": {
+        "primary": "curated",
+        "updated_at": "2026-08-12T00:00:00Z"
+      }
+    },
+    {
+      "id": "mimo-v2-pro",
+      "name": "MiMo V2 Pro",
+      "provider": "opencode-zen",
+      "status": "active",
+      "context_window": {
+        "value": 1048576,
+        "source": "spec",
+        "origin": "models.dev limit.context=1048576 (live fetch 2026-08-12, sha256 pinned in sources[])"
+      },
+      "max_output": {
+        "value": 131072,
+        "source": "spec",
+        "origin": "models.dev limit.output=131072 (live fetch 2026-08-12)"
+      },
+      "capabilities": [
+        "thinking",
+        "tools"
+      ],
+      "capability_sources": {
+        "thinking": "spec",
+        "tools": "spec"
+      },
+      "cost_per_1m": {
+        "input": 0.0,
+        "output": 0.0,
+        "currency": "USD",
+        "source": "verified",
+        "origin": "free gateway channel (provider-pool FREE_CHANNELS: opencode-zen); vendor list prices differ — expected channel difference (research F3)"
+      },
+      "latency_ms": {
+        "median": 4100,
+        "samples": 30,
+        "updated_at": "2026-08-12T00:00:00Z",
+        "source": "estimated",
+        "origin": "seeded from documented 2-26s envelope (proposal §5); refine via gateway_health probes"
+      },
+      "verified": {
+        "ok": true,
+        "date": "2026-08-10",
+        "method": "http200 spot-check",
+        "last_seen": "2026-08-12T00:00:00Z"
+      },
+      "provenance": {
+        "primary": "curated",
+        "updated_at": "2026-08-12T00:00:00Z"
+      }
+    },
+    {
+      "id": "mimo-v2-omni",
+      "name": "MiMo V2 Omni",
+      "provider": "opencode-zen",
+      "status": "active",
+      "context_window": {
+        "value": 262144,
+        "source": "spec",
+        "origin": "models.dev limit.context=262144 (live fetch 2026-08-12, sha256 pinned in sources[])"
+      },
+      "max_output": {
+        "value": 131072,
+        "source": "spec",
+        "origin": "models.dev limit.output=131072 (live fetch 2026-08-12)"
+      },
+      "capabilities": [
+        "thinking",
+        "tools",
+        "image_in",
+        "video_in"
+      ],
+      "capability_sources": {
+        "thinking": "spec",
+        "tools": "spec",
+        "image_in": "spec",
+        "video_in": "spec"
+      },
+      "cost_per_1m": {
+        "input": 0.0,
+        "output": 0.0,
+        "currency": "USD",
+        "source": "verified",
+        "origin": "free gateway channel (provider-pool FREE_CHANNELS: opencode-zen); vendor list prices differ — expected channel difference (research F3)"
+      },
+      "latency_ms": {
+        "median": 4100,
+        "samples": 30,
+        "updated_at": "2026-08-12T00:00:00Z",
+        "source": "estimated",
+        "origin": "seeded from documented 2-26s envelope (proposal §5); refine via gateway_health probes"
+      },
+      "verified": {
+        "ok": true,
+        "date": "2026-08-10",
+        "method": "http200 spot-check",
+        "last_seen": "2026-08-12T00:00:00Z"
+      },
+      "provenance": {
+        "primary": "curated",
+        "updated_at": "2026-08-12T00:00:00Z"
+      }
+    },
+    {
+      "id": "mimo-v2.5-pro",
+      "name": "MiMo V2.5 Pro",
+      "provider": "opencode-zen",
+      "status": "active",
+      "context_window": {
+        "value": 1048576,
+        "source": "spec",
+        "origin": "models.dev limit.context=1048576 (live fetch 2026-08-12, sha256 pinned in sources[])"
+      },
+      "max_output": {
+        "value": 131072,
+        "source": "spec",
+        "origin": "models.dev limit.output=131072 (live fetch 2026-08-12)"
+      },
+      "capabilities": [
+        "thinking",
+        "tools"
+      ],
+      "capability_sources": {
+        "thinking": "spec",
+        "tools": "spec"
+      },
+      "cost_per_1m": {
+        "input": 0.0,
+        "output": 0.0,
+        "currency": "USD",
+        "source": "verified",
+        "origin": "free gateway channel (provider-pool FREE_CHANNELS: opencode-zen); vendor list prices differ — expected channel difference (research F3)"
+      },
+      "latency_ms": {
+        "median": 4100,
+        "samples": 30,
+        "updated_at": "2026-08-12T00:00:00Z",
+        "source": "estimated",
+        "origin": "seeded from documented 2-26s envelope (proposal §5); refine via gateway_health probes"
+      },
+      "verified": {
+        "ok": true,
+        "date": "2026-08-10",
+        "method": "http200 spot-check",
+        "last_seen": "2026-08-12T00:00:00Z"
+      },
+      "provenance": {
+        "primary": "curated",
+        "updated_at": "2026-08-12T00:00:00Z"
+      }
+    },
+    {
+      "id": "mimo-v2.5",
+      "name": "MiMo V2.5",
+      "provider": "opencode-zen",
+      "status": "active",
+      "context_window": {
+        "value": 1048576,
+        "source": "spec",
+        "origin": "models.dev limit.context=1048576 (live fetch 2026-08-12, sha256 pinned in sources[])"
+      },
+      "max_output": {
+        "value": 131072,
+        "source": "spec",
+        "origin": "models.dev limit.output=131072 (live fetch 2026-08-12)"
+      },
+      "capabilities": [
+        "thinking",
+        "tools",
+        "image_in",
+        "video_in"
+      ],
+      "capability_sources": {
+        "thinking": "spec",
+        "tools": "spec",
+        "image_in": "spec",
+        "video_in": "spec"
+      },
+      "cost_per_1m": {
+        "input": 0.0,
+        "output": 0.0,
+        "currency": "USD",
+        "source": "verified",
+        "origin": "free gateway channel (provider-pool FREE_CHANNELS: opencode-zen); vendor list prices differ — expected channel difference (research F3)"
+      },
+      "latency_ms": {
+        "median": 4100,
+        "samples": 30,
+        "updated_at": "2026-08-12T00:00:00Z",
+        "source": "estimated",
+        "origin": "seeded from documented 2-26s envelope (proposal §5); refine via gateway_health probes"
+      },
+      "verified": {
+        "ok": true,
+        "date": "2026-08-10",
+        "method": "http200 spot-check",
+        "last_seen": "2026-08-12T00:00:00Z"
+      },
+      "provenance": {
+        "primary": "curated",
+        "updated_at": "2026-08-12T00:00:00Z"
+      }
+    },
+    {
+      "id": "hy3",
+      "name": "Hy3",
+      "provider": "opencode-zen",
+      "status": "active",
+      "context_window": {
+        "value": 256000,
+        "source": "spec",
+        "origin": "models.dev limit.context=256000 (live fetch 2026-08-12, sha256 pinned in sources[])"
+      },
+      "max_output": {
+        "value": 64000,
+        "source": "spec",
+        "origin": "models.dev limit.output=64000 (live fetch 2026-08-12)"
+      },
+      "capabilities": [
+        "thinking",
+        "tools"
+      ],
+      "capability_sources": {
+        "thinking": "spec",
+        "tools": "spec"
+      },
+      "cost_per_1m": {
+        "input": 0.0,
+        "output": 0.0,
+        "currency": "USD",
+        "source": "verified",
+        "origin": "free gateway channel (provider-pool FREE_CHANNELS: opencode-zen); vendor list prices differ — expected channel difference (research F3)"
+      },
+      "latency_ms": {
+        "median": 4100,
+        "samples": 30,
+        "updated_at": "2026-08-12T00:00:00Z",
+        "source": "estimated",
+        "origin": "seeded from documented 2-26s envelope (proposal §5); refine via gateway_health probes"
+      },
+      "verified": {
+        "ok": true,
+        "date": "2026-08-10",
+        "method": "http200 spot-check",
+        "last_seen": "2026-08-12T00:00:00Z"
+      },
+      "provenance": {
+        "primary": "curated",
+        "updated_at": "2026-08-12T00:00:00Z"
+      }
+    },
+    {
+      "id": "hy3-preview",
+      "name": "Hy3 Preview",
+      "provider": "opencode-zen",
+      "status": "active",
+      "context_window": {
+        "value": 256000,
+        "source": "spec",
+        "origin": "models.dev limit.context=256000 (live fetch 2026-08-12, sha256 pinned in sources[])"
+      },
+      "max_output": {
+        "value": 128000,
+        "source": "spec",
+        "origin": "models.dev limit.output=128000 (live fetch 2026-08-12)"
+      },
+      "capabilities": [
+        "thinking",
+        "tools",
+        "structured_output"
+      ],
+      "capability_sources": {
+        "thinking": "spec",
+        "tools": "spec",
+        "structured_output": "spec"
+      },
+      "cost_per_1m": {
+        "input": 0.0,
+        "output": 0.0,
+        "currency": "USD",
+        "source": "verified",
+        "origin": "free gateway channel (provider-pool FREE_CHANNELS: opencode-zen); vendor list prices differ — expected channel difference (research F3)"
+      },
+      "latency_ms": {
+        "median": 4100,
+        "samples": 30,
+        "updated_at": "2026-08-12T00:00:00Z",
+        "source": "estimated",
+        "origin": "seeded from documented 2-26s envelope (proposal §5); refine via gateway_health probes"
+      },
+      "verified": {
+        "ok": true,
+        "date": "2026-08-10",
+        "method": "http200 spot-check",
+        "last_seen": "2026-08-12T00:00:00Z"
+      },
+      "provenance": {
+        "primary": "curated",
+        "updated_at": "2026-08-12T00:00:00Z"
+      }
+    },
+    {
+      "id": "gpt-5.6-luna",
+      "name": "GPT-5.6 Luna",
+      "provider": "opencode-zen",
+      "status": "active",
+      "context_window": {
+        "value": 1050000,
+        "source": "spec",
+        "origin": "models.dev limit.context=1050000 (live fetch 2026-08-12, sha256 pinned in sources[])"
+      },
+      "max_output": {
+        "value": 1050000,
+        "source": "spec",
+        "origin": "models.dev limit.output=1050000 (live fetch 2026-08-12)"
+      },
+      "capabilities": [
+        "thinking",
+        "tools",
+        "structured_output",
+        "image_in"
+      ],
+      "capability_sources": {
+        "thinking": "spec",
+        "tools": "spec",
+        "structured_output": "spec",
+        "image_in": "spec"
+      },
+      "cost_per_1m": {
+        "input": 0.0,
+        "output": 0.0,
+        "currency": "USD",
+        "source": "verified",
+        "origin": "free gateway channel (provider-pool FREE_CHANNELS: opencode-zen); vendor list prices differ — expected channel difference (research F3)"
+      },
+      "latency_ms": {
+        "median": 4100,
+        "samples": 30,
+        "updated_at": "2026-08-12T00:00:00Z",
+        "source": "estimated",
+        "origin": "seeded from documented 2-26s envelope (proposal §5); refine via gateway_health probes"
+      },
+      "verified": {
+        "ok": true,
+        "date": "2026-08-10",
+        "method": "http200 spot-check",
+        "last_seen": "2026-08-12T00:00:00Z"
+      },
+      "provenance": {
+        "primary": "curated",
+        "updated_at": "2026-08-12T00:00:00Z"
+      }
+    },
+    {
+      "id": "grok-4.5",
+      "name": "Grok 4.5",
+      "provider": "opencode-zen",
+      "status": "active",
+      "context_window": {
+        "value": 500000,
+        "source": "spec",
+        "origin": "models.dev limit.context=500000 (live fetch 2026-08-12, sha256 pinned in sources[])"
+      },
+      "max_output": {
+        "value": 500000,
+        "source": "spec",
+        "origin": "models.dev limit.output=500000 (live fetch 2026-08-12)"
+      },
+      "capabilities": [
+        "thinking",
+        "tools",
+        "structured_output",
+        "image_in"
+      ],
+      "capability_sources": {
+        "thinking": "spec",
+        "tools": "spec",
+        "structured_output": "spec",
+        "image_in": "spec"
+      },
+      "cost_per_1m": {
+        "input": 0.0,
+        "output": 0.0,
+        "currency": "USD",
+        "source": "verified",
+        "origin": "free gateway channel (provider-pool FREE_CHANNELS: opencode-zen); vendor list prices differ — expected channel difference (research F3)"
+      },
+      "latency_ms": {
+        "median": 4100,
+        "samples": 30,
+        "updated_at": "2026-08-12T00:00:00Z",
+        "source": "estimated",
+        "origin": "seeded from documented 2-26s envelope (proposal §5); refine via gateway_health probes"
+      },
+      "verified": {
+        "ok": true,
+        "date": "2026-08-10",
+        "method": "http200 spot-check",
+        "last_seen": "2026-08-12T00:00:00Z"
+      },
+      "provenance": {
+        "primary": "curated",
+        "updated_at": "2026-08-12T00:00:00Z"
+      }
+    }
+  ],
+  "tombstones": [
+    {
+      "id": "kimi-k2",
+      "name": "Kimi K2",
+      "provider": "opencode-zen",
+      "status": "removed",
+      "context_window": {
+        "value": 131072,
+        "source": "spec",
+        "origin": "last known before removal; superseded by kimi-k3"
+      },
+      "max_output": {
+        "value": 8192,
+        "source": "spec",
+        "origin": "last known before removal"
+      },
+      "capabilities": [
+        "thinking",
+        "tools"
+      ],
+      "capability_sources": {
+        "thinking": "spec",
+        "tools": "spec"
+      },
+      "cost_per_1m": {
+        "input": 0.0,
+        "output": 0.0,
+        "currency": "USD",
+        "source": "verified",
+        "origin": "free gateway channel"
+      },
+      "verified": {
+        "ok": false,
+        "date": "2026-08-10",
+        "method": "http200 (pre-removal)",
+        "last_seen": "2026-07-01T00:00:00Z"
+      },
+      "provenance": {
+        "primary": "curated",
+        "updated_at": "2026-08-12T00:00:00Z",
+        "removed_at": "2026-08-12T00:00:00Z",
+        "reason": "superseded by kimi-k3 in gateway catalog (KLIP-6-style decommission; tombstone never deleted)"
+      }
+    },
+    {
+      "id": "glm-4.6",
+      "name": "GLM 4.6",
+      "provider": "opencode-zen",
+      "status": "removed",
+      "context_window": {
+        "value": 131072,
+        "source": "spec",
+        "origin": "last known before removal; superseded by glm-5"
+      },
+      "max_output": {
+        "value": 8192,
+        "source": "spec",
+        "origin": "last known before removal"
+      },
+      "capabilities": [
+        "thinking",
+        "tools"
+      ],
+      "capability_sources": {
+        "thinking": "spec",
+        "tools": "spec"
+      },
+      "cost_per_1m": {
+        "input": 0.0,
+        "output": 0.0,
+        "currency": "USD",
+        "source": "verified",
+        "origin": "free gateway channel"
+      },
+      "verified": {
+        "ok": false,
+        "date": "2026-08-10",
+        "method": "http200 (pre-removal)",
+        "last_seen": "2026-07-01T00:00:00Z"
+      },
+      "provenance": {
+        "primary": "curated",
+        "updated_at": "2026-08-12T00:00:00Z",
+        "removed_at": "2026-08-12T00:00:00Z",
+        "reason": "superseded by glm-5 in gateway catalog (KLIP-6-style decommission; tombstone never deleted)"
+      }
+    }
+  ]
+}

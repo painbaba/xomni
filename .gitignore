@@ -42,3 +42,6 @@ Thumbs.db
 build/
 *.egg-info/
 .pytest_cache/
+
+# omni-tools generated corpus cache
+plugins/omni-tools/corpus-cache.sqlite3

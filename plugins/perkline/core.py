@@ -57,7 +57,15 @@ DEFAULT_CONFIG = {
     ],
     "surface": "hermes-cli",
     "sync_url": "",
-    "auction": {"enabled": False, "bids": []},
+    "auction": {"enabled": False, "bids": [], "floor": 10.0},  # delta 1: floor per slot (CPM $10 min)
+    # delta 1 (house campaigns): auto-fill unsold auction slots at the floor
+    # price (promote the marketplace) — keeps the line populated and the
+    # impression ledger honest. budget 0 => house fills accrue $0 earnings.
+    "house_campaigns": [
+        {"id": "house-marketplace", "message": "XOMNI marketplace: verified plugins for every agent — coming soon",
+         "url": "https://example.invalid/marketplace", "model": "cpm", "price": 10.0,
+         "budget": 0.0, "targeting": [], "tags": []},
+    ],
 }
 
 DEFAULT_STATE = {
@@ -163,14 +171,39 @@ def stack_tags(root: str) -> list[str]:
     return result
 
 
-def eligible_sponsors(led: Ledger, repo_tags: list[str] | None = None) -> list[dict]:
-    """Sponsors whose targeting matches the local stack. Empty targeting = everyone."""
+def _context_match(sp: dict, context: str | None) -> bool:
+    """Sponsorship 2.0 delta 2: contextual tag matching.
+
+    A sponsor may carry a ``tags`` list of context keywords (e.g. ["codex"],
+    ["media", "omni"]). The sponsor is context-eligible when ANY tag appears
+    in the query context string (case-insensitive substring match). No tags =
+    context-agnostic (v1 behavior). Nothing about prompts/code is ever read:
+    the context string is whatever the CALLER supplies (e.g. a session kind
+    like "codex session"), and matching happens locally.
+    """
+    tags = [t.strip().lower() for t in (sp.get("tags") or []) if t and t.strip()]
+    if not tags:
+        return True
+    if not context:
+        return False
+    hay = context.lower()
+    return any(t in hay for t in tags)
+
+
+def eligible_sponsors(led: Ledger, repo_tags: list[str] | None = None,
+                      context: str | None = None) -> list[dict]:
+    """Sponsors whose targeting matches the local stack AND whose contextual
+    tags match the session context. Empty targeting = everyone (v1); empty
+    tags = context-agnostic (v1). Both filters must pass."""
     tags = set(repo_tags or [])
     out = []
     for sp in led.config.get("sponsors", []):
         target = set(sp.get("targeting") or [])
-        if not target or target & tags:
-            out.append(sp)
+        if target and not (target & tags):
+            continue
+        if not _context_match(sp, context):
+            continue
+        out.append(sp)
     return out
 
 
@@ -196,18 +229,29 @@ def _push_receipt(led: Ledger, receipt: str) -> None:
     led.state["receipts"] = (led.state.get("receipts", []) + [receipt])[-200:]  # ring buffer
 
 
-def current_sponsor(led: Ledger, repo_tags: list[str] | None = None) -> dict | None:
+def current_sponsor(led: Ledger, repo_tags: list[str] | None = None,
+                    context: str | None = None) -> dict | None:
     sp_id = led.state.get("current_sponsor_id")
-    for sp in eligible_sponsors(led, repo_tags):
+    for sp in eligible_sponsors(led, repo_tags, context):
         if sp["id"] == sp_id:
             return sp
-    elig = eligible_sponsors(led, repo_tags)
+    # sponsorship 2.0 delta 1: an unsold auction slot was filled by the house
+    # campaign — keep it on screen until the next auction, even if other
+    # sponsors become eligible again (the slot was sold to the house).
+    house = house_campaign(led)
+    if sp_id and house and sp_id == house["id"]:
+        return house
+    elig = eligible_sponsors(led, repo_tags, context)
     return elig[0] if elig else None
 
 
-def record_render(led: Ledger, repo_tags: list[str] | None = None, now: float | None = None,
-                  write_line: bool = True) -> dict:
+def record_render(led: Ledger, repo_tags: list[str] | None = None, context: str | None = None,
+                  now: float | None = None, write_line: bool = True) -> dict:
     """A render = the sponsor line was on screen for a work event. CPM tier counts here.
+
+    ``context`` is the sponsorship-2.0 session-context slot (delta 2): a
+    caller-supplied session kind string ("codex session", "media task") that
+    sponsors' ``tags`` are matched against. Optional — v1 callers omit it.
 
     ``write_line=False`` defers the ``current.txt`` write to the caller so
     the hook can throttle it (at most once per FLUSH_INTERVAL + on session
@@ -216,7 +260,7 @@ def record_render(led: Ledger, repo_tags: list[str] | None = None, now: float | 
     now = now if now is not None else time.time()
     if led.state.get("paused"):
         return {"counted": False, "sponsor": None}
-    sp = current_sponsor(led, repo_tags)
+    sp = current_sponsor(led, repo_tags, context)
     if sp is None:
         return {"counted": False, "sponsor": None}
     led.state["current_sponsor_id"] = sp["id"]
@@ -294,24 +338,57 @@ def escrow_invariant(led: Ledger) -> bool:
     return True
 
 
-def run_auction(led: Ledger, bids: list[dict]) -> dict:
-    """Second-price sealed-bid auction for the line slot.
-    bids = [{"sponsor_id": str, "bid": float}]. Winner pays the second-highest bid."""
+def house_campaign(led: Ledger) -> dict | None:
+    """Sponsorship 2.0 delta 1: XOMNI's own house campaign for unsold slots."""
+    houses = led.config.get("house_campaigns") or []
+    return houses[0] if houses else None
+
+
+def run_auction(led: Ledger, bids: list[dict], floor: float = 0.0) -> dict:
+    """Second-price sealed-bid auction for the line slot (sponsorship 2.0).
+
+    bids = [{"sponsor_id": str, "bid": float}]. Winner pays the second-highest
+    bid, but never less than ``floor`` (delta 1: floor per slot-tier, CPM $10
+    min) — so unsold impressions don't depress future rates. Bids below the
+    floor are discarded; if nothing qualifies, the slot is auto-filled with
+    the house campaign at the floor price (``house`` in the result) — keeps
+    the line populated and the impression ledger honest.
+
+    ``floor`` defaults to 0.0, which reproduces v1 exactly (second-price,
+    single bid pays $0).
+    """
+    house = house_campaign(led)
+
+    def _fill_house():
+        if house is not None:
+            led.config["auction"] = {"enabled": True, "bids": bids, "winner": None,
+                                     "price": floor, "floor": floor, "house": house["id"]}
+            led.state["current_sponsor_id"] = house["id"]
+            led.dirty = True
+            return {"winner": None, "price": floor, "house": house["id"], "filled": False}
+        return {"winner": None, "price": floor, "filled": False}
+
     if not bids:
-        return {"winner": None, "price": 0.0}
-    ordered = sorted(bids, key=lambda b: b["bid"], reverse=True)
+        return _fill_house()
+    qualified = [b for b in bids if b.get("bid", 0.0) >= floor]
+    if not qualified:
+        return _fill_house()
+    ordered = sorted(qualified, key=lambda b: b["bid"], reverse=True)
     winner = ordered[0]
-    price = ordered[1]["bid"] if len(ordered) > 1 else 0.0
-    led.config["auction"] = {"enabled": True, "bids": bids, "winner": winner["sponsor_id"], "price": price}
+    second = ordered[1]["bid"] if len(ordered) > 1 else 0.0
+    price = max(second, floor)
+    led.config["auction"] = {"enabled": True, "bids": bids, "winner": winner["sponsor_id"],
+                             "price": price, "floor": floor}
     led.state["current_sponsor_id"] = winner["sponsor_id"]
     led.dirty = True
     return {"winner": winner["sponsor_id"], "price": price}
 
 
-def render_line(led: Ledger, repo_tags: list[str] | None = None, width: int = 72) -> str:
+def render_line(led: Ledger, repo_tags: list[str] | None = None, context: str | None = None,
+                width: int = 72) -> str:
     if led.state.get("paused"):
         return ""
-    sp = current_sponsor(led, repo_tags)
+    sp = current_sponsor(led, repo_tags, context)
     if sp is None:
         return ""
     model = sp.get("model", "cpm").upper()
@@ -355,13 +432,15 @@ def sync(led: Ledger, http_post=None) -> dict:
         return {"mode": "error", "error": str(exc), "payload": payload}
 
 
-def status_text(led: Ledger, repo_tags: list[str] | None = None) -> str:
-    sp = current_sponsor(led, repo_tags)
-    elig = eligible_sponsors(led, repo_tags)
+def status_text(led: Ledger, repo_tags: list[str] | None = None, context: str | None = None) -> str:
+    sp = current_sponsor(led, repo_tags, context)
+    elig = eligible_sponsors(led, repo_tags, context)
+    auction = led.config.get("auction", {})
     lines = [
         "PerkLine v2 — status-line monetization (researched model)",
         f"  sponsor on screen : {sp['message'] if sp else 'none (no matching sponsor)'}",
         f"  local stack tags  : {', '.join(repo_tags or []) or 'unknown'}",
+        f"  session context   : {context or '(none)'}",
         f"  eligible sponsors : {len(elig)} of {len(led.config.get('sponsors', []))} (relevance-matched)",
         f"  renders           : {led.state.get('renders', 0)}",
         f"  engagements       : {json.dumps(led.state.get('engagements', {}))}",
@@ -369,7 +448,7 @@ def status_text(led: Ledger, repo_tags: list[str] | None = None) -> str:
         f"  earnings (50/50)  : ${compute_earnings(led):.4f}",
         f"  escrow invariant  : {'OK — spent ≤ budget per sponsor' if escrow_invariant(led) else 'VIOLATED'}",
         f"  pricing tiers     : cpm $10-40/1k  cpc $1-8  cpa $20-200 (benchmarks)",
-        f"  auction           : {'winner ' + str(led.config['auction'].get('winner')) + ' @ $' + str(led.config['auction'].get('price')) if led.config.get('auction', {}).get('enabled') else 'off (fixed prices)'}",
+        f"  auction           : {'winner ' + str(auction.get('winner')) + ' @ $' + str(auction.get('price')) + ' (floor $' + str(auction.get('floor', 0.0)) + ')' if auction.get('enabled') else 'off (fixed prices)'}",
         f"  paused            : {led.state.get('paused')}",
         f"  sync mode         : {'LIVE' if led.config.get('sync_url') else 'dry-run'}",
     ]

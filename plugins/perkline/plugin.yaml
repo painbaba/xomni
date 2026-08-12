@@ -1,3 +1,3 @@
 name: perkline
-version: "0.2.0"
-description: "PerkLine v2 sponsor engine: tiered pricing (cpm/cpc/cpa), local relevance match, signed receipts, escrow caps"
+version: "0.3.0"
+description: "PerkLine v2 sponsor engine + sponsorship 2.0: tiers (cpm/cpc/cpa), contextual tags, auction floor, house campaigns, signed receipts, escrow caps"
