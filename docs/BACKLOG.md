@@ -10,9 +10,9 @@
 
 ## Big wins (design-then-build)
 
-- [ ] U5. Automatic model routing: pick per task (fast/reasoning/vision) from the 25 free models + per-task cost/latency telemetry after every answer.
-- [ ] U6. Auto-skill creation: after any 5+ tool-call success, auto-draft a skill and show "saved: <name>" for approval.
-- [ ] U7. Receipts by default: every external side-effect returns a verifiable handle (URL/hash/status) — proof, not claims.
+- [ ] U5. Automatic model routing: pick per task (fast/reasoning/vision) from the 25 free models + per-task cost/latency telemetry after every answer. BUILDING (deleg_8a9896b8).
+- [ ] U6. Auto-skill creation: after any 5+ tool-call success, auto-draft a skill and show "saved: <name>" for approval. BUILDING (deleg_8a9896b8).
+- [ ] U7. Receipts by default: every external side-effect returns a verifiable handle (URL/hash/status) — proof, not claims. BUILDING (deleg_8a9896b8).
 
 
 Owned by the improvement workforce (cron: xomni-improvement-workforce, every 3h)
