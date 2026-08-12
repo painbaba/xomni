@@ -1,0 +1,117 @@
+{
+  "generated": "2026-08-12",
+  "count": 8,
+  "pages": [
+    {
+      "path": "architecture.html",
+      "title": "Architecture",
+      "headings": [
+        "Compose, don't merge",
+        "The host core: Hermes",
+        "Seven agents, one host",
+        "Plugin anatomy",
+        "Composition invariants",
+        "Data pipelines",
+        "Sponsorship rails"
+      ],
+      "summary": "XOMNI is one host core + edge modules. Seven source codebases — Python, Go, and Rust across seven repos, ~2.7 GB — are composed into one working ag..."
+    },
+    {
+      "path": "byo-provider.html",
+      "title": "Bring Your Own Provider",
+      "headings": [
+        "Why bring your own?",
+        "Add a provider",
+        "Local models",
+        "Verify the pool",
+        "Keeping secrets safe"
+      ],
+      "summary": "XOMNI ships with 25 verified free models, but the provider-pool plugin is built for your keys too. Add any OpenAI-compatible endpoint — hosted or l..."
+    },
+    {
+      "path": "faq.html",
+      "title": "FAQ",
+      "headings": [
+        "What is XOMNI?",
+        "Are the 25 models really free?",
+        "Which plugins are enabled by default?",
+        "Why \"compose, don't merge\"?",
+        "How does sponsorship work?",
+        "Can I use my own API keys?",
+        "Can XOMNI run fully offline?",
+        "Which platforms are supported?",
+        "What are the 170 skills?",
+        "Does XOMNI cost anything?",
+        "Where do I get help?"
+      ],
+      "summary": "Quick answers to the questions people ask most."
+    },
+    {
+      "path": "install.html",
+      "title": "Install XOMNI",
+      "headings": [
+        "Requirements",
+        "Windows (run.cmd)",
+        "macOS / Linux (run.sh)",
+        "First run",
+        "Updating",
+        "Next steps"
+      ],
+      "summary": "XOMNI is a single repository with two launchers: run.cmd for Windows and run.sh for POSIX systems. The only runtime requirement is a recent node."
+    },
+    {
+      "path": "roadmap.html",
+      "title": "Roadmap",
+      "headings": [
+        "P0 — foundation moats",
+        "P1 — scale & safety",
+        "P2 — incremental moat",
+        "Status notes"
+      ],
+      "summary": "Where XOMNI is going: the P0–P2 build plan distilled from docs/COMPETITIVE.md — the consolidated shortlist of the five-track competitive scan (veri..."
+    },
+    {
+      "path": "security.html",
+      "title": "Security",
+      "headings": [
+        "Threat model",
+        "Sandboxing",
+        "Secrets handling",
+        "Model pool trust",
+        "Sponsor-line isolation",
+        "Updates",
+        "Responsible disclosure"
+      ],
+      "summary": "XOMNI runs with the same privileges you give it — no more. This page describes the threat model and the controls in place."
+    },
+    {
+      "path": "sponsorship.html",
+      "title": "Sponsorship",
+      "headings": [
+        "Mechanics",
+        "The earnings formula",
+        "Worked example",
+        "Control & privacy",
+        "Fairness rules"
+      ],
+      "summary": "The waitperk and perkline plugins turn your idle agent time into income. While XOMNI works, a sponsor line runs in the statusline — and every work..."
+    },
+    {
+      "path": "troubleshooting.html",
+      "title": "Troubleshooting",
+      "headings": [
+        "Slow responses",
+        "API timeouts",
+        "Ollama / LM Studio port conflicts",
+        "Firewall blocks",
+        "PowerShell parse issues (BOM)",
+        "MCP servers won't connect",
+        "Plugin slowdowns (speed checks)",
+        "Ollama runtime issues",
+        "Where logs live",
+        "Still stuck?"
+      ],
+      "summary": "Real fixes for the issues that actually come up: slow free-model responses, Ollama port conflicts, firewall prompts, PowerShell parse failures, MCP..."
+    }
+  ]
+}

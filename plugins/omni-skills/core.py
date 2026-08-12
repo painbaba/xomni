@@ -10,6 +10,7 @@ import json
 import os
 import re
 import shutil
+import subprocess
 
 # ------------------------------------------------------------------ frontmatter
 FM_RE = re.compile(r"^---\s*\n(.*?)\n---", re.S | re.M)
@@ -84,10 +85,21 @@ def skill_meta(skill_dir: str) -> dict:
     }
 
 
-def scan_skills(root: str) -> list[dict]:
-    """Inventory every SKILL.md under root (top-level skill dirs only)."""
+def scan_skills(root: str, recursive: bool = False) -> list[dict]:
+    """Inventory every SKILL.md under root (top-level skill dirs only, or
+    any depth when recursive=True — root itself included)."""
     found = []
     if not os.path.isdir(root):
+        return found
+    if recursive:
+        for base, dirs, names in os.walk(root):
+            dirs[:] = [d for d in dirs if d != ".git"]  # never descend into .git
+            if "SKILL.md" in names:
+                meta = skill_meta(base)
+                if meta:
+                    meta["dir"] = os.path.abspath(base)
+                    found.append(meta)
+        found.sort(key=lambda m: m["dir"])
         return found
     for entry in sorted(os.listdir(root)):
         d = os.path.join(root, entry)
@@ -156,10 +168,11 @@ def install_skill(skill_dir: str, target_root: str, dry_run: bool = False) -> di
     return {"ok": True, "verdict": check["verdict"], "dest": dest, "files": [name] + meta["files"]}
 
 
-def install_marketplace(root: str, target_root: str, dry_run: bool = False) -> dict:
+def install_marketplace(root: str, target_root: str, dry_run: bool = False,
+                        recursive: bool = False) -> dict:
     """Install every skill dir in a marketplace repo root. Fail-closed per skill."""
     results = []
-    for meta in scan_skills(root):
+    for meta in scan_skills(root, recursive=recursive):
         r = install_skill(meta["dir"], target_root, dry_run=dry_run)
         r["name"] = meta["name"]
         results.append(r)
@@ -167,6 +180,92 @@ def install_marketplace(root: str, target_root: str, dry_run: bool = False) -> d
     rejected = [r for r in results if not r["ok"]]
     return {"ok": len(ok) > 0, "installed": len(ok), "rejected": len(rejected),
             "results": results, "dry_run": dry_run}
+
+
+# ------------------------------------------------------------------ git marketplace
+CACHE_ROOT = os.path.expanduser("~/.xomni-marketplaces")
+
+# Shell metacharacters + whitespace are never legal inside a git URL we will
+# pass to subprocess — reject them before anything touches the filesystem.
+_URL_META = re.compile(r"[;&|`$<>\"'()\[\]{}\s\\]")
+
+
+def validate_marketplace_url(url: str) -> tuple[bool, str]:
+    """Fail-closed URL gate: https:// or git:// only. Returns (ok, reason)."""
+    if not isinstance(url, str) or not url.strip():
+        return False, "empty URL"
+    u = url.strip()
+    if _URL_META.search(u):
+        return False, "shell metacharacters or whitespace in URL"
+    if not (u.startswith("https://") or u.startswith("git://")):
+        return False, "scheme must be https:// or git:// (file://, ssh, http rejected)"
+    return True, ""
+
+
+def _marketplace_name(url: str) -> str:
+    """Cache dir name from a validated URL — last path segment, sanitized."""
+    u = url.rstrip("/")
+    if u.endswith(".git"):
+        u = u[:-4]
+    name = u.rsplit("/", 1)[-1] or u
+    return re.sub(r"[^A-Za-z0-9._-]", "-", name) or "marketplace"
+
+
+def _git_clone(url: str, dest: str, timeout: int = 120) -> dict:
+    """Shallow clone via `git clone --depth 1 -- <url> <dest>`.
+
+    `--` stops option parsing, and the URL has already passed
+    validate_marketplace_url — the argv list is never passed through a shell.
+    """
+    try:
+        proc = subprocess.run(
+            ["git", "clone", "--depth", "1", "--", url, dest],
+            capture_output=True, text=True, timeout=timeout,
+        )
+    except Exception as exc:  # FileNotFoundError, TimeoutExpired, ...
+        return {"ok": False, "reason": f"git clone error: {exc}"}
+    if proc.returncode != 0:
+        err = (proc.stderr or "").strip() or (proc.stdout or "").strip()
+        return {"ok": False, "reason": f"git clone failed: {err[:200]}"}
+    return {"ok": True}
+
+
+def install_marketplace_url(url: str, target_dir: str, dry_run: bool = False,
+                            cache_root: str | None = None,
+                            _runner=None) -> dict:
+    """Shallow-clone a git marketplace URL, then install every skill found
+    (any dir with SKILL.md) into target_dir. Fail-closed: an invalid URL,
+    failed clone, or unexpected error aborts before target_dir is touched,
+    and any partially-cloned cache dir is removed. Valid clones are cached
+    at <cache_root>/<name> (~/.xomni-marketplaces by default) and reused."""
+    ok, reason = validate_marketplace_url(url)
+    if not ok:
+        return {"ok": False, "reason": f"invalid URL: {reason}", "url": url,
+                "dry_run": dry_run}
+    cache_root = cache_root or CACHE_ROOT
+    cache_dir = os.path.join(cache_root, _marketplace_name(url))
+    if not (os.path.isdir(cache_dir) and os.listdir(cache_dir)):
+        # Fresh clone — on any failure remove the partial dir (fail-closed).
+        try:
+            os.makedirs(cache_root, exist_ok=True)
+            r = (_runner or _git_clone)(url, cache_dir)
+        except Exception as exc:
+            shutil.rmtree(cache_dir, ignore_errors=True)
+            return {"ok": False, "reason": f"clone error: {exc}", "url": url,
+                    "dry_run": dry_run}
+        if not r["ok"]:
+            shutil.rmtree(cache_dir, ignore_errors=True)
+            return {"ok": False, "reason": r["reason"], "url": url,
+                    "dry_run": dry_run}
+    try:
+        res = install_marketplace(cache_dir, target_dir, dry_run=dry_run,
+                                  recursive=True)
+    except Exception as exc:
+        return {"ok": False, "reason": f"install error: {exc}", "url": url,
+                "dry_run": dry_run}
+    res["url"] = url
+    res["cache_dir"] = cache_dir
+    return res
 
 
 def fingerprint(skill_dir: str) -> str:

@@ -1,3 +1,4 @@
+import json
 import os
 import sqlite3
 import tempfile
@@ -12,6 +13,8 @@ from core import (
     consolidate,
     inject_brief,
     load_key,
+    mcp_handle,
+    mcp_tools,
     recall,
     remember,
 )
@@ -210,6 +213,41 @@ class OmniMemoryCoreTest(unittest.TestCase):
             encoding="utf-8",
         )
         self.assertEqual(load_key(str(env)), "quoted-key")
+
+    # ------------------------------------------------------------ MCP adapter
+    def test_mcp_tools_definitions_are_well_formed_json_schema(self):
+        defs = mcp_tools()
+        self.assertEqual({d["name"] for d in defs}, {"remember", "recall", "status"})
+        for d in defs:
+            self.assertIn("description", d)
+            schema = d["input_schema"]
+            self.assertEqual(schema["type"], "object")
+            self.assertIsInstance(schema["properties"], dict)
+            self.assertIsInstance(schema.get("required", []), list)
+            # Every definition must survive a JSON round-trip (JSON-RPC payload).
+            json.loads(json.dumps(d))
+        # remember requires 'text'; recall requires 'query'; status requires none.
+        by_name = {d["name"]: d for d in defs}
+        self.assertEqual(by_name["remember"]["input_schema"]["required"], ["text"])
+        self.assertEqual(by_name["recall"]["input_schema"]["required"], ["query"])
+        self.assertNotIn("required", by_name["status"]["input_schema"])
+
+    def test_mcp_handle_remember_recall_roundtrip(self):
+        stored = mcp_handle("remember", {"text": "mcp roundtrip fact", "tags": "mcp"})
+        self.assertIsInstance(stored["id"], int)
+        hits = mcp_handle("recall", {"query": "roundtrip", "limit": 3})
+        self.assertEqual(hits["results"][0]["id"], stored["id"])
+        self.assertEqual(hits["results"][0]["text"], "mcp roundtrip fact")
+        self.assertGreater(hits["results"][0]["score"], 0)
+        status = mcp_handle("status")
+        self.assertGreaterEqual(status["facts"], 1)
+        self.assertTrue(status["db_path"].endswith("memory.db"))
+
+    def test_mcp_handle_unknown_tool_raises(self):
+        with self.assertRaises(ValueError):
+            mcp_handle("no-such-tool", {})
+        with self.assertRaises(ValueError):
+            mcp_handle("remember", args="not-an-object")
 
 
 if __name__ == "__main__":

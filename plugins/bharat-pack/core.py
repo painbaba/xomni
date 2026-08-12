@@ -14,6 +14,8 @@ Pure stdlib, no Hermes imports. Unit-testable in isolation.
 """
 from __future__ import annotations
 
+import json
+
 # ---------------------------------------------------------------------------
 # Language strings — key UI strings for the India belt.
 # en + hi are the parity pair; regional languages share the same key set.
@@ -61,6 +63,26 @@ UI_STRINGS: dict[str, dict[str, str]] = {
         "version": "संस्करण",
         "language_switched": "भाषा बदल दी गई है",
     },
+    "mr": {
+        "hello": "नमस्कार",
+        "welcome": "XOMNI मध्ये आपले स्वागत आहे",
+        "models": "मॉडेल",
+        "providers": "प्रदाते",
+        "sponsor": "प्रायोजक",
+        "install": "स्थापित करा",
+        "verify": "तपासा",
+        "done": "झाले",
+        "error": "त्रुटी",
+        "loading": "लोड होत आहे",
+        "exit": "बाहेर पडा",
+        "free": "मोफत",
+        "help": "मदत",
+        "commands": "आज्ञा",
+        "settings": "सेटिंग्ज",
+        "update": "अपडेट",
+        "version": "आवृत्ती",
+        "language_switched": "भाषा बदलली",
+    },
     "ta": {
         "hello": "வணக்கம்",
         "welcome": "XOMNIக்கு வரவேற்கிறோம்",
@@ -101,6 +123,46 @@ UI_STRINGS: dict[str, dict[str, str]] = {
         "version": "వెర్షన్",
         "language_switched": "భాష మార్చబడింది",
     },
+    "kn": {
+        "hello": "ನಮಸ್ಕಾರ",
+        "welcome": "XOMNI ಗೆ ಸುಸ್ವಾಗತ",
+        "models": "ಮಾದರಿಗಳು",
+        "providers": "ಪೂರೈಕೆದಾರರು",
+        "sponsor": "ಪ್ರಾಯೋಜಕ",
+        "install": "ಸ್ಥಾಪಿಸಿ",
+        "verify": "ಪರಿಶೀಲಿಸಿ",
+        "done": "ಪೂರ್ಣಗೊಂಡಿದೆ",
+        "error": "ದೋಷ",
+        "loading": "ಲೋಡ್ ಆಗುತ್ತಿದೆ",
+        "exit": "ನಿರ್ಗಮಿಸಿ",
+        "free": "ಉಚಿತ",
+        "help": "ಸಹಾಯ",
+        "commands": "ಆಜ್ಞೆಗಳು",
+        "settings": "ಸೆಟ್ಟಿಂಗ್ಗಳು",
+        "update": "ನವೀಕರಿಸಿ",
+        "version": "ಆವೃತ್ತಿ",
+        "language_switched": "ಭಾಷೆ ಬದಲಾಯಿಸಲಾಗಿದೆ",
+    },
+    "gu": {
+        "hello": "નમસ્તે",
+        "welcome": "XOMNI માં આપનું સ્વાગત છે",
+        "models": "મોડેલ્સ",
+        "providers": "પ્રદાતાઓ",
+        "sponsor": "પ્રાયોજક",
+        "install": "ઇન્સ્ટોલ કરો",
+        "verify": "ચકાસો",
+        "done": "થઈ ગયું",
+        "error": "ભૂલ",
+        "loading": "લોડ થઈ રહ્યું છે",
+        "exit": "બહાર નીકળો",
+        "free": "મફત",
+        "help": "મદદ",
+        "commands": "આદેશો",
+        "settings": "સેટિંગ્સ",
+        "update": "અપડેટ",
+        "version": "આવૃત્તિ",
+        "language_switched": "ભાષા બદલાઈ",
+    },
     "bn": {
         "hello": "নমস্কার",
         "welcome": "XOMNI-তে স্বাগতম",
@@ -126,8 +188,11 @@ UI_STRINGS: dict[str, dict[str, str]] = {
 LANGUAGES: list[dict] = [
     {"code": "en", "name": "English", "name_native": "English", "edge_tts": "en-IN", "bhashini": "en"},
     {"code": "hi", "name": "Hindi", "name_native": "हिन्दी", "edge_tts": "hi-IN", "bhashini": "hi"},
+    {"code": "mr", "name": "Marathi", "name_native": "मराठी", "edge_tts": "mr-IN", "bhashini": "mr"},
     {"code": "ta", "name": "Tamil", "name_native": "தமிழ்", "edge_tts": "ta-IN", "bhashini": "ta"},
     {"code": "te", "name": "Telugu", "name_native": "తెలుగు", "edge_tts": "te-IN", "bhashini": "te"},
+    {"code": "kn", "name": "Kannada", "name_native": "ಕನ್ನಡ", "edge_tts": "kn-IN", "bhashini": "kn"},
+    {"code": "gu", "name": "Gujarati", "name_native": "ગુજરાતી", "edge_tts": "gu-IN", "bhashini": "gu"},
     {"code": "bn", "name": "Bengali", "name_native": "বাংলা", "edge_tts": "bn-IN", "bhashini": "bn"},
 ]
 
@@ -308,3 +373,87 @@ def providers_text() -> str:
         out.append(f"----- {name} -----")
         out.append(snip)
     return "\n".join(out)
+
+
+# ---------------------------------------------------------------------------
+# Sarvam TTS dry-run preview — payload shape only, NO live calls.
+# Research (INDIA-FEATURES.md 2026-08-12): Sarvam TTS = "natural voices across
+# 11 Indic languages", per-character ₹30/₹15; API is POST /v1/tts with an
+# api-subscription-key header. This section builds the exact request shape a
+# caller would send (payload dict + ready curl) WITHOUT calling the endpoint
+# and WITHOUT reading the API key — the key is referenced by env-var NAME
+# only, so its value can never leak into logs or the CLI.
+# ---------------------------------------------------------------------------
+
+SARVAM_TTS_URL = "https://api.sarvam.ai/v1/tts"
+SARVAM_TTS_MODEL = "bulbul/v1"  # baseline TTS model; research lists bulbul:v3 (₹30/₹15 per char)
+SARVAM_API_KEY_ENV = "SARVAM_API_KEY"  # env-var name — referenced, never read/printed
+# Bharat-pack lang codes -> Sarvam target_language_code values.
+SARVAM_TTS_LANGS: dict[str, str] = {
+    "en": "en-IN",
+    "hi": "hi-IN",
+    "mr": "mr-IN",
+    "ta": "ta-IN",
+    "te": "te-IN",
+    "kn": "kn-IN",
+    "gu": "gu-IN",
+    "bn": "bn-IN",
+}
+
+
+def tts_preview(text: str, lang: str) -> dict:
+    """Dry-run Sarvam TTS request shape. Never calls the API, never reads the key.
+
+    Returns a dict describing the exact ``POST https://api.sarvam.ai/v1/tts``
+    request: headers reference ``SARVAM_API_KEY`` by env-var NAME only (the
+    value is never fetched or printed), the body carries model=bulbul/v1 +
+    target_language_code + input, and a ready-to-run curl example is included.
+    Unknown lang codes fall back to hi-IN.
+    """
+    lang = (lang or "").strip().lower()
+    tlc = SARVAM_TTS_LANGS.get(lang, SARVAM_TTS_LANGS["hi"])  # unknown -> hi-IN
+    body = {
+        "model": SARVAM_TTS_MODEL,
+        "target_language_code": tlc,
+        "input": text,
+    }
+    headers = {
+        "api-subscription-key": f"env:{SARVAM_API_KEY_ENV}",
+        "Content-Type": "application/json",
+    }
+    curl = (
+        f"curl -sS -X POST {SARVAM_TTS_URL} \\\n"
+        f"  -H 'api-subscription-key: ${SARVAM_API_KEY_ENV}' \\\n"
+        f"  -H 'Content-Type: application/json' \\\n"
+        f"  -d '{json.dumps(body, ensure_ascii=False)}'"
+    )
+    return {
+        "provider": "sarvam",
+        "kind": "tts",
+        "mode": "dry-run",  # no live call is made by this function
+        "method": "POST",
+        "url": SARVAM_TTS_URL,
+        "key_env": SARVAM_API_KEY_ENV,  # referenced by name; value never read/printed
+        "headers": headers,
+        "body": body,
+        "lang": lang,
+        "target_language_code": tlc,
+        "text_chars": len(text),
+        "curl": curl,
+    }
+
+
+def tts_preview_text(text: str, lang: str) -> str:
+    """Human-readable dry-run TTS preview: payload + curl, no live call."""
+    p = tts_preview(text, lang)
+    return (
+        "Sarvam TTS dry-run preview (no live call made):\n"
+        f"  POST {p['url']}\n"
+        f"  key:  ${p['key_env']}  (env-var name — value not read or printed)\n"
+        f"  lang: {p['lang']} -> target_language_code {p['target_language_code']}\n"
+        f"  text: {p['text_chars']} chars\n"
+        f"  headers: {json.dumps(p['headers'], ensure_ascii=False)}\n"
+        f"  body:    {json.dumps(p['body'], ensure_ascii=False)}\n"
+        "  curl:\n"
+        f"{p['curl']}"
+    )

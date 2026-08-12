@@ -1,0 +1,111 @@
+{
+  "schema_version": "1.0.0",
+  "snapshot_id": "ffe72277408ee3d8",
+  "source": "https://models.dev/api.json",
+  "fetched_at": "2026-08-12T08:49:14Z",
+  "sha256": "ffe72277408ee3d87eb8e40a49775c8b10622bf4b8014118d4df2335e8ce4c99",
+  "matched": 25,
+  "total_slugs": 2972,
+  "models": {
+    "deepseek-v4-flash": {
+      "context_window": 1048576,
+      "max_output": 1048576
+    },
+    "deepseek-v4-pro": {
+      "context_window": 1048576,
+      "max_output": 1048576
+    },
+    "kimi-k3": {
+      "context_window": 1048576,
+      "max_output": 1048576
+    },
+    "kimi-k2.7-code": {
+      "context_window": 262144,
+      "max_output": 262144
+    },
+    "kimi-k2.6": {
+      "context_window": 262144,
+      "max_output": 256000
+    },
+    "kimi-k2.5": {
+      "context_window": 262144,
+      "max_output": 256000
+    },
+    "glm-5.2": {
+      "context_window": 1048576,
+      "max_output": 1048576
+    },
+    "glm-5.1": {
+      "context_window": 202752,
+      "max_output": 202752
+    },
+    "glm-5": {
+      "context_window": 202752,
+      "max_output": 202752
+    },
+    "qwen3.8-max": {
+      "context_window": 1000000,
+      "max_output": 131072
+    },
+    "qwen3.7-max": {
+      "context_window": 1000000,
+      "max_output": 131072
+    },
+    "qwen3.7-plus": {
+      "context_window": 1000000,
+      "max_output": 65536
+    },
+    "qwen3.6-plus": {
+      "context_window": 1000000,
+      "max_output": 65536
+    },
+    "qwen3.5-plus": {
+      "context_window": 1000000,
+      "max_output": 65536
+    },
+    "minimax-m3": {
+      "context_window": 1048576,
+      "max_output": 1048576
+    },
+    "minimax-m2.7": {
+      "context_window": 196608,
+      "max_output": 196072
+    },
+    "minimax-m2.5": {
+      "context_window": 196680,
+      "max_output": 196608
+    },
+    "mimo-v2-pro": {
+      "context_window": 1048576,
+      "max_output": 131072
+    },
+    "mimo-v2-omni": {
+      "context_window": 262144,
+      "max_output": 131072
+    },
+    "mimo-v2.5-pro": {
+      "context_window": 1048576,
+      "max_output": 131072
+    },
+    "mimo-v2.5": {
+      "context_window": 1048576,
+      "max_output": 131072
+    },
+    "hy3": {
+      "context_window": 256000,
+      "max_output": 64000
+    },
+    "hy3-preview": {
+      "context_window": 256000,
+      "max_output": 128000
+    },
+    "gpt-5.6-luna": {
+      "context_window": 1050000,
+      "max_output": 1050000
+    },
+    "grok-4.5": {
+      "context_window": 500000,
+      "max_output": 500000
+    }
+  }
+}

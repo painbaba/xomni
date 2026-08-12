@@ -1,3 +1,3 @@
 name: gh-ops
-version: "1.0.0"
-description: "GitHub/GitLab workflows via the gh/glab CLIs: auth status, PR list, issue list, current user (strict table parsing)"
+version: "1.1.0"
+description: "GitHub/GitLab workflows via the gh/glab CLIs: auth status, PR list, issue list, current user, PR review comments (strict table parsing)"

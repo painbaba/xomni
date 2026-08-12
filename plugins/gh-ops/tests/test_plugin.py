@@ -104,6 +104,34 @@ class CommandHandlerTests(unittest.TestCase):
             self.plugin._handle_gh("  ME  ")
         m.assert_called_once_with("me", None)
 
+    def test_pr_review_subcommand_routes_number_and_body(self):
+        with mock.patch.object(self.plugin.core, "execute_pr_review", return_value="ok") as m:
+            out = self.plugin._handle_gh("pr-review 42 nice work")
+        m.assert_called_once_with(42, "nice work")
+        self.assertEqual(out, "ok")
+
+    def test_pr_summary_subcommand_routes(self):
+        with mock.patch.object(self.plugin.core, "execute_pr_summary", return_value="ok") as m:
+            out = self.plugin._handle_gh("pr-summary 9 overall: solid")
+        m.assert_called_once_with(9, "overall: solid")
+        self.assertEqual(out, "ok")
+
+    def test_pr_review_missing_number_usage(self):
+        with mock.patch.object(self.plugin.core, "execute_pr_review") as m:
+            out = self.plugin._handle_gh("pr-review")
+        m.assert_not_called()
+        self.assertIn("needs a PR number", out)
+        with mock.patch.object(self.plugin.core, "execute_pr_summary") as m2:
+            out2 = self.plugin._handle_gh("pr-summary abc text")
+        m2.assert_not_called()
+        self.assertIn("needs a PR number", out2)
+
+    def test_pr_review_no_body_still_routes(self):
+        # The body is optional at the handler level; core reports a usage hint.
+        with mock.patch.object(self.plugin.core, "execute_pr_review", return_value="ok") as m:
+            self.plugin._handle_gh("pr-review 42")
+        m.assert_called_once_with(42, "")
+
 
 class ToolHandlerTests(unittest.TestCase):
     @classmethod

@@ -329,3 +329,125 @@ def execute(action="status", repo=None):
     if action == "prs":
         return format_summary(parse_pr_list(out), "pr")
     return format_summary(parse_issue_list(out), "issue")
+
+
+# ---------------------------------------------------------------------------
+# PR review comments
+# ---------------------------------------------------------------------------
+
+# Known success wordings of `gh pr review` across versions:
+#   "Reviewed pull request #42"
+#   "Review submitted" / "Review posted"
+REVIEW_OK_PATTERNS = (
+    re.compile(r"reviewed pull request #\d+", re.IGNORECASE),
+    re.compile(r"review (submitted|posted)", re.IGNORECASE),
+)
+
+
+def render_comment_body(comment):
+    """Render one comment dict into the ``gh pr review --body`` string.
+
+    *comment* is ``{"body": str, "path"?: str, "line"?: int}``. A position
+    hint (path and optional line) becomes a ``[path:line]`` prefix so the
+    reviewer can see where the comment applies; a bare body passes through
+    unchanged. Never invents a hint when none was given.
+    """
+    body = (comment.get("body") or "").strip() if isinstance(comment, dict) else ""
+    path = (comment.get("path") or "").strip() if isinstance(comment, dict) else ""
+    line = comment.get("line") if isinstance(comment, dict) else None
+    if path:
+        hint = path
+        if line is not None:
+            try:
+                hint = f"{path}:{int(line)}"
+            except (TypeError, ValueError):
+                pass  # non-numeric line -> keep the bare path hint
+        return f"[{hint}] {body}" if body else f"[{hint}]"
+    return body
+
+
+def pr_review_argv(pr_number, body, repo=None):
+    """Build the exact ``gh pr review <n> --comment --body <body>`` argv.
+
+    Returns a list (never a shell string). *repo* is an optional
+    ``OWNER/REPO`` appended as ``--repo`` when given.
+    """
+    argv = ["gh", "pr", "review", str(pr_number).strip(), "--comment", "--body", body]
+    return argv + (["--repo", (repo or "").strip()] if (repo or "").strip() else [])
+
+
+def pr_review_batch(pr_number, comments, repo=None):
+    """Post a batch of review comments; return one result dict per comment.
+
+    *comments* is an iterable of ``{"body", "path"?, "line"?}`` dicts. Each
+    comment becomes its own ``gh pr review <n> --comment --body <text>`` call
+    (position hints rendered into the body via :func:`render_comment_body`),
+    so a failure in one comment never blocks the others. Empty bodies and
+    non-dict entries are skipped — the plugin never posts empty comments.
+    Result dicts are :func:`run_gh` shapes plus ``"body"`` (the rendered text).
+    """
+    results = []
+    for comment in comments or []:
+        body = render_comment_body(comment)
+        if not body:
+            continue
+        res = run_gh(pr_review_argv(pr_number, body, repo))
+        res["body"] = body
+        results.append(res)
+    return results
+
+
+def pr_review_summary(pr_number, text, repo=None):
+    """Post one review summary comment; return the :func:`run_gh` result dict."""
+    return run_gh(pr_review_argv(pr_number, text, repo))
+
+
+def parse_review_output(text, pr_number=None):
+    """Classify ``gh pr review`` stdout into a clean, stable result string.
+
+    Known success wordings collapse to ``"Posted review comment on PR #<n>."``;
+    empty stdout (gh is quiet on some happy paths) gets the same treatment;
+    anything unrecognized returns the raw first line verbatim — never fabricates.
+    """
+    out = (text or "").strip()
+    if not out:
+        return f"Posted review comment on PR #{pr_number}." if pr_number is not None else "Posted review comment."
+    if any(p.search(out) for p in REVIEW_OK_PATTERNS):
+        return f"Posted review comment on PR #{pr_number}." if pr_number is not None else "Review posted."
+    return out.splitlines()[0]
+
+
+def format_review_batch(results, pr_number):
+    """Render batch results into one printable multi-line string."""
+    if not results:
+        return "No review comments to post."
+    lines = []
+    for res in results:
+        if res.get("ok"):
+            lines.append(parse_review_output(res.get("stdout"), pr_number))
+        else:
+            lines.append(res.get("error") or "gh command failed.")
+    return "\n".join(lines)
+
+
+def execute_pr_review(pr_number, text, repo=None):
+    """Slash-command path: post one review comment (batch of one), printable."""
+    if not detect_cli()["gh"]:
+        return missing_cli_message()
+    body = (text or "").strip()
+    if not body:
+        return f"pr-review needs a comment body: /gh pr-review {pr_number} <comment>"
+    return format_review_batch(pr_review_batch(pr_number, [{"body": body}], repo), pr_number)
+
+
+def execute_pr_summary(pr_number, text, repo=None):
+    """Slash-command path: post a review summary comment, printable."""
+    if not detect_cli()["gh"]:
+        return missing_cli_message()
+    body = (text or "").strip()
+    if not body:
+        return f"pr-summary needs text: /gh pr-summary {pr_number} <text>"
+    res = pr_review_summary(pr_number, body, repo)
+    if not res["ok"]:
+        return res["error"]
+    return parse_review_output(res.get("stdout"), pr_number)

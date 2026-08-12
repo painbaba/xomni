@@ -3,7 +3,7 @@
 Implements TOOL-SEARCH.md: the Hermes host already hides the long tail
 behind its native ``tool_search`` bridge; this plugin extends what the model
 can *discover* to the three surfaces the host cannot see — the 311-server MCP
-catalog, the 180-skill curated DB, and all 17 plugins' tools + slash commands
+catalog, the 180-skill curated DB, and all 22 plugins' tools + slash commands
 — through one BM25 router tool.
 
 Model tool::
@@ -21,6 +21,7 @@ Slash commands::
 
     /tools-search <query> [--kind=<tool|command|mcp_server|skill>] [--limit=N]
     /tools-index            rebuild the corpus + print stats
+    /tools-stats            corpus size + top-5 recall + last eval time
 
 Zero hooks: nothing here registers a hook; the plugin is pure on-demand.
 """
@@ -34,6 +35,7 @@ HELP = (
     "/tools-search <query> [--kind=KIND] [--limit=N]  search the capability corpus (BM25)\n"
     "  kinds: tool | command | mcp_server | skill | all (default)\n"
     "/tools-index   rebuild the corpus from source files + print index stats\n"
+    "/tools-stats   corpus size + top-5 recall on the built-in eval set + last eval time\n"
 )
 
 
@@ -74,6 +76,12 @@ def _handle_tools_index(raw: str) -> str:
     return "\n".join(lines)
 
 
+def _handle_tools_stats(raw: str) -> str:
+    """/tools-stats: corpus size, top-5 recall on the built-in eval set,
+    and the last eval time (persisted to the sqlite cache)."""
+    return core.stats_report()
+
+
 def register(ctx) -> None:
     global _CTX
     _CTX = ctx
@@ -87,7 +95,7 @@ def register(ctx) -> None:
         schema={
             "description": (
                 "Capability router: BM25 search across ALL XOMNI capabilities — "
-                "plugin tools + slash commands (17 plugins), MCP servers (311 in "
+                "plugin tools + slash commands (22 plugins), MCP servers (311 in "
                 "catalog), and skills (180 curated). Every hit reports its source, "
                 "status, and how to load/invoke it. Use this FIRST whenever the "
                 "needed tool is not already visible in the tool list — the full "
@@ -134,5 +142,14 @@ def register(ctx) -> None:
         "tools-index",
         handler=_handle_tools_index,
         description="Rebuild the omni-tools corpus from source files and print index stats.",
+        args_hint="",
+    )
+    ctx.register_command(
+        "tools-stats",
+        handler=_handle_tools_stats,
+        description=(
+            "omni-tools stats: corpus size, top-5 recall on the built-in eval set, "
+            "and the last eval time."
+        ),
         args_hint="",
     )

@@ -14,9 +14,10 @@ The registry is read-only data + text views; routing behavior is P1.
 | File | Role |
 |---|---|
 | `data/capabilities.json` | Registry: 25 active records + 2 tombstones, `sources[]` snapshot pins (sha256) |
-| `core.py` | Pure-stdlib API: `registry_load`, `capability`, `filter_by_capability`, `capabilities_text`, `conflict_report`, `recommend`, … |
-| `__init__.py` | `/models2` command + `registry_status` tool — no hooks |
-| `tests/test_core.py` | 15 unittest methods, offline |
+| `data/models.snapshot.json` | Baseline snapshot (item 01 format): 27 models, `captured_at`, per-model `{status, context_window, max_output}` — the `/models2 diff` reference; overwritten by `refresh_from_models_dev` pins |
+| `core.py` | Pure-stdlib API: `registry_load`, `capability`, `filter_by_capability`, `capabilities_text`, `conflict_report`, `diff_since`/`diff_text`, `recommend`, … |
+| `__init__.py` | `/models2` (+ `diff` subcommand) + `registry_status` tool — no hooks |
+| `tests/test_core.py` | 18 unittest methods, offline |
 
 ## Schema (v1.0.0)
 
@@ -56,6 +57,10 @@ The old curated `131072` was wrong (research F3). Adopted value:
 - `filter_by_capability(status="active", **caps)` — e.g.
   `filter_by_capability(thinking=True, tools=True)`
 - `capabilities_text()` — `/models2` output, retired rows shown as tombstones
+- `diff_since(snapshot)` / `diff_text()` — `/models2 diff`: added/removed/changed
+  per model vs the last snapshot (slug presence, `context_window`, `status`),
+  with tombstone reasons; tolerant of both snapshot shapes (registry-state
+  baseline and models.dev refresh pins)
 - `conflict_report(registry=None, snapshot=None)` — CI-readable:
   internal consistency + slug/context diff vs a pinned snapshot
   (`MISSING-SLUG` / `CTX` / `OUT` lines; `conflict_report: OK` when clean)

@@ -38,6 +38,21 @@ Pure-stdlib BM25 over the merged corpus. Every hit carries `source` +
 ```
 /tools-search <query> [--kind=tool|command|mcp_server|skill] [--limit=N]
 /tools-index            rebuild corpus from source files + print stats
+/tools-stats            corpus size + top-5 recall + last eval time
+```
+
+## Recall benchmark
+
+`core.EVAL_SET` is a built-in eval set of **20 planted queries** (plugin tools
++ commands, MCP servers, skills, synonym-expansion paths), each with a known
+expected hit that must land in the top 5 on the live corpus. `core.eval_recall()`
+runs the set and returns `{queries, hits, recall, limit, last_eval, results}`;
+the summary is persisted to the SQLite cache (eval table) so `/tools-stats`
+reports the last eval time across runs.
+
+```
+>>> core.eval_recall()["recall"]
+1.0   # 20/20 expected hits in top 5 (verified 2026-08-12)
 ```
 
 ## Design notes
@@ -50,7 +65,7 @@ Pure-stdlib BM25 over the merged corpus. Every hit carries `source` +
 - **BM25 details**: k1=1.5, b=0.75, smoothed idf; name tokens weighted 2×;
   query-side synonym expansion; zero-IDF name-substring fallback (host parity).
 - **Recall gate**: top-5 recall ≥ 0.9 on both a planted corpus and the real
-  corpus (12 verified query→target pairs).
+  corpus (built-in 20-query `EVAL_SET`, plus 12 legacy verified pairs).
 
 ## Test
 
@@ -62,9 +77,9 @@ cd plugins/omni-tools && python -m unittest tests.test_core -q
 
 ```
 plugins/omni-tools/
-├── core.py          corpus builder, BM25, cache, router tool body (pure)
-├── __init__.py      register xomni_capabilities + /tools-search + /tools-index
+├── core.py          corpus builder, BM25, cache, eval_recall, stats_report (pure)
+├── __init__.py      register xomni_capabilities + /tools-search + /tools-index + /tools-stats
 ├── plugin.yaml
 ├── README.md
-└── tests/test_core.py   19 tests
+└── tests/test_core.py   21 tests
 ```

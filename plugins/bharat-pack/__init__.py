@@ -16,11 +16,12 @@ _current = "hi"  # in-memory UI-language state; not persisted, not hooked
 
 HELP = (
     "/bharat                 switch to Hindi UI strings (default)\n"
-    "/bharat <lang>          switch UI strings: en | hi | ta | te | bn\n"
+    "/bharat <lang>          switch UI strings: en | hi | mr | ta | te | kn | gu | bn\n"
     "/bharat providers       all Indian provider snippets (Sarvam/Bhashini/Krutrim)\n"
     "/bharat providers <p>   one provider's snippet\n"
     "/bharat models          Indian model-pool registry (source=spec)\n"
     "/bharat langs           supported languages + voice fallbacks\n"
+    "/bharat tts <lang> <text>   Sarvam TTS dry-run payload + curl (no live call)\n"
 )
 
 
@@ -41,6 +42,11 @@ def _handle_bharat(raw: str) -> str:
         return core.models_text()
     if cmd == "langs":
         return core.langs_text()
+    if cmd == "tts":
+        if len(args) < 3:
+            known = ", ".join(core.SARVAM_TTS_LANGS)
+            return f"usage: /bharat tts <lang> <text...>  (dry-run — payload + curl, no live call)\nknown langs: {known}"
+        return core.tts_preview_text(" ".join(args[2:]), args[1])
     if cmd in core.UI_STRINGS:
         _current = cmd
         s = core.ui_strings(cmd)

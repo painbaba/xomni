@@ -19,6 +19,10 @@ research pass; unverified items flagged `[UNVERIFIED]` in place).
 - `/bharat providers [name]` — all / one Indian provider snippet
 - `/bharat models` — Indian model-pool registry
 - `/bharat langs` — supported languages + edge-tts voice fallbacks
+- `/bharat tts <lang> <text>` — **Sarvam TTS dry-run** preview: exact
+  `POST https://api.sarvam.ai/v1/tts` payload (`model=bulbul/v1`,
+  `target_language_code`) + ready curl. **No live call** — `SARVAM_API_KEY`
+  is referenced by env-var name only, never read or printed.
 
 **Speed posture:** commands only, no hooks (`register_hook` absent) — never
 alters agent behavior. Pure stdlib `core.py`, no network calls, no state on

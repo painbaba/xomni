@@ -5,9 +5,9 @@
     {
       "name": "models.dev",
       "url": "https://models.dev/api.json",
-      "fetched_at": "2026-08-12T00:00:00Z",
+      "fetched_at": "2026-08-12T08:49:14Z",
       "sha256": "ffe72277408ee3d87eb8e40a49775c8b10622bf4b8014118d4df2335e8ce4c99",
-      "note": "limit.context/output, intent labels (reasoning/tool_call/structured_output/attachment), modalities, release/last_updated — 25/25 gateway slugs matched"
+      "note": "limit.context/output, intent labels (reasoning/tool_call/structured_output/attachment), modalities, release/last_updated — 25/25 gateway slugs matched · live refresh 2026-08-12T08:49:14Z: 25 matched, sha256 pinned"
     },
     {
       "name": "litellm",
@@ -32,12 +32,12 @@
       "context_window": {
         "value": 1000000,
         "source": "spec",
-        "origin": "models.dev limit.context=1048576 (live fetch 2026-08-12); LiteLLM max_input_tokens=1000000 (deepseek-v4-flash + azure_ai/deepseek-v4-flash entries); research F3 adopted 1000000; old curated 131072 refuted; gateway exposes no limits (F1)"
+        "origin": "models.dev limit.context=1048576 (live fetch 2026-08-12); LiteLLM max_input_tokens=1000000 (deepseek-v4-flash + azure_ai/deepseek-v4-flash entries); research F3 adopted 1000000; old curated 131072 refuted; gateway exposes no limits (F1) · models.dev live refresh 2026-08-12T08:49:14Z sha256=ffe72277408ee3d8 — context_window 1048576 != registry 1000000 (F3: flagged, not auto-accepted)"
       },
       "max_output": {
         "value": 1048576,
-        "source": "spec",
-        "origin": "models.dev limit.output=1048576; LiteLLM max_output_tokens=8192 (api-docs.deepseek.com) / 384000 (azure_ai) — spec conflict, flag for CI review (F3 precedent)"
+        "source": "verified",
+        "origin": "models.dev limit.output=1048576; LiteLLM max_output_tokens=8192 (api-docs.deepseek.com) / 384000 (azure_ai) — spec conflict, flag for CI review (F3 precedent) · models.dev live refresh 2026-08-12T08:49:14Z sha256=ffe72277408ee3d8 — max_output 1048576 confirmed"
       },
       "capabilities": [
         "thinking",
@@ -69,7 +69,7 @@
       },
       "provenance": {
         "primary": "curated",
-        "updated_at": "2026-08-12T00:00:00Z"
+        "updated_at": "2026-08-12T08:49:14Z"
       }
     },
     {
@@ -79,13 +79,13 @@
       "status": "active",
       "context_window": {
         "value": 1048576,
-        "source": "spec",
-        "origin": "models.dev limit.context=1048576 (live fetch 2026-08-12, sha256 pinned in sources[])"
+        "source": "verified",
+        "origin": "models.dev limit.context=1048576 (live fetch 2026-08-12, sha256 pinned in sources[]) · models.dev live refresh 2026-08-12T08:49:14Z sha256=ffe72277408ee3d8 — context_window 1048576 confirmed"
       },
       "max_output": {
         "value": 1048576,
-        "source": "spec",
-        "origin": "models.dev limit.output=1048576 (live fetch 2026-08-12)"
+        "source": "verified",
+        "origin": "models.dev limit.output=1048576 (live fetch 2026-08-12) · models.dev live refresh 2026-08-12T08:49:14Z sha256=ffe72277408ee3d8 — max_output 1048576 confirmed"
       },
       "capabilities": [
         "thinking",
@@ -117,7 +117,7 @@
       },
       "provenance": {
         "primary": "curated",
-        "updated_at": "2026-08-12T00:00:00Z"
+        "updated_at": "2026-08-12T08:49:14Z"
       }
     },
     {
@@ -127,13 +127,13 @@
       "status": "active",
       "context_window": {
         "value": 1048576,
-        "source": "spec",
-        "origin": "models.dev limit.context=1048576 (live fetch 2026-08-12, sha256 pinned in sources[])"
+        "source": "verified",
+        "origin": "models.dev limit.context=1048576 (live fetch 2026-08-12, sha256 pinned in sources[]) · models.dev live refresh 2026-08-12T08:49:14Z sha256=ffe72277408ee3d8 — context_window 1048576 confirmed"
       },
       "max_output": {
         "value": 1048576,
-        "source": "spec",
-        "origin": "models.dev limit.output=1048576 (live fetch 2026-08-12)"
+        "source": "verified",
+        "origin": "models.dev limit.output=1048576 (live fetch 2026-08-12) · models.dev live refresh 2026-08-12T08:49:14Z sha256=ffe72277408ee3d8 — max_output 1048576 confirmed"
       },
       "capabilities": [
         "thinking",
@@ -169,7 +169,7 @@
       },
       "provenance": {
         "primary": "curated",
-        "updated_at": "2026-08-12T00:00:00Z"
+        "updated_at": "2026-08-12T08:49:14Z"
       }
     },
     {
@@ -179,13 +179,13 @@
       "status": "active",
       "context_window": {
         "value": 262144,
-        "source": "spec",
-        "origin": "models.dev limit.context=262144 (live fetch 2026-08-12, sha256 pinned in sources[])"
+        "source": "verified",
+        "origin": "models.dev limit.context=262144 (live fetch 2026-08-12, sha256 pinned in sources[]) · models.dev live refresh 2026-08-12T08:49:14Z sha256=ffe72277408ee3d8 — context_window 262144 confirmed"
       },
       "max_output": {
         "value": 262144,
-        "source": "spec",
-        "origin": "models.dev limit.output=262144 (live fetch 2026-08-12)"
+        "source": "verified",
+        "origin": "models.dev limit.output=262144 (live fetch 2026-08-12) · models.dev live refresh 2026-08-12T08:49:14Z sha256=ffe72277408ee3d8 — max_output 262144 confirmed"
       },
       "capabilities": [
         "thinking",
@@ -221,7 +221,7 @@
       },
       "provenance": {
         "primary": "curated",
-        "updated_at": "2026-08-12T00:00:00Z"
+        "updated_at": "2026-08-12T08:49:14Z"
       }
     },
     {
@@ -231,13 +231,13 @@
       "status": "active",
       "context_window": {
         "value": 262144,
-        "source": "spec",
-        "origin": "models.dev limit.context=262144 (live fetch 2026-08-12, sha256 pinned in sources[])"
+        "source": "verified",
+        "origin": "models.dev limit.context=262144 (live fetch 2026-08-12, sha256 pinned in sources[]) · models.dev live refresh 2026-08-12T08:49:14Z sha256=ffe72277408ee3d8 — context_window 262144 confirmed"
       },
       "max_output": {
         "value": 256000,
-        "source": "spec",
-        "origin": "models.dev limit.output=256000 (live fetch 2026-08-12)"
+        "source": "verified",
+        "origin": "models.dev limit.output=256000 (live fetch 2026-08-12) · models.dev live refresh 2026-08-12T08:49:14Z sha256=ffe72277408ee3d8 — max_output 256000 confirmed"
       },
       "capabilities": [
         "thinking",
@@ -273,7 +273,7 @@
       },
       "provenance": {
         "primary": "curated",
-        "updated_at": "2026-08-12T00:00:00Z"
+        "updated_at": "2026-08-12T08:49:14Z"
       }
     },
     {
@@ -283,13 +283,13 @@
       "status": "active",
       "context_window": {
         "value": 262144,
-        "source": "spec",
-        "origin": "models.dev limit.context=262144 (live fetch 2026-08-12, sha256 pinned in sources[])"
+        "source": "verified",
+        "origin": "models.dev limit.context=262144 (live fetch 2026-08-12, sha256 pinned in sources[]) · models.dev live refresh 2026-08-12T08:49:14Z sha256=ffe72277408ee3d8 — context_window 262144 confirmed"
       },
       "max_output": {
         "value": 256000,
-        "source": "spec",
-        "origin": "models.dev limit.output=256000 (live fetch 2026-08-12)"
+        "source": "verified",
+        "origin": "models.dev limit.output=256000 (live fetch 2026-08-12) · models.dev live refresh 2026-08-12T08:49:14Z sha256=ffe72277408ee3d8 — max_output 256000 confirmed"
       },
       "capabilities": [
         "thinking",
@@ -325,7 +325,7 @@
       },
       "provenance": {
         "primary": "curated",
-        "updated_at": "2026-08-12T00:00:00Z"
+        "updated_at": "2026-08-12T08:49:14Z"
       }
     },
     {
@@ -335,13 +335,13 @@
       "status": "active",
       "context_window": {
         "value": 1048576,
-        "source": "spec",
-        "origin": "models.dev limit.context=1048576 (live fetch 2026-08-12, sha256 pinned in sources[])"
+        "source": "verified",
+        "origin": "models.dev limit.context=1048576 (live fetch 2026-08-12, sha256 pinned in sources[]) · models.dev live refresh 2026-08-12T08:49:14Z sha256=ffe72277408ee3d8 — context_window 1048576 confirmed"
       },
       "max_output": {
         "value": 1048576,
-        "source": "spec",
-        "origin": "models.dev limit.output=1048576 (live fetch 2026-08-12)"
+        "source": "verified",
+        "origin": "models.dev limit.output=1048576 (live fetch 2026-08-12) · models.dev live refresh 2026-08-12T08:49:14Z sha256=ffe72277408ee3d8 — max_output 1048576 confirmed"
       },
       "capabilities": [
         "thinking",
@@ -375,7 +375,7 @@
       },
       "provenance": {
         "primary": "curated",
-        "updated_at": "2026-08-12T00:00:00Z"
+        "updated_at": "2026-08-12T08:49:14Z"
       }
     },
     {
@@ -385,13 +385,13 @@
       "status": "active",
       "context_window": {
         "value": 202752,
-        "source": "spec",
-        "origin": "models.dev limit.context=202752 (live fetch 2026-08-12, sha256 pinned in sources[])"
+        "source": "verified",
+        "origin": "models.dev limit.context=202752 (live fetch 2026-08-12, sha256 pinned in sources[]) · models.dev live refresh 2026-08-12T08:49:14Z sha256=ffe72277408ee3d8 — context_window 202752 confirmed"
       },
       "max_output": {
         "value": 202752,
-        "source": "spec",
-        "origin": "models.dev limit.output=202752 (live fetch 2026-08-12)"
+        "source": "verified",
+        "origin": "models.dev limit.output=202752 (live fetch 2026-08-12) · models.dev live refresh 2026-08-12T08:49:14Z sha256=ffe72277408ee3d8 — max_output 202752 confirmed"
       },
       "capabilities": [
         "thinking",
@@ -425,7 +425,7 @@
       },
       "provenance": {
         "primary": "curated",
-        "updated_at": "2026-08-12T00:00:00Z"
+        "updated_at": "2026-08-12T08:49:14Z"
       }
     },
     {
@@ -435,13 +435,13 @@
       "status": "active",
       "context_window": {
         "value": 202752,
-        "source": "spec",
-        "origin": "models.dev limit.context=202752 (live fetch 2026-08-12, sha256 pinned in sources[])"
+        "source": "verified",
+        "origin": "models.dev limit.context=202752 (live fetch 2026-08-12, sha256 pinned in sources[]) · models.dev live refresh 2026-08-12T08:49:14Z sha256=ffe72277408ee3d8 — context_window 202752 confirmed"
       },
       "max_output": {
         "value": 202752,
-        "source": "spec",
-        "origin": "models.dev limit.output=202752 (live fetch 2026-08-12)"
+        "source": "verified",
+        "origin": "models.dev limit.output=202752 (live fetch 2026-08-12) · models.dev live refresh 2026-08-12T08:49:14Z sha256=ffe72277408ee3d8 — max_output 202752 confirmed"
       },
       "capabilities": [
         "thinking",
@@ -475,7 +475,7 @@
       },
       "provenance": {
         "primary": "curated",
-        "updated_at": "2026-08-12T00:00:00Z"
+        "updated_at": "2026-08-12T08:49:14Z"
       }
     },
     {
@@ -485,13 +485,13 @@
       "status": "active",
       "context_window": {
         "value": 1000000,
-        "source": "spec",
-        "origin": "models.dev limit.context=1000000 (live fetch 2026-08-12, sha256 pinned in sources[])"
+        "source": "verified",
+        "origin": "models.dev limit.context=1000000 (live fetch 2026-08-12, sha256 pinned in sources[]) · models.dev live refresh 2026-08-12T08:49:14Z sha256=ffe72277408ee3d8 — context_window 1000000 confirmed"
       },
       "max_output": {
         "value": 131072,
-        "source": "spec",
-        "origin": "models.dev limit.output=131072 (live fetch 2026-08-12)"
+        "source": "verified",
+        "origin": "models.dev limit.output=131072 (live fetch 2026-08-12) · models.dev live refresh 2026-08-12T08:49:14Z sha256=ffe72277408ee3d8 — max_output 131072 confirmed"
       },
       "capabilities": [
         "thinking",
@@ -529,7 +529,7 @@
       },
       "provenance": {
         "primary": "curated",
-        "updated_at": "2026-08-12T00:00:00Z"
+        "updated_at": "2026-08-12T08:49:14Z"
       }
     },
     {
@@ -539,13 +539,13 @@
       "status": "active",
       "context_window": {
         "value": 1000000,
-        "source": "spec",
-        "origin": "models.dev limit.context=1000000 (live fetch 2026-08-12, sha256 pinned in sources[])"
+        "source": "verified",
+        "origin": "models.dev limit.context=1000000 (live fetch 2026-08-12, sha256 pinned in sources[]) · models.dev live refresh 2026-08-12T08:49:14Z sha256=ffe72277408ee3d8 — context_window 1000000 confirmed"
       },
       "max_output": {
         "value": 131072,
-        "source": "spec",
-        "origin": "models.dev limit.output=131072 (live fetch 2026-08-12)"
+        "source": "verified",
+        "origin": "models.dev limit.output=131072 (live fetch 2026-08-12) · models.dev live refresh 2026-08-12T08:49:14Z sha256=ffe72277408ee3d8 — max_output 131072 confirmed"
       },
       "capabilities": [
         "thinking",
@@ -579,7 +579,7 @@
       },
       "provenance": {
         "primary": "curated",
-        "updated_at": "2026-08-12T00:00:00Z"
+        "updated_at": "2026-08-12T08:49:14Z"
       }
     },
     {
@@ -589,13 +589,13 @@
       "status": "active",
       "context_window": {
         "value": 1000000,
-        "source": "spec",
-        "origin": "models.dev limit.context=1000000 (live fetch 2026-08-12, sha256 pinned in sources[])"
+        "source": "verified",
+        "origin": "models.dev limit.context=1000000 (live fetch 2026-08-12, sha256 pinned in sources[]) · models.dev live refresh 2026-08-12T08:49:14Z sha256=ffe72277408ee3d8 — context_window 1000000 confirmed"
       },
       "max_output": {
         "value": 65536,
-        "source": "spec",
-        "origin": "models.dev limit.output=65536 (live fetch 2026-08-12)"
+        "source": "verified",
+        "origin": "models.dev limit.output=65536 (live fetch 2026-08-12) · models.dev live refresh 2026-08-12T08:49:14Z sha256=ffe72277408ee3d8 — max_output 65536 confirmed"
       },
       "capabilities": [
         "thinking",
@@ -633,7 +633,7 @@
       },
       "provenance": {
         "primary": "curated",
-        "updated_at": "2026-08-12T00:00:00Z"
+        "updated_at": "2026-08-12T08:49:14Z"
       }
     },
     {
@@ -643,13 +643,13 @@
       "status": "active",
       "context_window": {
         "value": 1000000,
-        "source": "spec",
-        "origin": "models.dev limit.context=1000000 (live fetch 2026-08-12, sha256 pinned in sources[])"
+        "source": "verified",
+        "origin": "models.dev limit.context=1000000 (live fetch 2026-08-12, sha256 pinned in sources[]) · models.dev live refresh 2026-08-12T08:49:14Z sha256=ffe72277408ee3d8 — context_window 1000000 confirmed"
       },
       "max_output": {
         "value": 65536,
-        "source": "spec",
-        "origin": "models.dev limit.output=65536 (live fetch 2026-08-12)"
+        "source": "verified",
+        "origin": "models.dev limit.output=65536 (live fetch 2026-08-12) · models.dev live refresh 2026-08-12T08:49:14Z sha256=ffe72277408ee3d8 — max_output 65536 confirmed"
       },
       "capabilities": [
         "thinking",
@@ -687,7 +687,7 @@
       },
       "provenance": {
         "primary": "curated",
-        "updated_at": "2026-08-12T00:00:00Z"
+        "updated_at": "2026-08-12T08:49:14Z"
       }
     },
     {
@@ -697,13 +697,13 @@
       "status": "active",
       "context_window": {
         "value": 1000000,
-        "source": "spec",
-        "origin": "models.dev limit.context=1000000 (live fetch 2026-08-12, sha256 pinned in sources[])"
+        "source": "verified",
+        "origin": "models.dev limit.context=1000000 (live fetch 2026-08-12, sha256 pinned in sources[]) · models.dev live refresh 2026-08-12T08:49:14Z sha256=ffe72277408ee3d8 — context_window 1000000 confirmed"
       },
       "max_output": {
         "value": 65536,
-        "source": "spec",
-        "origin": "models.dev limit.output=65536 (live fetch 2026-08-12)"
+        "source": "verified",
+        "origin": "models.dev limit.output=65536 (live fetch 2026-08-12) · models.dev live refresh 2026-08-12T08:49:14Z sha256=ffe72277408ee3d8 — max_output 65536 confirmed"
       },
       "capabilities": [
         "thinking",
@@ -737,7 +737,7 @@
       },
       "provenance": {
         "primary": "curated",
-        "updated_at": "2026-08-12T00:00:00Z"
+        "updated_at": "2026-08-12T08:49:14Z"
       }
     },
     {
@@ -747,13 +747,13 @@
       "status": "active",
       "context_window": {
         "value": 1048576,
-        "source": "spec",
-        "origin": "models.dev limit.context=1048576 (live fetch 2026-08-12, sha256 pinned in sources[])"
+        "source": "verified",
+        "origin": "models.dev limit.context=1048576 (live fetch 2026-08-12, sha256 pinned in sources[]) · models.dev live refresh 2026-08-12T08:49:14Z sha256=ffe72277408ee3d8 — context_window 1048576 confirmed"
       },
       "max_output": {
         "value": 1048576,
-        "source": "spec",
-        "origin": "models.dev limit.output=1048576 (live fetch 2026-08-12)"
+        "source": "verified",
+        "origin": "models.dev limit.output=1048576 (live fetch 2026-08-12) · models.dev live refresh 2026-08-12T08:49:14Z sha256=ffe72277408ee3d8 — max_output 1048576 confirmed"
       },
       "capabilities": [
         "thinking",
@@ -789,7 +789,7 @@
       },
       "provenance": {
         "primary": "curated",
-        "updated_at": "2026-08-12T00:00:00Z"
+        "updated_at": "2026-08-12T08:49:14Z"
       }
     },
     {
@@ -799,13 +799,13 @@
       "status": "active",
       "context_window": {
         "value": 196608,
-        "source": "spec",
-        "origin": "models.dev limit.context=196608 (live fetch 2026-08-12, sha256 pinned in sources[])"
+        "source": "verified",
+        "origin": "models.dev limit.context=196608 (live fetch 2026-08-12, sha256 pinned in sources[]) · models.dev live refresh 2026-08-12T08:49:14Z sha256=ffe72277408ee3d8 — context_window 196608 confirmed"
       },
       "max_output": {
         "value": 196072,
-        "source": "spec",
-        "origin": "models.dev limit.output=196072 (live fetch 2026-08-12)"
+        "source": "verified",
+        "origin": "models.dev limit.output=196072 (live fetch 2026-08-12) · models.dev live refresh 2026-08-12T08:49:14Z sha256=ffe72277408ee3d8 — max_output 196072 confirmed"
       },
       "capabilities": [
         "thinking",
@@ -839,7 +839,7 @@
       },
       "provenance": {
         "primary": "curated",
-        "updated_at": "2026-08-12T00:00:00Z"
+        "updated_at": "2026-08-12T08:49:14Z"
       }
     },
     {
@@ -849,13 +849,13 @@
       "status": "active",
       "context_window": {
         "value": 196680,
-        "source": "spec",
-        "origin": "models.dev limit.context=196680 (live fetch 2026-08-12, sha256 pinned in sources[])"
+        "source": "verified",
+        "origin": "models.dev limit.context=196680 (live fetch 2026-08-12, sha256 pinned in sources[]) · models.dev live refresh 2026-08-12T08:49:14Z sha256=ffe72277408ee3d8 — context_window 196680 confirmed"
       },
       "max_output": {
         "value": 196608,
-        "source": "spec",
-        "origin": "models.dev limit.output=196608 (live fetch 2026-08-12)"
+        "source": "verified",
+        "origin": "models.dev limit.output=196608 (live fetch 2026-08-12) · models.dev live refresh 2026-08-12T08:49:14Z sha256=ffe72277408ee3d8 — max_output 196608 confirmed"
       },
       "capabilities": [
         "thinking",
@@ -889,7 +889,7 @@
       },
       "provenance": {
         "primary": "curated",
-        "updated_at": "2026-08-12T00:00:00Z"
+        "updated_at": "2026-08-12T08:49:14Z"
       }
     },
     {
@@ -899,13 +899,13 @@
       "status": "active",
       "context_window": {
         "value": 1048576,
-        "source": "spec",
-        "origin": "models.dev limit.context=1048576 (live fetch 2026-08-12, sha256 pinned in sources[])"
+        "source": "verified",
+        "origin": "models.dev limit.context=1048576 (live fetch 2026-08-12, sha256 pinned in sources[]) · models.dev live refresh 2026-08-12T08:49:14Z sha256=ffe72277408ee3d8 — context_window 1048576 confirmed"
       },
       "max_output": {
         "value": 131072,
-        "source": "spec",
-        "origin": "models.dev limit.output=131072 (live fetch 2026-08-12)"
+        "source": "verified",
+        "origin": "models.dev limit.output=131072 (live fetch 2026-08-12) · models.dev live refresh 2026-08-12T08:49:14Z sha256=ffe72277408ee3d8 — max_output 131072 confirmed"
       },
       "capabilities": [
         "thinking",
@@ -937,7 +937,7 @@
       },
       "provenance": {
         "primary": "curated",
-        "updated_at": "2026-08-12T00:00:00Z"
+        "updated_at": "2026-08-12T08:49:14Z"
       }
     },
     {
@@ -947,13 +947,13 @@
       "status": "active",
       "context_window": {
         "value": 262144,
-        "source": "spec",
-        "origin": "models.dev limit.context=262144 (live fetch 2026-08-12, sha256 pinned in sources[])"
+        "source": "verified",
+        "origin": "models.dev limit.context=262144 (live fetch 2026-08-12, sha256 pinned in sources[]) · models.dev live refresh 2026-08-12T08:49:14Z sha256=ffe72277408ee3d8 — context_window 262144 confirmed"
       },
       "max_output": {
         "value": 131072,
-        "source": "spec",
-        "origin": "models.dev limit.output=131072 (live fetch 2026-08-12)"
+        "source": "verified",
+        "origin": "models.dev limit.output=131072 (live fetch 2026-08-12) · models.dev live refresh 2026-08-12T08:49:14Z sha256=ffe72277408ee3d8 — max_output 131072 confirmed"
       },
       "capabilities": [
         "thinking",
@@ -989,7 +989,7 @@
       },
       "provenance": {
         "primary": "curated",
-        "updated_at": "2026-08-12T00:00:00Z"
+        "updated_at": "2026-08-12T08:49:14Z"
       }
     },
     {
@@ -999,13 +999,13 @@
       "status": "active",
       "context_window": {
         "value": 1048576,
-        "source": "spec",
-        "origin": "models.dev limit.context=1048576 (live fetch 2026-08-12, sha256 pinned in sources[])"
+        "source": "verified",
+        "origin": "models.dev limit.context=1048576 (live fetch 2026-08-12, sha256 pinned in sources[]) · models.dev live refresh 2026-08-12T08:49:14Z sha256=ffe72277408ee3d8 — context_window 1048576 confirmed"
       },
       "max_output": {
         "value": 131072,
-        "source": "spec",
-        "origin": "models.dev limit.output=131072 (live fetch 2026-08-12)"
+        "source": "verified",
+        "origin": "models.dev limit.output=131072 (live fetch 2026-08-12) · models.dev live refresh 2026-08-12T08:49:14Z sha256=ffe72277408ee3d8 — max_output 131072 confirmed"
       },
       "capabilities": [
         "thinking",
@@ -1037,7 +1037,7 @@
       },
       "provenance": {
         "primary": "curated",
-        "updated_at": "2026-08-12T00:00:00Z"
+        "updated_at": "2026-08-12T08:49:14Z"
       }
     },
     {
@@ -1047,13 +1047,13 @@
       "status": "active",
       "context_window": {
         "value": 1048576,
-        "source": "spec",
-        "origin": "models.dev limit.context=1048576 (live fetch 2026-08-12, sha256 pinned in sources[])"
+        "source": "verified",
+        "origin": "models.dev limit.context=1048576 (live fetch 2026-08-12, sha256 pinned in sources[]) · models.dev live refresh 2026-08-12T08:49:14Z sha256=ffe72277408ee3d8 — context_window 1048576 confirmed"
       },
       "max_output": {
         "value": 131072,
-        "source": "spec",
-        "origin": "models.dev limit.output=131072 (live fetch 2026-08-12)"
+        "source": "verified",
+        "origin": "models.dev limit.output=131072 (live fetch 2026-08-12) · models.dev live refresh 2026-08-12T08:49:14Z sha256=ffe72277408ee3d8 — max_output 131072 confirmed"
       },
       "capabilities": [
         "thinking",
@@ -1089,7 +1089,7 @@
       },
       "provenance": {
         "primary": "curated",
-        "updated_at": "2026-08-12T00:00:00Z"
+        "updated_at": "2026-08-12T08:49:14Z"
       }
     },
     {
@@ -1099,13 +1099,13 @@
       "status": "active",
       "context_window": {
         "value": 256000,
-        "source": "spec",
-        "origin": "models.dev limit.context=256000 (live fetch 2026-08-12, sha256 pinned in sources[])"
+        "source": "verified",
+        "origin": "models.dev limit.context=256000 (live fetch 2026-08-12, sha256 pinned in sources[]) · models.dev live refresh 2026-08-12T08:49:14Z sha256=ffe72277408ee3d8 — context_window 256000 confirmed"
       },
       "max_output": {
         "value": 64000,
-        "source": "spec",
-        "origin": "models.dev limit.output=64000 (live fetch 2026-08-12)"
+        "source": "verified",
+        "origin": "models.dev limit.output=64000 (live fetch 2026-08-12) · models.dev live refresh 2026-08-12T08:49:14Z sha256=ffe72277408ee3d8 — max_output 64000 confirmed"
       },
       "capabilities": [
         "thinking",
@@ -1137,7 +1137,7 @@
       },
       "provenance": {
         "primary": "curated",
-        "updated_at": "2026-08-12T00:00:00Z"
+        "updated_at": "2026-08-12T08:49:14Z"
       }
     },
     {
@@ -1147,13 +1147,13 @@
       "status": "active",
       "context_window": {
         "value": 256000,
-        "source": "spec",
-        "origin": "models.dev limit.context=256000 (live fetch 2026-08-12, sha256 pinned in sources[])"
+        "source": "verified",
+        "origin": "models.dev limit.context=256000 (live fetch 2026-08-12, sha256 pinned in sources[]) · models.dev live refresh 2026-08-12T08:49:14Z sha256=ffe72277408ee3d8 — context_window 256000 confirmed"
       },
       "max_output": {
         "value": 128000,
-        "source": "spec",
-        "origin": "models.dev limit.output=128000 (live fetch 2026-08-12)"
+        "source": "verified",
+        "origin": "models.dev limit.output=128000 (live fetch 2026-08-12) · models.dev live refresh 2026-08-12T08:49:14Z sha256=ffe72277408ee3d8 — max_output 128000 confirmed"
       },
       "capabilities": [
         "thinking",
@@ -1187,7 +1187,7 @@
       },
       "provenance": {
         "primary": "curated",
-        "updated_at": "2026-08-12T00:00:00Z"
+        "updated_at": "2026-08-12T08:49:14Z"
       }
     },
     {
@@ -1197,13 +1197,13 @@
       "status": "active",
       "context_window": {
         "value": 1050000,
-        "source": "spec",
-        "origin": "models.dev limit.context=1050000 (live fetch 2026-08-12, sha256 pinned in sources[])"
+        "source": "verified",
+        "origin": "models.dev limit.context=1050000 (live fetch 2026-08-12, sha256 pinned in sources[]) · models.dev live refresh 2026-08-12T08:49:14Z sha256=ffe72277408ee3d8 — context_window 1050000 confirmed"
       },
       "max_output": {
         "value": 1050000,
-        "source": "spec",
-        "origin": "models.dev limit.output=1050000 (live fetch 2026-08-12)"
+        "source": "verified",
+        "origin": "models.dev limit.output=1050000 (live fetch 2026-08-12) · models.dev live refresh 2026-08-12T08:49:14Z sha256=ffe72277408ee3d8 — max_output 1050000 confirmed"
       },
       "capabilities": [
         "thinking",
@@ -1239,7 +1239,7 @@
       },
       "provenance": {
         "primary": "curated",
-        "updated_at": "2026-08-12T00:00:00Z"
+        "updated_at": "2026-08-12T08:49:14Z"
       }
     },
     {
@@ -1249,13 +1249,13 @@
       "status": "active",
       "context_window": {
         "value": 500000,
-        "source": "spec",
-        "origin": "models.dev limit.context=500000 (live fetch 2026-08-12, sha256 pinned in sources[])"
+        "source": "verified",
+        "origin": "models.dev limit.context=500000 (live fetch 2026-08-12, sha256 pinned in sources[]) · models.dev live refresh 2026-08-12T08:49:14Z sha256=ffe72277408ee3d8 — context_window 500000 confirmed"
       },
       "max_output": {
         "value": 500000,
-        "source": "spec",
-        "origin": "models.dev limit.output=500000 (live fetch 2026-08-12)"
+        "source": "verified",
+        "origin": "models.dev limit.output=500000 (live fetch 2026-08-12) · models.dev live refresh 2026-08-12T08:49:14Z sha256=ffe72277408ee3d8 — max_output 500000 confirmed"
       },
       "capabilities": [
         "thinking",
@@ -1291,7 +1291,7 @@
       },
       "provenance": {
         "primary": "curated",
-        "updated_at": "2026-08-12T00:00:00Z"
+        "updated_at": "2026-08-12T08:49:14Z"
       }
     }
   ],
@@ -1382,5 +1382,7 @@
         "reason": "superseded by glm-5 in gateway catalog (KLIP-6-style decommission; tombstone never deleted)"
       }
     }
-  ]
+  ],
+  "snapshot_id": "ffe72277408ee3d8",
+  "refreshed_at": "2026-08-12T08:49:14Z"
 }

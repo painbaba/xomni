@@ -141,6 +141,7 @@ footer.site-footer{border-top:1px solid var(--border);padding:40px 24px;margin-t
       <a href="index.html" aria-current="true">Home</a>
       <a href="skills.html">Skills</a>
       <a href="mcp.html">MCP Catalog</a>
+      <a href="features.html">Features</a>
       <a href="gallery.html">Gallery</a>
       <a href="docs/install.html">Docs</a>
       <a href="docs/sponsorship.html">Sponsorship</a>
@@ -165,7 +166,7 @@ footer.site-footer{border-top:1px solid var(--border);padding:40px 24px;margin-t
     </div>
     <div class="hero-art">
       <div class="term" id="termMock" aria-label="XOMNI terminal demo">
-        <div class="term-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="t">xomni — 7 agents · 17 plugins · 170 skills</span></div>
+        <div class="term-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="t">xomni — 7 agents · 22 plugins · 170 skills</span></div>
         <div class="term-body">
           <div><span class="prompt">$ </span><span class="cmd" id="typedCmd"></span><span class="caret" id="caret"></span></div>
           <div id="termLines"></div>
@@ -176,10 +177,10 @@ footer.site-footer{border-top:1px solid var(--border);padding:40px 24px;margin-t
   </section>
   <section class="stats-band" aria-label="XOMNI by the numbers">
     <div class="stat"><strong class="num" data-count="7">0</strong><span>agents composed</span></div>
-    <div class="stat"><strong class="num" data-count="17">0</strong><span>plugins shipped</span></div>
+    <div class="stat"><strong class="num" data-count="22">0</strong><span>plugins shipped</span></div>
     <div class="stat"><strong class="num" data-count="170">0</strong><span>skills</span></div>
     <div class="stat"><strong class="num" data-count="25">0</strong><span>verified free models</span></div>
-    <div class="stat"><strong class="num" data-count="677">0</strong><span>tests passing</span></div>
+    <div class="stat"><strong class="num" data-count="842">0</strong><span>tests passing</span></div>
     <div class="stat"><strong class="num" data-count="42">0</strong><span>domains</span></div>
   </section>
   <section class="block reveal" id="compose">
@@ -190,7 +191,7 @@ footer.site-footer{border-top:1px solid var(--border);padding:40px 24px;margin-t
       <article class="card reveal"><span class="tag">Composed in</span><h3>OpenCode · jcode · Codex · Aider · Goose · OpenClaw</h3><p>Status-line TUI, RAM discipline, sandboxed execution, symbol-level repo maps, MCP-native extensibility, personal memory and media understanding — each as a plugin.</p></article>
       <article class="card reveal"><span class="tag">Why it works</span><h3>Edge modules, not forks</h3><p>Every strength lands as a tested plugin on the host core. No 2.7&nbsp;GB source merge, no broken monolith — just composed capability.</p></article>
     </div>
-    <h2>17 plugins, <span class="muted">seven themes</span></h2>
+    <h2>22 plugins, <span class="muted">seven themes + new wave</span></h2>
     <div class="plugins-grid">
       <div class="plugin-col"><h4>Sponsorship</h4><div class="pl"><div class="pn">waitperk</div><div class="pd">sponsor line, impressions, 50/50</div></div><div class="pl"><div class="pn">perkline</div><div class="pd">CPM/CPC tiers, receipts, escrow</div></div></div>
       <div class="plugin-col"><h4>Free models</h4><div class="pl"><div class="pn">provider-pool</div><div class="pd">25 verified models, health checks</div></div><div class="pl"><div class="pn">local-models</div><div class="pd">Ollama / LM Studio wiring</div></div></div>
@@ -199,6 +200,7 @@ footer.site-footer{border-top:1px solid var(--border);padding:40px 24px;margin-t
       <div class="plugin-col"><h4>Integration</h4><div class="pl"><div class="pn">context-loader</div><div class="pd">fetch page + describe image</div></div><div class="pl"><div class="pn">mcp-catalog</div><div class="pd">MCP server dispatch</div></div><div class="pl"><div class="pn">title-statusline</div><div class="pd">sponsor line in the title bar</div></div><div class="pl"><div class="pn">omni-skills</div><div class="pd">SKILL.md interop + marketplaces</div></div></div>
       <div class="plugin-col"><h4>Creative</h4><div class="pl"><div class="pn">omni-design</div><div class="pd">/design artifacts + slop audit</div></div></div>
       <div class="plugin-col"><h4>Workflow</h4><div class="pl"><div class="pn">omni-parallel</div><div class="pd">/swarm queue, judge, PR-split</div></div></div>
+      <div class="plugin-col"><h4>New wave</h4><div class="pl"><div class="pn">omni-registry</div><div class="pd">25-model capability registry</div></div><div class="pl"><div class="pn">codebase-index</div><div class="pd">FTS5 search + symbol catalog</div></div><div class="pl"><div class="pn">omni-tools</div><div class="pd">561-entry corpus + BM25 router</div></div><div class="pl"><div class="pn">bharat-pack</div><div class="pd">8 UI languages, India stack</div></div><div class="pl"><div class="pn">cost-tracker</div><div class="pd">budget caps + cost ledger</div></div></div>
     </div>
   </section>
   <section class="block reveal" id="models">
@@ -224,7 +226,7 @@ footer.site-footer{border-top:1px solid var(--border);padding:40px 24px;margin-t
   </section>
   <section class="cta-band reveal" aria-label="Call to action">
     <h2>Ready to run everything?</h2>
-    <p class="sub">One agent. Every feature. Every free model. 358 tests passing, and it only gets better.</p>
+    <p class="sub">One agent. Every feature. Every free model. 842 tests passing, and it only gets better.</p>
     <div class="cta-row center">
       <button class="btn-primary" data-go="docs/install.html">Install XOMNI</button>
       <button data-go="mcp.html">Browse 311 MCP servers</button>
@@ -290,10 +292,10 @@ footer.site-footer{border-top:1px solid var(--border);padding:40px 24px;margin-t
   function boot(){
     var cmd=qs('#typedCmd'),lines=qs('#termLines');
     var text='hermes run --compose';
-    if(RM){cmd.textContent=text;lines.innerHTML='<div class="out">▸ 7 agents online — Hermes host core</div><div class="out">▸ 17 plugins loaded — <b>0 hooks in hot path</b></div><div class="out">▸ 170 skills indexed across 42 domains</div><div class="out">▸ 25 free models verified — <b>latency 2–26s, honest</b></div><div class="out ok">▸ 677/677 tests passing</div>';return}
+    if(RM){cmd.textContent=text;lines.innerHTML='<div class="out">▸ 7 agents online — Hermes host core</div><div class="out">▸ 22 plugins loaded — <b>0 hooks in hot path</b></div><div class="out">▸ 170 skills indexed across 42 domains</div><div class="out">▸ 25 free models verified — <b>latency 2–26s, honest</b></div><div class="out ok">▸ 842/842 tests passing</div>';return}
     var i=0;
     function type(){if(i<=text.length){cmd.textContent=text.slice(0,i);i++;setTimeout(type,60+Math.random()*50)}else{enter()}}
-    function enter(){var linesArr=['<div class="out">▸ 7 agents online — Hermes host core</div>','<div class="out">▸ 17 plugins loaded — <b>0 hooks in hot path</b></div>','<div class="out">▸ 170 skills indexed across 42 domains</div>','<div class="out">▸ 25 free models verified — <b>latency 2–26s, honest</b></div>','<div class="out ok">▸ 677/677 tests passing</div>'];
+    function enter(){var linesArr=['<div class="out">▸ 7 agents online — Hermes host core</div>','<div class="out">▸ 22 plugins loaded — <b>0 hooks in hot path</b></div>','<div class="out">▸ 170 skills indexed across 42 domains</div>','<div class="out">▸ 25 free models verified — <b>latency 2–26s, honest</b></div>','<div class="out ok">▸ 842/842 tests passing</div>'];
       var k=0;function line(){if(k<linesArr.length){lines.innerHTML+=linesArr[k];k++;setTimeout(line,90)}}
       setTimeout(line,120);
     }

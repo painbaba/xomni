@@ -50,6 +50,20 @@ header.site-nav.scrolled{box-shadow:0 8px 24px rgba(0,0,0,.5)}
 }
 @media(max-width:600px){.nav-links{display:none}}
 @media (prefers-reduced-motion: reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}.bg-grid{display:none}}
+/* ===== docs search ===== */
+.docs-search{margin:0 0 28px;padding:16px 18px;border:1px solid var(--border);border-radius:var(--radius-2);background:var(--surface-1)}
+.docs-search label{display:block;font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.docs-search input{width:100%;min-height:44px;padding:10px 14px;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-1);outline:none;transition:border-color var(--dur-fast)}
+.docs-search input:focus{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 18%,transparent)}
+.docs-search input::placeholder{color:var(--faint)}
+.docs-search [role="status"]{font-size:12.5px;color:var(--faint);margin-top:8px;min-height:1em}
+.docs-results{list-style:none;margin:10px 0 0;display:grid;gap:6px}
+.docs-results:empty{display:none}
+.docs-results a{display:block;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-1);background:var(--surface-2);transition:border-color var(--dur-fast)}
+.docs-results a:hover,.docs-results a:focus-visible{border-color:var(--accent)}
+.docs-results .t{display:block;color:var(--ink);font-weight:600;font-size:14px}
+.docs-results .s{display:block;color:var(--muted);font-size:12.5px;margin-top:2px}
+.docs-results .h{display:block;color:var(--accent);font-size:11.5px;letter-spacing:.04em;margin-top:2px}
 </style>
 </head>
 <body>
@@ -62,6 +76,7 @@ header.site-nav.scrolled{box-shadow:0 8px 24px rgba(0,0,0,.5)}
       <a href="../index.html">Home</a>
       <a href="../skills.html">Skills</a>
       <a href="../mcp.html">MCP Catalog</a>
+      <a href="../features.html">Features</a>
       <a href="../gallery.html">Gallery</a>
       <a href="install.html" aria-current="page">Docs</a>
       <a href="sponsorship.html">Sponsorship</a>
@@ -86,6 +101,12 @@ header.site-nav.scrolled{box-shadow:0 8px 24px rgba(0,0,0,.5)}
     </aside>
 
     <article class="docs-body">
+      <div class="docs-search" id="docsSearch">
+        <label for="docsSearchInput">Search docs</label>
+        <input type="search" id="docsSearchInput" placeholder="e.g. windows, provider, sponsor, update…" autocomplete="off" aria-controls="docsResults">
+        <div role="status" id="docsSearchStatus" aria-live="polite"></div>
+        <ul class="docs-results" id="docsResults"></ul>
+      </div>
       <h1>Install XOMNI</h1>
       <p class="lead">XOMNI is a single repository with two launchers: <span class="mono">run.cmd</span> for Windows and <span class="mono">run.sh</span> for POSIX systems. The only runtime requirement is a recent <span class="mono">node</span>.</p>
 
@@ -171,6 +192,7 @@ header.site-nav.scrolled{box-shadow:0 8px 24px rgba(0,0,0,.5)}
   <p class="footer-bottom muted">© <span data-year>2026</span> XOMNI · compose, don't merge.</p>
 </footer>
 
+<script src="../js/docs-search.js"></script>
 <script src="../js/site.js"></script>
 </body>
 </html>

@@ -39,7 +39,7 @@ fix is available unless you agree otherwise.
 
 ## Scope
 
-In scope: the XOMNI codebase in this repository, its 16 plugins, the
+In scope: the XOMNI codebase in this repository, its 22 plugins, the
 `data/build_db.py` pipeline and its outputs, and the flagship website.
 
 Out of scope: third-party skills, models, and APIs referenced by XOMNI

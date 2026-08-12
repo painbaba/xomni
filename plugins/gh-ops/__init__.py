@@ -1,12 +1,14 @@
 """gh-ops — GitHub/GitLab workflows via the gh/glab CLIs (strict parsing).
 
 Registers:
-  * slash command ``/gh status|prs [repo]|issues [repo]|me``
+  * slash command ``/gh status|prs [repo]|issues [repo]|me|pr-review <n> <text>|pr-summary <n> <text>``
   * model tool ``gh_ops(action, repo?)``
 
-Both share :func:`core.execute` — CLI output is parsed strictly (column
-positions from the header line), never trusted as raw text. Errors (CLI
-missing, not authenticated, network failure) come back as clean messages.
+Both share :func:`core.execute` (and the PR-review helpers
+:func:`core.execute_pr_review` / :func:`core.execute_pr_summary`) — CLI
+output is parsed strictly (column positions from the header line), never
+trusted as raw text. Errors (CLI missing, not authenticated, network
+failure) come back as clean messages.
 No hooks; nothing here alters agent behavior.
 """
 from __future__ import annotations
@@ -18,6 +20,8 @@ HELP = (
     "/gh prs [repo]       list up to 20 pull requests (OWNER/REPO optional)\n"
     "/gh issues [repo]    list up to 20 issues (OWNER/REPO optional)\n"
     "/gh me               show the authenticated GitHub account\n"
+    "/gh pr-review <n> <text>   post a review comment on pull request <n>\n"
+    "/gh pr-summary <n> <text>  post a review summary comment on pull request <n>\n"
 )
 
 
@@ -28,8 +32,18 @@ def _handle_gh(raw: str) -> str:
         return core.execute("status")
     parts = raw.split(None, 1)
     action = parts[0].lower()
-    repo = parts[1].strip() if len(parts) > 1 else ""
-    return core.execute(action, repo or None)
+    rest = parts[1].strip() if len(parts) > 1 else ""
+    if action in ("pr-review", "pr-summary"):
+        # Syntax: "<n> [body...]" — the number is required, the text optional
+        # (the core function reports a usage hint when the body is empty).
+        num_text, _, body = rest.partition(" ")
+        num_text = num_text.strip()
+        if not num_text.isdigit():
+            return f"/gh {action} needs a PR number: /gh {action} <n> [text]"
+        if action == "pr-review":
+            return core.execute_pr_review(int(num_text), body.strip())
+        return core.execute_pr_summary(int(num_text), body.strip())
+    return core.execute(action, rest or None)
 
 
 def _tool_gh_ops(args: dict, **kwargs) -> str:
@@ -64,8 +78,8 @@ def register(ctx) -> None:
     ctx.register_command(
         "gh",
         handler=_handle_gh,
-        description="GitHub/GitLab workflows via the gh/glab CLIs: auth status, PR list, issue list, current user",
-        args_hint="status|prs [repo]|issues [repo]|me",
+        description="GitHub/GitLab workflows via the gh/glab CLIs: auth status, PR list, issue list, current user, PR review comments",
+        args_hint="status|prs [repo]|issues [repo]|me|pr-review <n> <text>|pr-summary <n> <text>",
     )
     ctx.register_tool(
         name="gh_ops",

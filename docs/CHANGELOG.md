@@ -1,10 +1,11 @@
 # XOMNI Changelog
 
-> Current: **17 plugins / 677 tests / 519 skills / 311 MCPs**
+> Current: **22 plugins / 842 tests / 519 skills / 311 MCPs**
 > All entries are taken verbatim from `git log`; nothing invented.
 
 ## 2026-08-12
 
+- `2ecec88` — next-feature wave: 5 new plugins (22 total) — omni-registry (capability registry, corrected 1M ctx), codebase-index (FTS5 repomap v2), omni-tools (tool-search corpus/BM25 router), bharat-pack (Hindi + Indian model pool), cost-tracker + perkline 2.0 deltas; 763/763 tests; docs/site/CLI cascaded. Test-hardening pass since: matrix regenerated 2026-08-12 14:19 = 842/842.
 - `da432f3` — site: 7 theme columns (auto-fit grid), heading fix
 - `ee24e9e` — XOMNI: 17 plugins, flagship site, skills+MCP catalogs, 677 tests green
 
@@ -21,4 +22,4 @@
 
 ---
 
-*Generated from `git log` — 10 commits total across 2 days.*
+*Generated from `git log` — 25 commits total across 2 days.*

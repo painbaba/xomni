@@ -8,6 +8,7 @@ import datetime
 import os
 import tempfile
 import unittest
+import csv
 
 import core
 
@@ -175,6 +176,45 @@ class CostTrackerTests(unittest.TestCase):
         s = tr.budget_status(ts=_ts(2026, 8, 12, 12))
         self.assertEqual(s["daily_cap"], 2.0)
         self.assertTrue(s["hard_stop"])
+
+    # ---- export / digest ----
+
+    def test_export_csv_rows_match_ledger(self):
+        tr = self._tracker()
+        tr.log_call("deepseek-chat", provider="openrouter", tokens_in=1000, tokens_out=500,
+                    ts=_ts(2026, 8, 12, 10))                      # $0.00082
+        tr.log_call("gpt-4o", tokens_in=2000, tokens_out=1000, ts=_ts(2026, 8, 12, 11))  # $0.015
+        csv_path = os.path.join(self._tmp.name, "ledger.csv")
+        res = tr.export_csv(csv_path)
+        self.assertEqual(res["rows"], 2)
+        self.assertTrue(os.path.exists(csv_path))
+        with open(csv_path, newline="", encoding="utf-8") as fh:
+            rows = list(csv.reader(fh))
+        self.assertEqual(rows[0], ["timestamp", "model", "tokens_in", "tokens_out", "est_cost"])
+        self.assertEqual(len(rows), 3)  # header + one line per ledger row
+        by_model = {r[1]: r for r in rows[1:]}
+        self.assertEqual(by_model["deepseek-chat"][2:], ["1000", "500", "0.00082"])
+        self.assertEqual(by_model["gpt-4o"][2:], ["2000", "1000", "0.015"])
+        self.assertEqual(tr.totals()["calls"], len(rows) - 1)  # csv rows match ledger
+
+    def test_digest_contains_totals(self):
+        tr = self._tracker(daily_cap=1.0)
+        tr.log_call("deepseek-chat", tokens_in=1_000_000, tokens_out=0, ts=_ts(2026, 8, 12, 10))   # $0.27
+        tr.log_call("gpt-4o", tokens_in=2_000_000, tokens_out=1_000_000, ts=_ts(2026, 8, 12, 11))   # $15.00
+        text = tr.digest_text(ts=_ts(2026, 8, 12, 12))
+        self.assertIn("weekly digest", text)
+        self.assertIn("calls: 2", text)
+        self.assertIn("$15.270000", text)      # week total = 0.27 + 15.00
+        self.assertIn("gpt-4o", text)          # top model by cost
+        self.assertIn("deepseek-chat", text)
+        self.assertIn("budget (week)", text)
+
+    def test_digest_empty_ledger_graceful(self):
+        tr = self._tracker()
+        text = tr.digest_text(ts=_ts(2026, 8, 12, 12))
+        self.assertIn("weekly digest", text)
+        self.assertIn("no calls logged this week", text)
+        self.assertIn("budget (week)", text)
 
 
 if __name__ == "__main__":

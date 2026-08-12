@@ -172,6 +172,17 @@ class AgentSnippetGenTests(unittest.TestCase):
         self.assertIn(core.GATEWAY_URL, b)
         self.assertIn("openrouter", b)  # documented fallback chain
 
+    def test_waba_block_documented_shape(self):
+        """WABA agent block (WhatsApp B2B mode) documents the Cloud API env
+        vars and stays OUT of AGENT_CONFIGS (it is not an LLM endpoint)."""
+        b = core.WABA_AGENT_BLOCK
+        self.assertIn("WHATSAPP_CLOUD_PHONE_NUMBER_ID", b)
+        self.assertIn("WHATSAPP_CLOUD_ACCESS_TOKEN", b)
+        self.assertIn("WHATSAPP_CLOUD_VERIFY_TOKEN", b)
+        self.assertIn(core.GATEWAY_URL, b)  # same free-model brain
+        self.assertIn("COMPLIANCE", b)  # compliance rule is part of the shape
+        self.assertNotIn("waba", core.AGENT_CONFIGS)
+
 
 class ModelListParsingTests(unittest.TestCase):
     """models_text / filter_by_tag formatting and filtering."""

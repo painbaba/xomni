@@ -15,7 +15,7 @@ to ~100x. Ranked by measured/estimated impact:
 
 | # | Root cause | Mechanism | Impact |
 |---|-----------|-----------|--------|
-| 1 | **prompt-enhancer auto mode** | One **extra `ctx.llm.complete` per turn** (~10–20s each on the slow provider) on top of every real turn | **Primary multiplier** — one LLM call per turn × 17 plugins' worth of context inflation |
+| 1 | **prompt-enhancer auto mode** | One **extra `ctx.llm.complete` per turn** (~10–20s each on the slow provider) on top of every real turn | **Primary multiplier** — one LLM call per turn × 22 plugins' worth of context inflation |
 | 2 | **15 plugins enabled at once** | `context-compact, context-loader, gh-ops, local-models, mcp-catalog, omni-media, omni-memory, perkline, PROMPT-ENHANCER, provider-pool, repomap, sandbox-gate, title-statusline, verify-runner, waitperk` | N hook-triggered LLM calls per turn multiply a ~17s baseline by 3–6x |
 | 3 | **Per-event file I/O in hooks** | perkline + waitperk rewrote `state.json` AND `current.txt` on **every** `pre_llm_call`/`post_tool_call` (≥4 disk ops/turn); perkline also ran a full `os.walk` of the cwd per event | Measured 90.5ms + 106.8ms per event (perkline) |
 | 4 | **omni-memory brief injection** | Injects a memory brief into **every** `pre_llm_call` when user message ≥ threshold | Per-turn token inflation + sqlite query |
@@ -65,7 +65,7 @@ per process; hook medians are steady-state.
 - BEFORE: ~95.0ms + ~111.2ms ≈ **~206ms/turn** (perkline alone ≈ 197ms)
 - AFTER: ~1.32ms + ~0.59ms ≈ **~1.9ms/turn** (~108x reduction) — **well under the <1s/turn target**
 
-Cold imports: all 17 plugins < 90ms one-time (`context-loader` 88ms worst on the after run;
+Cold imports: all 22 plugins < 90ms one-time (`context-loader` 88ms worst on the after run;
 perkline 21.7ms; waitperk 28.7ms). One-time per process, negligible.
 
 ### What the fixes actually do
@@ -123,6 +123,6 @@ zero-LLM plugins, and never enable per-turn LLM hooks.
 
 ## 4. Test status
 
-Full suite (`bash .bench/run_all_tests.sh`, `python` 3.11): **677/677 pass, 0 failures**
-(17/17 plugin suites; the count grew 356→358 when the perf-contract regression tests
-landed, then →677 with omni-design (8) + omni-parallel (20)).
+Full suite (`bash .bench/run_all_tests.sh`, `python` 3.11): **842/842 pass, 0 failures**
+(22/22 plugin suites; the count grew 356→358 when the perf-contract regression tests
+landed, then →677 with omni-design (8) + omni-parallel (20), →763 with the next-feature wave (5 new plugins), →842 with the test-hardening pass).

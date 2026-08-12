@@ -3,7 +3,10 @@
 Commands:
   /skills-scan <dir>              inventory SKILL.md skills (parse + validate)
   /skills-install <dir> [--target=<skills_root>] [--dry-run]
-  /skills-marketplace <dir>       install every skill in a marketplace repo
+  /skills-marketplace <url-or-dir> [--target=<skills_root>] [--dry-run]
+                                  install every skill from a git marketplace
+                                  URL (https:// or git://, shallow clone) or a
+                                  local repo dir
 Tool:     skills_import(dir, target, dry_run)
 No hooks registered — zero per-turn cost.
 """
@@ -109,6 +112,31 @@ def _handle_install(raw: str) -> str:
     return f"/skills-install: {mode}OK — {os.path.basename(r['dest'])} -> {target}"
 
 
+def _handle_marketplace(raw: str) -> str:
+    """/skills-marketplace <url-or-dir> — git URL (https/git, shallow clone,
+    cached under ~/.xomni-marketplaces) or a local marketplace dir."""
+    path, target, dry = _parse_args(raw)
+    if not path:
+        return ("/skills-marketplace <url-or-dir> [--target=...] [--dry-run] — "
+                "install every skill from a git marketplace URL (https:// or "
+                "git://, shallow clone) or a local repo dir.")
+    mode = "DRY-RUN " if dry else ""
+    if path.startswith(("https://", "git://")) or "://" in path:
+        # anything scheme-like goes through the strict URL gate (fail-closed)
+        r = core.install_marketplace_url(path, target, dry_run=dry)
+        if not r["ok"]:
+            return f"/skills-marketplace: {mode}FAILED — {r.get('reason', 'see details')}"
+        return (f"/skills-marketplace: {mode}OK — {r['installed']} installed, "
+                f"{r['rejected']} rejected (cached {r.get('cache_dir', '')}) -> {target}")
+    if not os.path.isdir(path):
+        return f"/skills-marketplace: not a directory or git URL: {path}"
+    r = core.install_marketplace(path, target, dry_run=dry)
+    if not r["ok"]:
+        return f"/skills-marketplace: {mode}FAILED — {r.get('reason', 'see details')}"
+    return (f"/skills-marketplace: {mode}OK — {r['installed']} installed, "
+            f"{r['rejected']} rejected -> {target}")
+
+
 def _tool_skills_import(params: dict) -> str:
     try:
         d = (params or {}).get("dir") or ""
@@ -155,9 +183,9 @@ def register(ctx) -> None:
     ctx.register_command("skills-install", handler=_handle_install,
                          description="Install a skill or marketplace (SKILL.md interop) into the skills surface.",
                          args_hint="<dir> [--target=...] [--dry-run]")
-    ctx.register_command("skills-marketplace", handler=_handle_install,
-                         description="Install every skill in a marketplace repo root (alias of /skills-install).",
-                         args_hint="<marketplace_dir> [--target=...] [--dry-run]")
+    ctx.register_command("skills-marketplace", handler=_handle_marketplace,
+                         description="Install every skill from a git marketplace URL (https/git, shallow clone, cached) or a local repo dir.",
+                         args_hint="<url-or-dir> [--target=...] [--dry-run]")
     ctx.register_tool("skills_import", toolset="skills", schema=TOOL_SCHEMA,
                       handler=_tool_skills_import,
                       description="Import SKILL.md skills (single dir or marketplace) into the Hermes skills surface, fail-closed.")

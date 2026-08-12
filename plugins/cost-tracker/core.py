@@ -23,6 +23,7 @@ import datetime
 import os
 import sqlite3
 import time
+import csv
 
 DB_DIR = os.path.expanduser("~/.xomni-cost")
 DB_PATH = os.path.join(DB_DIR, "costs.db")
@@ -296,9 +297,20 @@ class CostTracker:
         """Pre-call gate used by cost_track: cheap, read-only."""
         return self.budget_status(ts=ts)
 
-    def top_models(self, limit: int = 5, ts: float | None = None) -> list[dict]:
-        """Top models by est cost (desc), with call/token counts."""
-        if ts is not None:
+    def top_models(self, limit: int = 5, ts: float | None = None,
+                   week: bool = False) -> list[dict]:
+        """Top models by est cost (desc), with call/token counts.
+
+        ts=None → all-time; ts set → that calendar day; week=True → the ISO
+        week containing ts (or now when ts is None).
+        """
+        if week:
+            rows = self._query(
+                "SELECT model, COUNT(*), COALESCE(SUM(tokens_in),0), COALESCE(SUM(tokens_out),0), "
+                "COALESCE(SUM(est_cost),0) FROM calls WHERE week = ? "
+                "GROUP BY model ORDER BY SUM(est_cost) DESC, COUNT(*) DESC LIMIT ?",
+                (_week_of(ts if ts is not None else time.time()), int(limit)))
+        elif ts is not None:
             rows = self._query(
                 "SELECT model, COUNT(*), COALESCE(SUM(tokens_in),0), COALESCE(SUM(tokens_out),0), "
                 "COALESCE(SUM(est_cost),0) FROM calls WHERE day = ? "
@@ -337,6 +349,74 @@ class CostTracker:
             return {"logged": False, "blocked": True, "reason": check["reason"],
                     "est_cost": 0.0}
         return self.log_call(model, provider, tokens_in, tokens_out, task=task, ts=ts)
+
+    def export_csv(self, path: str) -> dict:
+        """Full ledger → CSV: timestamp, model, tokens_in, tokens_out, est_cost.
+
+        Append-only snapshot (oldest first). Returns {"path": ..., "rows": n}.
+        """
+        rows = self._query(
+            "SELECT ts, model, tokens_in, tokens_out, est_cost FROM calls ORDER BY id")
+        parent = os.path.dirname(os.path.abspath(path))
+        if parent:
+            os.makedirs(parent, exist_ok=True)
+        with open(path, "w", newline="", encoding="utf-8") as fh:
+            writer = csv.writer(fh)
+            writer.writerow(["timestamp", "model", "tokens_in", "tokens_out", "est_cost"])
+            for ts_row, model, tin, tout, cost in rows:
+                writer.writerow([
+                    datetime.datetime.fromtimestamp(ts_row).isoformat(sep=" "),
+                    model, tin, tout, cost])
+        return {"path": os.path.abspath(path), "rows": len(rows)}
+
+    def digest_text(self, ts: float | None = None) -> str:
+        """/cost digest — weekly summary: totals, top 3 models, budget status."""
+        now = ts if ts is not None else time.time()
+        week = _week_of(now)
+        row = self._query(
+            "SELECT COUNT(*), COALESCE(SUM(tokens_in),0), COALESCE(SUM(tokens_out),0), "
+            "COALESCE(SUM(est_cost),0) FROM calls WHERE week = ?", (week,))[0]
+        n, tin, tout, cost = int(row[0]), int(row[1]), int(row[2]), float(row[3])
+        status = self.budget_status(ts=now)
+        top = self.top_models(limit=3, week=True, ts=now)
+        lines = [
+            "cost-tracker — weekly digest (ISO week %s)" % week,
+            "",
+        ]
+        if n:
+            lines.append("  calls: %d   tokens in: %d / out: %d   est cost: $%.6f"
+                         % (n, tin, tout, cost))
+        else:
+            lines.append("  no calls logged this week — the ledger is quiet.")
+        lines.append("  top models (this week):")
+        if top:
+            for m in top:
+                lines.append("    %-20s %5d calls  $%.6f"
+                             % (m["model"][:20], m["calls"], m["est_cost"]))
+        else:
+            lines.append("    (none)")
+        cap_w = status["weekly_cap"]
+        lines.append("  budget (week): spent $%.6f of %s — %s"
+                     % (status["week_spent"],
+                        ("$%.6f" % cap_w) if cap_w > 0 else "no cap",
+                        "OVER" if (cap_w > 0 and status["week_spent"] >= cap_w) else "ok"))
+        return "\n".join(lines)
+
+    def cmd_export(self, raw: str) -> str:
+        """/cost export <path> — full ledger to CSV."""
+        path = (raw or "").strip().strip('"')
+        if not path:
+            return ("usage: /cost export <path.csv> — full ledger → CSV "
+                    "(timestamp, model, tokens_in, tokens_out, est_cost)")
+        try:
+            res = self.export_csv(path)
+        except OSError as exc:
+            return "export failed: %s" % exc
+        return "exported %d ledger rows → %s" % (res["rows"], res["path"])
+
+    def cmd_digest(self, ts: float | None = None) -> str:
+        """/cost digest — weekly summary (plain text)."""
+        return self.digest_text(ts=ts)
 
     def cmd_report(self, ts: float | None = None) -> str:
         """/cost report — top models, totals, budget status."""

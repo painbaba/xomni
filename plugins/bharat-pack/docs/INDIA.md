@@ -77,6 +77,7 @@ Azure Central/South/West India; AWS ap-south-1/ap-south-2.
 | 2 | WhatsApp B2B agent mode (business WABA) | 10 | 6 | AI-Provider ToS → business-owned WABA only |
 | 3 | UPI rails + INR pricing | 8 | 7 | Razorpay; UPI 0% MDR; Autopay; payout KYC |
 | 4 | India model pool | 6 | 9 | ✅ **this plugin** (Sarvam/Bhashini/Krutrim) |
+| 4b | Sarvam TTS dry-run preview (`/bharat tts`) | 5 | 9 | ✅ **this plugin** — payload shape + curl only, no live call, key by env name |
 | 5 | Exam-prep skill packs (CBSE/ICSE 10/12) | 7 | 6 | syllabus drift + licensing risk |
 | 6 | Offline / low-bandwidth mode | 5 | 4 | deprioritized |
 | 7 | Retail-investor packs (IPO + crypto) | 6 | 5 | data licensing + SEBI-adjacent |

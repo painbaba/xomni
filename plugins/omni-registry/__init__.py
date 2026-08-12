@@ -15,13 +15,16 @@ _CTX = None
 HELP = (
     "/models2                 capability registry: ctx/tools/think/vision/video per model + source tags\n"
     "/models2 <capability>    filter rows: image_in | video_in | thinking | always_thinking | tools | structured_output\n"
+    "/models2 diff            changes vs last snapshot: added/removed/changed per model (slug, context, status)\n"
 )
 
 
 def _handle_models2(raw: str) -> str:
-    cap = (raw or "").strip().lower()
+    arg = (raw or "").strip().lower()
+    if arg == "diff":
+        return core.diff_text()
     try:
-        return core.capabilities_text(cap_filter=cap or None)
+        return core.capabilities_text(cap_filter=arg or None)
     except ValueError as exc:
         return f"/models2: {exc}"
 

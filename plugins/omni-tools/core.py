@@ -5,7 +5,7 @@ host already ships a native search bridge (``tool_search`` / ``tool_describe`` /
 ``tool_call``); this module does NOT rebuild that mechanism. It builds the
 *corpus the host cannot see* and exposes it through one router tool:
 
-  * **plugin surfaces** — all 17 plugins in ``plugins/``: model tools and
+  * **plugin surfaces** — all 22 plugins in ``plugins/``: model tools and
     slash commands statically parsed from each ``__init__.py`` (register_tool /
     register_command calls plus the docstring "Commands::" sections) and
     enriched with the plugin.yaml description.
@@ -36,6 +36,7 @@ import math
 import os
 import re
 import sqlite3
+import time
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
 
@@ -618,4 +619,145 @@ def xomni_capabilities(
             f"{r['rank']}. [{r['source']}:{r['kind']}] {r['name']} — {r['description'][:160]}"
             f" (status={r['status']}; {r['hint']})"
         )
+    return "\n".join(lines)
+
+
+# ─── recall benchmark (built-in eval set) ───────────────────────────────────
+# ~20 planted queries, each with a known expected hit that must land in the
+# top 5 on the live corpus. Verified 2026-08-12 against the real repo data
+# (561-entry corpus: 70 plugin surfaces + 311 MCP + 180 skills). Covers all
+# three surfaces plus the synonym-expansion path ("picture photo visual",
+# "web scraping dom") and command paths ("mcp add", "mcp list").
+EVAL_SET: List[Tuple[str, str]] = [
+    ("vision image describe", "describe_image"),          # plugin tool
+    ("browser automation web scraping", "playwright"),    # mcp
+    ("sqlite database query", "sqlite"),                  # mcp
+    ("youtube transcript subtitles", "youtube-transcript"),  # mcp
+    ("memory consolidate recall", "memory-consolidate"),  # plugin command
+    ("mcp server catalog add", "mcp add"),                # plugin command
+    ("pdf extract document", "pdf"),                      # skill
+    ("picture photo visual", "describe_image"),           # synonym path
+    ("web scraping dom", "playwright"),                   # synonym path
+    ("cloudflare workers deploy", "cloudflare"),          # mcp
+    ("ocr scan text", "ocr"),                             # plugin command
+    ("video transcript", "youtube-transcript"),           # mcp
+    ("ffmpeg video clip transcode", "ffmpeg-mcp"),        # mcp
+    ("media directory caption", "mediascan"),             # plugin command
+    ("web page fetch readable", "fetch_page"),            # plugin tool
+    ("caption vision model", "caption"),                  # plugin command
+    ("command list tools mcp", "mcp list"),               # plugin command
+    ("github pull request issue", "github"),              # mcp
+    ("spreadsheet excel csv", "googlesheets"),            # mcp
+    ("document parse extract table", "pdf"),              # skill
+]
+
+
+def eval_recall(
+    index: Optional[ToolSearchIndex] = None,
+    limit: int = 5,
+    persist: bool = False,
+    cache_path: Optional[Path] = None,
+) -> Dict[str, Any]:
+    """Run the built-in EVAL_SET against an index; return top-N recall stats.
+
+    ``recall`` = fraction of queries whose expected hit appears in the top
+    ``limit`` results (case-insensitive name-substring match, same rule the
+    test suite uses). ``last_eval`` is the run timestamp. When ``persist`` is
+    true the summary is written to the SQLite cache (eval table) so
+    ``/tools-stats`` can report the last eval time across runs.
+    """
+    idx = index if index is not None else get_index()
+    results: List[Dict[str, Any]] = []
+    hits = 0
+    for query, expected in EVAL_SET:
+        names = [r["name"] for r in idx.search(query, limit=limit)]
+        rank = next(
+            (i + 1 for i, n in enumerate(names) if expected.lower() in n.lower()),
+            None,
+        )
+        hit = rank is not None
+        hits += int(hit)
+        results.append(
+            {"query": query, "expected": expected, "hit": hit, "rank": rank}
+        )
+    ev: Dict[str, Any] = {
+        "queries": len(EVAL_SET),
+        "hits": hits,
+        "recall": hits / len(EVAL_SET) if EVAL_SET else 0.0,
+        "limit": limit,
+        "last_eval": time.strftime("%Y-%m-%d %H:%M:%S"),
+        "results": results,
+    }
+    if persist:
+        try:
+            cp = Path(cache_path or os.environ.get(ENV_CACHE_PATH) or CACHE_PATH)
+            save_eval(cp, ev)
+        except OSError:
+            pass  # cache is an optimization; never fatal
+    return ev
+
+
+def save_eval(db_path: Path, ev: Dict[str, Any]) -> None:
+    """Persist the eval summary into a key/value 'eval' table (cache db)."""
+    db_path.parent.mkdir(parents=True, exist_ok=True)
+    conn = sqlite3.connect(str(db_path))
+    try:
+        conn.execute("CREATE TABLE IF NOT EXISTS eval (key TEXT PRIMARY KEY, value TEXT)")
+        payload = {k: v for k, v in ev.items() if k != "results"}
+        payload["results"] = json.dumps(ev.get("results", []), sort_keys=True)
+        for key, value in payload.items():
+            encoded = value if isinstance(value, str) else json.dumps(value, sort_keys=True)
+            conn.execute(
+                "INSERT INTO eval (key, value) VALUES (?, ?) "
+                "ON CONFLICT(key) DO UPDATE SET value = excluded.value",
+                (key, encoded),
+            )
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def load_eval(db_path: Path) -> Optional[Dict[str, Any]]:
+    """Last persisted eval summary, or None if never run / db missing."""
+    if not db_path.exists():
+        return None
+    conn = sqlite3.connect(str(db_path))
+    try:
+        try:
+            rows = conn.execute("SELECT key, value FROM eval").fetchall()
+        except sqlite3.OperationalError:
+            return None
+    finally:
+        conn.close()
+    if not rows:
+        return None
+    out: Dict[str, Any] = {}
+    for key, value in rows:
+        try:
+            out[key] = json.loads(value)
+        except (ValueError, TypeError):
+            out[key] = value
+    return out
+
+
+def stats_report(index: Optional[ToolSearchIndex] = None) -> str:
+    """Rendered /tools-stats output: corpus size + recall + last eval time.
+
+    Runs the built-in eval set live (cheap: ~20 in-memory BM25 searches),
+    persists the summary to the cache, and prints corpus counts, top-5
+    recall, and the eval timestamp.
+    """
+    idx = index if index is not None else get_index()
+    stats = idx.stats()
+    ev = eval_recall(index=idx, persist=True)
+    lines = [
+        "omni-tools stats:",
+        f"corpus: {stats['total']} entries "
+        f"(plugin surfaces={stats['by_source'].get('plugin', 0)}, "
+        f"MCP servers={stats['by_source'].get('mcp', 0)}, "
+        f"skills={stats['by_source'].get('skill', 0)})",
+        f"recall: {ev['recall']:.3f} top-{ev['limit']} "
+        f"({ev['hits']}/{ev['queries']} eval queries)",
+        f"last eval: {ev['last_eval']}",
+    ]
     return "\n".join(lines)

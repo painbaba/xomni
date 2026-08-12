@@ -248,3 +248,105 @@ def load_key(env_path: str = r"C:\Users\HP\AppData\Local\hermes\.env") -> str | 
     except OSError:
         return None
     return None
+
+
+# ─── MCP adapter ────────────────────────────────────────────────────────────
+
+_MCP_TOOLS = (
+    {
+        "name": "remember",
+        "description": (
+            "Store one personal fact in omni-memory. Returns the new fact id."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "text": {
+                    "type": "string",
+                    "description": "The fact to store (must be non-blank).",
+                },
+                "source": {
+                    "type": "string",
+                    "description": "Origin label, e.g. 'user', 'chat' (default 'user').",
+                },
+                "tags": {
+                    "type": "string",
+                    "description": "Comma-separated tags for the fact (default '').",
+                },
+            },
+            "required": ["text"],
+        },
+    },
+    {
+        "name": "recall",
+        "description": (
+            "Retrieve stored facts ranked by token overlap with the query, "
+            "newest-first. Blank query returns the newest facts."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "query": {
+                    "type": "string",
+                    "description": "Search query (blank returns newest facts).",
+                },
+                "limit": {
+                    "type": "integer",
+                    "description": "Maximum number of rows to return (default 5).",
+                },
+            },
+            "required": ["query"],
+        },
+    },
+    {
+        "name": "status",
+        "description": "Show omni-memory store status: fact count and database path.",
+        "input_schema": {
+            "type": "object",
+            "properties": {},
+        },
+    },
+)
+
+
+def mcp_tools() -> list[dict]:
+    """MCP-style tool definitions for the omni-memory surface.
+
+    Each entry is ``{name, description, input_schema}`` with
+    ``input_schema`` a JSON Schema object — the shape MCP clients expect
+    over JSON-RPC. Fresh copies are returned so callers cannot mutate the
+    module-level definitions.
+    """
+    return [dict(t) for t in _MCP_TOOLS]
+
+
+def mcp_handle(tool_name: str, args: dict | None = None):
+    """Dispatch one MCP tool call to the memory engine.
+
+    Returns a JSON-serializable result. Raises ``ValueError`` for unknown
+    tools and non-object args so a JSON-RPC layer can map it to an error
+    response.
+    """
+    args = args or {}
+    if not isinstance(args, dict):
+        raise ValueError("mcp_handle: 'args' must be a JSON object")
+    name = (tool_name or "").strip()
+    if name == "remember":
+        return {
+            "id": remember(
+                args.get("text"),
+                source=args.get("source") or "user",
+                tags=args.get("tags") or "",
+            )
+        }
+    if name == "recall":
+        limit = args.get("limit")
+        limit = 5 if limit is None else int(limit)
+        return {"results": recall(args.get("query"), limit=limit)}
+    if name == "status":
+        with closing(_conn()) as db:
+            total = db.execute("SELECT COUNT(*) FROM facts").fetchone()[0]
+        return {"facts": total, "db_path": str(DB_PATH)}
+    raise ValueError(
+        f"unknown memory tool: {name!r} (known: remember, recall, status)"
+    )

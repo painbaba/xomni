@@ -1,6 +1,6 @@
 # XOMNI Validation — Fit Matrix for the "Best of 7 Agents in One" Claim
 
-> Evidence base: `docs/TEST-MATRIX.md` (auto-generated 2026-08-12, **677/677 test
+> Evidence base: `docs/TEST-MATRIX.md` (auto-generated 2026-08-12, **842/842 test
 > methods pass**, 0 failed suites) + static analysis of each plugin's surface
 > (`plugin.yaml` / `core.py`) + `docs/ARCHITECTURE.md` + `docs/FEATURES.md`.
 > Scope: 16 shipped plugins. Claim under test: XOMNI delivers best-quality
@@ -13,7 +13,7 @@ Two independent evidence lines, each required for an ADD-VALUE verdict:
 
 1. **Empirical**: the plugin's test suite passes in full, per
    `docs/TEST-MATRIX.md`. Every plugin below carries its pass count; the matrix
-   total is 677/677 (all suites PASS, none failed, generated 2026-08-12; grew via +2 perf-contract, +8 omni-design, +20 omni-parallel).
+   total is 842/842 (all suites PASS, none failed, generated 2026-08-12; grew via +2 perf-contract, +8 omni-design, +20 omni-parallel, +86 next-feature wave: 5 new plugins, +79 test-hardening pass).
 2. **Static surface analysis**: the plugin's shipped surface
    (`register_tool` / `register_command` / `register_hook` entries in
    `plugin.yaml`) was read and mapped to a task type. A plugin is ADD-VALUE
@@ -27,27 +27,35 @@ does not change task quality (monetization / cosmetic surfaces). No shipped
 plugin earned DUPLICATE-OF-HOST: every overlap found is complementary rather
 than redundant (see §4).
 
-## 2. Per-Plugin Scorecards (14)
+## 2. Per-Plugin Scorecards (22)
 
 | Plugin | Surface (tested) | What it does | Serves | Verdict |
 |---|---|---|---|---|
-| **provider-pool** | `/models`, health check, per-agent config gen — 16 tests | OpenCode Zen gateway catalog: 25 free models (deepseek-v4-flash/pro, qwen3.8-max, glm-5.x, kimi-kx, minimax-mx, gpt-5.6-luna, grok-4.5…), live HTTP health, config generation for every agent from one key | Deep research, general assistant, coding (model choice + failover) | **ADD-VALUE** |
-| **omni-memory** | `/remember`, `/recall`, SQLite facts, LLM consolidation — 8 tests | OpenClaw-style personal memory: explicit fact store across sessions, distinct from the host's message-history session store | Deep research, general assistant, personal memory | **ADD-VALUE** |
-| **context-loader** | `fetch_page` tool, `describe_image` tool, `/fetch`, `/describe` — 34 tests | Aider-style context: any web page → clean readable text (512KB cap, 20s timeout); local jpg/png → vision description via verified minimax-m3 | Deep research, general assistant, media | **ADD-VALUE** |
-| **omni-media** | `/ocr`, `/caption`, `/mediascan` — 9 tests | OpenClaw-style media understanding through a verified vision model | Deep research (document/image pipelines), media/OCR | **ADD-VALUE** |
+| **provider-pool** | `/models`, health check, per-agent config gen — 37 tests | OpenCode Zen gateway catalog: 25 free models (deepseek-v4-flash/pro, qwen3.8-max, glm-5.x, kimi-kx, minimax-mx, gpt-5.6-luna, grok-4.5…), live HTTP health, config generation for every agent from one key | Deep research, general assistant, coding (model choice + failover) | **ADD-VALUE** |
+| **omni-memory** | `/remember`, `/recall`, SQLite facts, LLM consolidation — 29 tests | OpenClaw-style personal memory: explicit fact store across sessions, distinct from the host's message-history session store | Deep research, general assistant, personal memory | **ADD-VALUE** |
+| **context-loader** | `fetch_page` tool, `describe_image` tool, `/fetch`, `/describe` — 69 tests | Aider-style context: any web page → clean readable text (512KB cap, 20s timeout); local jpg/png → vision description via verified minimax-m3 | Deep research, general assistant, media | **ADD-VALUE** |
+| **omni-media** | `/ocr`, `/caption`, `/mediascan` — 27 tests | OpenClaw-style media understanding through a verified vision model | Deep research (document/image pipelines), media/OCR | **ADD-VALUE** |
 | **mcp-catalog** | `/mcp list\|tools\|add\|status\|validate`, `mcp_call` tool — 26 tests | Goose-style MCP catalog: discover/validate/manage MCP servers; dispatches through the host `mcp__server__tool` registry | MCP interop, general assistant, research tooling | **ADD-VALUE** |
-| **repomap** | `repomap` tool, `/repomap` — 15 tests | Aider's signature: symbol-level repo map (classes/functions/types per file, 13 lang families, 6000-char cap) for navigation without dumping files | Coding, codebase navigation | **ADD-VALUE** |
-| **context-compact** | `pre_llm_call` compaction, `/compact status\|on\|off\|now\|threshold` — 30 tests | JCode P1 port: compacts older history into a summary injected cache-safe into the current turn — long-session RAM/context discipline | Coding, deep research, long sessions | **ADD-VALUE** |
-| **sandbox-gate** | pre-execution risk gate — 29 tests | Codex-style pre-tool sandbox: blocks `rm -rf /`, dd/mkfs/raw-device writes, pipe-to-shell, fork bombs, shutdown; escalates force-push / `reset --hard` / exfiltration to human approval | Coding safety, general assistant safety | **ADD-VALUE** |
-| **gh-ops** | gh/glab wrappers: auth, PR list, issue list, user — 60 tests (largest suite) | OpenCode-style GitHub/GitLab workflow surface with strict table parsers | Coding, codebase navigation, CI workflow | **ADD-VALUE** |
+| **repomap** | `repomap` tool, `/repomap` — 42 tests | Aider's signature: symbol-level repo map (classes/functions/types per file, 13 lang families, 6000-char cap) for navigation without dumping files | Coding, codebase navigation | **ADD-VALUE** |
+| **context-compact** | `pre_llm_call` compaction, `/compact status\|on\|off\|now\|threshold` — 31 tests | JCode P1 port: compacts older history into a summary injected cache-safe into the current turn — long-session RAM/context discipline | Coding, deep research, long sessions | **ADD-VALUE** |
+| **sandbox-gate** | pre-execution risk gate — 75 tests | Codex-style pre-tool sandbox: blocks `rm -rf /`, dd/mkfs/raw-device writes, pipe-to-shell, fork bombs, shutdown; escalates force-push / `reset --hard` / exfiltration to human approval | Coding safety, general assistant safety | **ADD-VALUE** |
+| **gh-ops** | gh/glab wrappers: auth, PR list, issue list, user — 130 tests (largest suite) | OpenCode-style GitHub/GitLab workflow surface with strict table parsers | Coding, codebase navigation, CI workflow | **ADD-VALUE** |
 | **verify-runner** | `/verify` — 38 tests | Aider's lint-and-test automation: one command runs tests + linter, returns PASS/FAIL verdict | Coding (verify-after-every-change loop) | **ADD-VALUE** |
-| **local-models** | Ollama :11434, LM Studio :1234 probe + config gen — 40 tests | Detects local OpenAI-compatible servers and wires them into Hermes/opencode | Coding, privacy/offline fallback, general assistant | **ADD-VALUE** |
-| **waitperk** | `/sponsor`, impression ledger, `~/.waitperk/current.txt`, sync payload — 14 tests | WaitPerk sponsorship: one sponsor line while the agent works; 50/50 impression-share payout, capped by construction | Monetization (product surface) | **NEUTRAL** (task-quality) |
-| **perkline** | `/perkline engage\|complete\|sync`, receipts, escrow — 11 tests | PerkLine v2: tiered cpm/cpc/cpa pricing, local relevance match, HMAC receipts, escrow caps | Monetization (product surface) | **NEUTRAL** (task-quality) |
-| **title-statusline** | Windows-native terminal title bar — 27 tests | OpenCode-style statusline surface rendering the sponsor line in the title bar | Monetization/UX (render surface) | **NEUTRAL** (task-quality) |
+| **local-models** | Ollama :11434, LM Studio :1234 probe + config gen — 87 tests | Detects local OpenAI-compatible servers and wires them into Hermes/opencode | Coding, privacy/offline fallback, general assistant | **ADD-VALUE** |
+| **waitperk** | `/sponsor`, impression ledger, `~/.waitperk/current.txt`, sync payload — 34 tests | WaitPerk sponsorship: one sponsor line while the agent works; 50/50 impression-share payout, capped by construction | Monetization (product surface) | **NEUTRAL** (task-quality) |
+| **perkline** | `/perkline engage\|complete\|sync`, receipts, escrow — 27 tests | PerkLine v2: tiered cpm/cpc/cpa pricing, local relevance match, HMAC receipts, escrow caps | Monetization (product surface) | **NEUTRAL** (task-quality) |
+| **title-statusline** | Windows-native terminal title bar — 32 tests | OpenCode-style statusline surface rendering the sponsor line in the title bar | Monetization/UX (render surface) | **NEUTRAL** (task-quality) |
+| **omni-design** | `/design`, `/design-audit` — 8 tests | Premium self-contained HTML artifacts from a brief; 10-tell slop audit — zero hooks | Design, marketing assets | **ADD-VALUE** |
+| **omni-parallel** | `/swarm` queue, context packs, judging — 20 tests | Parallel-task layer: task queue + context packs + multi-agent judging + PR-split merge plans | Deep research, coding (parallelism) | **ADD-VALUE** |
+| **omni-skills** | `/skills scan\|validate\|install` — 23 tests | SKILL.md interop: scan/validate/install skills from any marketplace — zero hooks | General assistant, extensibility | **ADD-VALUE** |
+| **omni-registry** | capability registry, ctx flags — 22 tests | Capability-declared model registry (corrected 1M-context flags) | Model routing accuracy | **ADD-VALUE** |
+| **codebase-index** | FTS5 repomap v2 index — 28 tests | Full-text codebase index: FTS5 symbol search over the repo map | Coding, codebase navigation | **ADD-VALUE** |
+| **omni-tools** | tool-search corpus, BM25 router — 21 tests | Tool-search corpus + BM25 router: catalog-in-context, load-on-use | Tool accuracy at scale | **ADD-VALUE** |
+| **bharat-pack** | Hindi + Indian model pool — 19 tests | Bharat model pool + Devanagari prompt support | India market, Hindi users | **ADD-VALUE** |
+| **cost-tracker** | token/cost ledger, budget caps — 17 tests | Per-run token/cost ledger + budget caps | Ops / budgeting | **ADD-VALUE** |
 
-**Evidence check**: 16+8+34+9+26+15+30+29+60+38+40+14+11+27+8+20 = **677 tests,
-677 passed** — every row above is backed by a green suite in
+**Evidence check**: 37+29+69+27+26+42+31+75+130+38+87+34+27+32+8+20+23+22+28+21+19+17 = **842 tests,
+842 passed** — every row above is backed by a green suite in
 `docs/TEST-MATRIX.md`.
 
 ## 3. Task-Type Verdict Matrix
@@ -120,10 +128,10 @@ sandbox-gate. All matches.
 3. **Both combos rest on the Hermes host core** (skills, subagent delegation,
    cron, gateway, browser/terminal drivers, native MCP, provider failover) —
    the plugins are edge modules on a narrow waist, never replacements for it.
-4. **The three monetization plugins** (waitperk 14, perkline 11,
-   title-statusline 27) are NEUTRAL for task quality by design — they fund the
+4. **The three monetization plugins** (waitperk 34, perkline 27,
+   title-statusline 32) are NEUTRAL for task quality by design — they fund the
    product via sponsor impressions, they do not change capability.
-5. **677/677 tests pass** across all 17 plugins (TEST-MATRIX.md, 2026-08-12);
+5. **842/842 tests pass** across all 22 plugins (TEST-MATRIX.md, 2026-08-12);
    no plugin is DUPLICATE-OF-HOST — every overlap identified in §4 is
    complementary — so the "best of 7 agents in one" claim holds on both
    evidence lines: full empirical coverage and a clean static fit per task type.

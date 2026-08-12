@@ -50,7 +50,7 @@
 
 ## What stays free (the moat — never broken)
 
-- **Core agent + all 17 plugins + 25 verified free models + Windows support** — free forever (SELLING.md §4).
+- **Core agent + all 22 plugins + 25 verified free models + Windows support** — free forever (SELLING.md §4).
 - **Cost tracking / budget caps** — free; it is the honest-math proof that sells sponsorship, not a product to sell.
 - **Marketplace installs + verified badges** — free to install; fees only on *money flows* (creator payout take-rate, sponsor campaigns).
 - **Dev earnings: 50/50 sponsor share forever** — the retention hook and network-effect moat.

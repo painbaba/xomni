@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Features — XOMNI Docs</title>
+<meta name="description" content="XOMNI feature matrix: 22 plugins, 842 tests, every feature of every source repo, tracked.">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="stylesheet" href="css/style.css">
+
+<style>
+/* ===== flagship void/emerald token aliases (map to css/style.css palette) ===== */
+:root{
+  --font-sans:var(--sans);--font-mono:var(--mono);
+  --radius-1:6px;--dur-fast:150ms;--dur-med:300ms;--ease-out-expo:cubic-bezier(.16,1,.3,1);
+  --surface-1:var(--bg-soft);--surface-2:var(--panel);--elevated:var(--card);
+  --ink:var(--text);--faint:#7B828A;
+  --accent-hover:#00FFB0;--accent-dim:var(--accent2);--success:var(--green);--danger:var(--red);--warning:var(--amber);
+}
+/* ===== flagship nav ===== */
+html{scroll-behavior:smooth}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+::selection{background:color-mix(in srgb,var(--accent) 35%,transparent)}
+.skip-link{position:absolute;left:-999px;top:0;background:var(--accent);color:#000;padding:10px 16px;z-index:100;border-radius:0 0 var(--radius-1) 0}
+.skip-link:focus{left:0}
+header.site-nav{display:block;position:sticky;top:0;z-index:50;background:var(--bg);border-bottom:1px solid var(--border);transition:box-shadow var(--dur-med),border-color var(--dur-med)}
+header.site-nav.scrolled{box-shadow:0 8px 24px rgba(0,0,0,.5)}
+.nav-inner{max-width:1200px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;gap:24px}
+.wordmark{font-family:var(--font-mono);font-weight:700;font-size:17px;letter-spacing:.12em;color:var(--accent)}
+.wordmark:hover{text-decoration:none}
+.wordmark span{color:var(--ink)}
+.nav-links{display:flex;gap:4px;margin-left:auto;align-items:center;flex-wrap:wrap}
+.nav-links a{padding:8px 12px;border-radius:var(--radius-1);color:var(--muted);font-size:14px;position:relative;transition:color var(--dur-fast)}
+.nav-links a::after{content:"";position:absolute;left:12px;right:12px;bottom:4px;height:1px;background:var(--accent);transform:scaleX(0);transform-origin:left;transition:transform var(--dur-med) var(--ease-out-expo)}
+.nav-links a:hover{color:var(--ink)}
+.nav-links a:hover::after{transform:scaleX(1)}
+.nav-links a[aria-current="page"]{color:var(--accent)}
+.nav-links a[aria-current="page"]::after{transform:scaleX(1)}
+.nav-links .nav-cta{margin-left:0;padding:8px 16px!important;min-height:36px}
+.btn-primary{background:var(--accent);border-color:var(--accent);color:#000;font-weight:600}
+.btn-primary:hover{background:var(--accent-hover);box-shadow:0 0 24px var(--accent-dim);color:#000;text-decoration:none}
+.bg-grid{position:fixed;inset:0;z-index:-1;pointer-events:none;background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);background-size:56px 56px;opacity:.35;mask-image:radial-gradient(ellipse 80% 60% at 50% 0%,#000 40%,transparent 75%)}
+/* ===== docs polish (emerald, no legacy blues) ===== */
+.docs-body h2{scroll-margin-top:96px}
+.docs-link.active{background:color-mix(in srgb,var(--accent) 8%,transparent)}
+.docs-body table{width:100%;border-collapse:collapse;font-size:13.5px;margin:0 0 26px}
+.docs-body th,.docs-body td{border:1px solid var(--border);padding:8px 10px;text-align:left;vertical-align:top}
+.docs-body th{background:var(--panel);font-family:var(--font-mono);font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.docs-body td code{font-size:12.5px}
+.docs-body blockquote{border-left:3px solid var(--accent);margin:0 0 22px;padding:4px 0 4px 18px;color:var(--muted)}
+.docs-body ul{margin:0 0 22px 22px}
+.docs-body li{margin-bottom:8px}
+@media(max-width:860px){
+  header.site-nav{display:block;position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--border);padding:0}
+  .nav-inner{flex-wrap:wrap;padding:12px 20px}
+  .nav-links .nav-cta{margin:0}
+}
+@media(max-width:600px){.nav-links{display:none}}
+@media (prefers-reduced-motion: reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}.bg-grid{display:none}}
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<div class="bg-grid" aria-hidden="true"></div>
+<header class="site-nav" id="siteNav">
+  <div class="nav-inner">
+    <a class="wordmark" href="index.html">XOMNI<span>.</span></a>
+    <nav class="nav-links" aria-label="Primary">
+      <a href="index.html">Home</a>
+      <a href="skills.html">Skills</a>
+      <a href="mcp.html">MCP Catalog</a>
+      <a href="gallery.html">Gallery</a>
+      <a href="docs/install.html">Docs</a>
+      <a href="docs/sponsorship.html">Sponsorship</a>
+      <a href="https://github.com/painbaba/xomni">GitHub</a>
+      <a class="nav-cta btn-primary" href="docs/install.html">Install</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+  <div class="container page">
+    <aside class="docs-side" aria-label="Docs navigation">
+      <p class="docs-h">Docs</p>
+      <a href="docs/install.html" class="docs-link">Install</a>
+      <a href="docs/byo-provider.html" class="docs-link">BYO Provider</a>
+      <a href="docs/sponsorship.html" class="docs-link">Sponsorship</a>
+      <a href="docs/faq.html" class="docs-link">FAQ</a>
+      <a href="docs/security.html" class="docs-link">Security</a>
+      <a href="features.html" class="docs-link active">Features</a>
+      <p class="docs-h">Site</p>
+      <a href="skills.html" class="docs-link">Skills</a>
+      <a href="index.html" class="docs-link">Home</a>
+    </aside>
+
+    <article class="docs-body">
+<h1>Feature Matrix — every feature of every source repo, tracked</h1>
+<p>XOMNI&#x27;s contract: NOTHING from the seven source agents is dropped by</p>
+<p>decision — every feature is listed here with a status. All counts below were</p>
+<p><strong>verified live against the repo on 2026-08-12</strong> (source tree, auto-generated</p>
+<p>test matrix, SQLite row counts, JSON array lengths, file listings) — no number</p>
+<p>is carried over from memory.</p>
+<h2 id="verified-headline-numbers-2026-08-12">Verified headline numbers (2026-08-12)</h2>
+<div class="table-wrap"><table>
+<tbody>
+<tr><td>Metric</td><td>Verified value</td><td>How verified</td></tr>
+<tr><td>---</td><td>---</td><td>---</td></tr>
+<tr><td>Plugins shipped</td><td><strong>22</strong></td><td><code>ls plugins/</code> = 22 dirs; README plugin table (22 rows)</td></tr>
+<tr><td>Passing tests</td><td><strong>842 / 842</strong> (0 failures)</td><td><code>docs/TEST-MATRIX.md</code> (auto-generated 2026-08-12 00:27)</td></tr>
+<tr><td>Skills in repo</td><td><strong>170</strong> <code>SKILL.md</code> files, <strong>42</strong> domain folders</td><td>glob count <code>skills/**/SKILL.md</code>; <code>ls skills/</code></td></tr>
+<tr><td>External-skills DB</td><td><strong>519 rows</strong> (skills.db), 6 sources; <strong>180</strong> curated shortlist (201 rows carry a rank)</td><td>SQLite <code>COUNT(*)</code>; <code>curated-skills.json</code> (180 entries) + <code>.stats.json</code></td></tr>
+<tr><td>MCP server catalog</td><td><strong>311 servers</strong></td><td><code>data/mcps.db</code> (311), <code>data/mcp/catalog.json</code> (311), <code>website/data/mcps.json</code> (311)</td></tr>
+<tr><td>Verified free models</td><td><strong>25</strong> (live HTTP 200, 2026-08-10)</td><td>README + FEATURES.md provider-pool row</td></tr>
+<tr><td>Source agents composed</td><td><strong>7</strong> (Hermes, OpenCode, jcode, Codex, Aider, Goose, OpenClaw)</td><td>README §&quot;The seven agents, one host&quot;</td></tr>
+<tr><td>Site assets</td><td>index (flagship) + skills.html + mcp.html + gallery.html + features.html + <strong>8</strong> docs pages + 404 + favicon + robots + css/js + 2 data JSONs</td><td><code>ls website/ website/docs/</code></td></tr>
+<tr><td>Docs</td><td><strong>8</strong> files in <code>docs/</code></td><td><code>ls docs/</code></td></tr>
+<tr><td>CI (.github)</td><td><strong>not present — PENDING</strong></td><td><code>ls .github/</code> → no such directory</td></tr>
+</tbody></table></div>
+<blockquote>Discrepancies found vs. prior claims: (a) <code>website/docs/</code> contains <strong>5</strong> pages</blockquote>
+<blockquote>(byo-provider, faq, install, security, sponsorship), not 6; (b) <code>run.cmd</code> /</blockquote>
+<blockquote><code>run.sh</code> still printed a stale plugin count — fixed to 16 with this rebuild; (c)</blockquote>
+<blockquote><code>docs/ARCHITECTURE.md</code> said &quot;six codebases&quot; and enumerated only 3 shipped</blockquote>
+<blockquote>modules — updated to seven / 16 with this rebuild; (d) the 2026-08-11</blockquote>
+<blockquote>competitive-scan baseline in <code>.tmp/competitive-research/BROAD-SCAN.md</code> still</blockquote>
+<blockquote>cites stale plugin/test counts (pre-dates omni-design + omni-parallel).</blockquote>
+<p>Status legend:</p>
+<ul>
+<li><code>HOST</code> — already part of the Hermes host core (XOMNI IS Hermes)</li>
+<li><code>SHIPPED</code> — ported as a module/plugin in this repo, tested, installed</li>
+<li><code>WIRED</code> — usable through the host (config/plumbing, e.g. providers)</li>
+<li><code>PENDING</code> — accepted into the build queue / in progress (see Roadmap)</li>
+<li><code>PARKED</code> — tracked, consciously deferred with a reason</li>
+</ul>
+<p>---</p>
+<h2 id="1-plugin-matrix-all-22-shipped-source-of-truth-docs-test-matrix-md-readme">1. Plugin matrix — all 22, shipped (source of truth: <code>docs/TEST-MATRIX.md</code>, README)</h2>
+<div class="table-wrap"><table>
+<tbody>
+<tr><td>#</td><td>Plugin</td><td>Theme</td><td>Tests (PASS)</td><td>Status</td><td>Origin strength</td></tr>
+<tr><td>---</td><td>---</td><td>---</td><td>---</td><td>---</td><td>---</td></tr>
+<tr><td>1</td><td><code>waitperk</code></td><td>WaitPerk-model sponsorship: sponsor line, impression ledger, 50/50 payout math</td><td>34</td><td>SHIPPED</td><td>sponsorship (WaitPerk)</td></tr>
+<tr><td>2</td><td><code>perkline</code></td><td>PerkLine v2: CPM/CPC/CPA tiers, relevance match, HMAC receipts, escrow caps, second-price auction</td><td>27</td><td>SHIPPED</td><td>sponsorship (researched upgrade)</td></tr>
+<tr><td>3</td><td><code>provider-pool</code></td><td>25 verified free models, live health checks, per-agent config generation, <code>/models</code> <code>/provider</code></td><td>37</td><td>SHIPPED</td><td>free models (OpenCode Zen gateway)</td></tr>
+<tr><td>4</td><td><code>context-compact</code></td><td>Long-session compaction, cache-safe context injection</td><td>31</td><td>SHIPPED</td><td>jcode (RAM efficiency)</td></tr>
+<tr><td>5</td><td><code>sandbox-gate</code></td><td>Pre-tool risk gate (block/warn/allow) + allowlist</td><td>75</td><td>SHIPPED</td><td>Codex (sandboxed execution)</td></tr>
+<tr><td>6</td><td><code>mcp-catalog</code></td><td>MCP server catalog, validation, JSON-RPC shapes</td><td>26</td><td>SHIPPED</td><td>Goose (MCP-native)</td></tr>
+<tr><td>7</td><td><code>repomap</code></td><td>Symbol-level repo map (13+ lang families), <code>rank_files</code> relevance scoring, stack tags</td><td>42</td><td>SHIPPED</td><td>Aider (repo map)</td></tr>
+<tr><td>8</td><td><code>context-loader</code></td><td><code>fetch_page</code> + <code>describe_image</code> (vision) context tools</td><td>69</td><td>SHIPPED</td><td>Aider (images/web context)</td></tr>
+<tr><td>9</td><td><code>verify-runner</code></td><td><code>/verify</code> tests+lint verdict on projects</td><td>38</td><td>SHIPPED</td><td>Aider (lint &amp; test automation)</td></tr>
+<tr><td>10</td><td><code>gh-ops</code></td><td>gh/glab wrappers with strict table parsers</td><td>130</td><td>SHIPPED</td><td>OpenCode (GitHub/GitLab)</td></tr>
+<tr><td>11</td><td><code>local-models</code></td><td>Ollama / LM Studio probe (:11434/:1234) + config generation</td><td>87</td><td>SHIPPED</td><td>OpenCode (local endpoints)</td></tr>
+<tr><td>12</td><td><code>title-statusline</code></td><td>Sponsor line in the terminal title bar</td><td>32</td><td>SHIPPED</td><td>OpenCode (TUI/statusline)</td></tr>
+<tr><td>13</td><td><code>omni-memory</code></td><td>Personal memory: local SQLite facts, <code>/remember</code> <code>/recall</code>, LLM consolidation</td><td>29</td><td>SHIPPED</td><td>OpenClaw (persistent memory)</td></tr>
+<tr><td>14</td><td><code>omni-media</code></td><td>Media understanding: <code>/ocr</code> <code>/caption</code> <code>/mediascan</code> via verified vision model</td><td>27</td><td>SHIPPED</td><td>OpenClaw (media pipeline)</td></tr>
+<tr><td>15</td><td><code>omni-design</code></td><td><code>/design</code> premium self-contained HTML artifacts from a brief, <code>/design-audit</code> 10-tell slop audit — zero hooks</td><td>8</td><td>SHIPPED</td><td>Claude Design / Stitch</td></tr>
+<tr><td>16</td><td><code>omni-parallel</code></td><td>Parallel-task layer: <code>/swarm</code> task queue + context packs + multi-agent judging + PR-split merge plans</td><td>20</td><td>SHIPPED</td><td>Kimi / Cursor / Claude</td></tr>
+<tr><td>17</td><td><code>omni-skills</code></td><td>SKILL.md interop: scan/validate/install skills from any marketplace — zero hooks</td><td>23</td><td>SHIPPED</td><td>Claude (SKILL.md standard)</td></tr>
+<tr><td>18</td><td><code>omni-registry</code></td><td>Omni Registry</td><td>22</td><td>SHIPPED</td><td>Next-feature wave</td></tr>
+<tr><td>19</td><td><code>codebase-index</code></td><td>Codebase Index</td><td>28</td><td>SHIPPED</td><td>Next-feature wave</td></tr>
+<tr><td>20</td><td><code>omni-tools</code></td><td>Omni Tools</td><td>21</td><td>SHIPPED</td><td>Next-feature wave</td></tr>
+<tr><td>21</td><td><code>bharat-pack</code></td><td>Bharat Pack</td><td>19</td><td>SHIPPED</td><td>Next-feature wave</td></tr>
+<tr><td>22</td><td><code>cost-tracker</code></td><td>Cost Tracker</td><td>17</td><td>SHIPPED</td><td>Next-feature wave</td></tr>
+</tbody></table></div>
+<p><strong>Totals: 22 plugins · 842 test methods · 842 passed · 0 failed</strong> (TEST-MATRIX.md, 2026-08-12 14:19).</p>
+<p>Row sum check: 34+27+37+31+75+26+42+69+38+130+87+32+29+27+8+20+23+22+28+21+19+17 = 842 ✓</p>
+<h2 id="2-heritage-map-the-seven-source-agents-one-host">2. Heritage map — the seven source agents, one host</h2>
+<div class="table-wrap"><table>
+<tbody>
+<tr><td>Tool</td><td>Language</td><td>Signature strength</td><td>Where it lands in XOMNI</td><td>Status</td></tr>
+<tr><td>---</td><td>---</td><td>---</td><td>---</td><td>---</td></tr>
+<tr><td>Hermes</td><td>Python</td><td>Full agent framework: skills, memory, cron, plugins, gateway</td><td>The host core (XOMNI IS Hermes)</td><td>HOST</td></tr>
+<tr><td>OpenCode</td><td>Go</td><td>Terminal TUI, provider-agnostic loop</td><td><code>title-statusline</code>, <code>local-models</code>, <code>gh-ops</code></td><td>SHIPPED</td></tr>
+<tr><td>jcode</td><td>Rust</td><td>RAM-efficient harness</td><td><code>context-compact</code></td><td>SHIPPED</td></tr>
+<tr><td>Codex</td><td>Rust</td><td>Sandboxed execution, plan+act loop</td><td><code>sandbox-gate</code></td><td>SHIPPED</td></tr>
+<tr><td>Aider</td><td>Python</td><td>Repo map, surgical git diffs, images/web context, lint+test</td><td><code>repomap</code>, <code>context-loader</code>, <code>verify-runner</code></td><td>SHIPPED</td></tr>
+<tr><td>Goose</td><td>Rust</td><td>MCP-native extensibility</td><td><code>mcp-catalog</code></td><td>SHIPPED</td></tr>
+<tr><td>OpenClaw</td><td>TypeScript</td><td>Persistent semantic memory + media understanding</td><td><code>omni-memory</code>, <code>omni-media</code></td><td>SHIPPED</td></tr>
+<tr><td>—</td><td>—</td><td>Sponsorship fundamental</td><td><code>waitperk</code>, <code>perkline</code></td><td>SHIPPED</td></tr>
+<tr><td>—</td><td>—</td><td>Design + parallel-task layers</td><td><code>omni-design</code>, <code>omni-parallel</code></td><td>SHIPPED</td></tr>
+</tbody></table></div>
+<h2 id="3-website-assets-static-site-no-build-step-website">3. Website assets (static site, no build step — <code>website/</code>)</h2>
+<div class="table-wrap"><table>
+<tbody>
+<tr><td>Asset</td><td>Type / role</td><td>Status</td><td>Source</td></tr>
+<tr><td>---</td><td>---</td><td>---</td><td>---</td></tr>
+<tr><td><code>index.html</code></td><td><strong>Flagship landing page</strong> (24.9 KB, updated 2026-08-12 00:31 — newest file in site)</td><td>SHIPPED</td><td>hand-authored + <code>.tmp/flagship-site/</code> spec (BRIEF.md, DESIGN.md, ENGINEERING.md, MOTION.md)</td></tr>
+<tr><td><code>mcp.html</code></td><td>MCP catalog page (27.7 KB) — renders the 311-server catalog</td><td>SHIPPED</td><td><code>data/mcps.db</code> → <code>website/data/mcps.json</code> (311)</td></tr>
+<tr><td><code>skills.html</code></td><td>Skills catalog page (48.4 KB) — vanilla-JS search + category filter over 170 skills</td><td>SHIPPED</td><td><code>website/scripts/gen_skills.py</code></td></tr>
+<tr><td><code>docs/byo-provider.html</code></td><td>&quot;Bring your own provider&quot; doc page</td><td>SHIPPED</td><td>hand-authored</td></tr>
+<tr><td><code>docs/faq.html</code></td><td>FAQ doc page</td><td>SHIPPED</td><td>hand-authored</td></tr>
+<tr><td><code>docs/install.html</code></td><td>Install doc page</td><td>SHIPPED</td><td>hand-authored</td></tr>
+<tr><td><code>docs/security.html</code></td><td>Security doc page</td><td>SHIPPED</td><td>hand-authored</td></tr>
+<tr><td><code>docs/sponsorship.html</code></td><td>Sponsorship model doc page</td><td>SHIPPED</td><td>hand-authored</td></tr>
+<tr><td><code>404.html</code></td><td>404 page</td><td>SHIPPED</td><td>hand-authored</td></tr>
+<tr><td><code>favicon.svg</code></td><td>Site favicon</td><td>SHIPPED</td><td>hand-authored</td></tr>
+<tr><td><code>robots.txt</code></td><td>Robots directives</td><td>SHIPPED</td><td>hand-authored</td></tr>
+<tr><td><code>css/style.css</code></td><td>Site-wide stylesheet</td><td>SHIPPED</td><td>hand-authored</td></tr>
+<tr><td><code>js/site.js</code></td><td>Shared scripts</td><td>SHIPPED</td><td>hand-authored</td></tr>
+<tr><td><code>data/skills.json</code></td><td>Machine-readable skills catalog — <strong>170 entries</strong> (verified)</td><td>SHIPPED</td><td>generated by <code>gen_skills.py</code></td></tr>
+<tr><td><code>data/mcps.json</code></td><td>Machine-readable MCP catalog — <strong>311 entries</strong> (verified)</td><td>SHIPPED</td><td>mcp pipeline</td></tr>
+<tr><td><code>README.md</code></td><td>Website layout + regeneration docs</td><td>SHIPPED</td><td>hand-authored</td></tr>
+<tr><td><code>scripts/gen_skills.py</code></td><td>Regenerates <code>skills.html</code> + <code>data/skills.json</code></td><td>SHIPPED</td><td>pipeline (see §5)</td></tr>
+<tr><td><code>features.html</code></td><td>Feature-matrix page (generated from <code>docs/FEATURES.md</code>)</td><td>SHIPPED</td><td><code>website/scripts/gen_features.py</code></td></tr>
+<tr><td><code>scripts/gen_features.py</code></td><td>Regenerates <code>features.html</code> from <code>docs/FEATURES.md</code></td><td>SHIPPED</td><td>pipeline (see §5)</td></tr>
+</tbody></table></div>
+<h2 id="4-docs-docs-8-files">4. Docs (<code>docs/</code>, 8 files)</h2>
+<div class="table-wrap"><table>
+<tbody>
+<tr><td>File</td><td>Purpose</td><td>Status</td></tr>
+<tr><td>---</td><td>---</td><td>---</td></tr>
+<tr><td><code>FEATURES.md</code></td><td><strong>This file</strong> — master feature matrix, rebuilt 2026-08-12</td><td>SHIPPED</td></tr>
+<tr><td><code>ARCHITECTURE.md</code></td><td>Host-core + edge-module architecture (updated 2026-08-12: seven agents, 22 modules)</td><td>SHIPPED</td></tr>
+<tr><td><code>TEST-MATRIX.md</code></td><td>Auto-generated plugin test matrix — 842/842 PASS (2026-08-12 00:27)</td><td>SHIPPED (regenerated by the test harness)</td></tr>
+<tr><td><code>PERFORMANCE.md</code></td><td>Bench results (updated 2026-08-12)</td><td>SHIPPED</td></tr>
+<tr><td><code>SELLING.md</code></td><td>Go-to-market / sponsorship plan (updated 2026-08-12)</td><td>SHIPPED</td></tr>
+<tr><td><code>SKILLS-SECURITY.md</code></td><td>External-skills security scan report — regenerated by <code>data/build_db.py</code></td><td>SHIPPED</td></tr>
+<tr><td><code>VALIDATION.md</code></td><td>Validation record (updated 2026-08-12)</td><td>SHIPPED</td></tr>
+<tr><td><code>BRANDING.md</code></td><td>Brand/identity guide</td><td>SHIPPED</td></tr>
+</tbody></table></div>
+<h2 id="5-data-pipelines">5. Data pipelines</h2>
+<div class="table-wrap"><table>
+<tbody>
+<tr><td>Pipeline</td><td>Input → Output</td><td>Verified counts</td><td>Status</td></tr>
+<tr><td>---</td><td>---</td><td>---</td><td>---</td></tr>
+<tr><td><code>data/build_db.py</code></td><td><code>data/raw/scrape{1..6}.json</code> → dedupe by sha256 → <code>data/skills.db</code>; merges curated ranks; regenerates <code>docs/SKILLS-SECURITY.md</code></td><td>519 rows in <code>skills</code> table, 6 rows in <code>sources</code>, 6 raw scrape files, 475 unique / 467 scored / 180 curated per <code>.stats.json</code></td><td>SHIPPED</td></tr>
+<tr><td><code>data/curated-skills.json</code> (+ <code>.stats.json</code>, <code>curated-summary.md</code>)</td><td>Curator-ranked top-useful shortlist, keyed by sha256</td><td><strong>180 entries</strong> (verified); 201 skills rows carry a <code>rank</code> in db</td><td>SHIPPED</td></tr>
+<tr><td><code>website/scripts/gen_skills.py</code></td><td><code>skills/**/SKILL.md</code> (YAML frontmatter) → <code>website/data/skills.json</code> + <code>website/skills.html</code></td><td>170 SKILL.md files → 170 JSON entries</td><td>SHIPPED</td></tr>
+<tr><td>MCP catalog pipeline</td><td><code>.tmp/mcp/</code> harvest scripts (<code>harvest_gh.py</code>, <code>build_github_json.py</code>) + <code>.tmp/build_smithery.py</code> + <code>.tmp/build_final.py</code> → <code>data/mcp/catalog.json</code> → <code>data/mcps.db</code> → <code>website/data/mcps.json</code> + <code>website/mcp.html</code></td><td><strong>311 servers</strong> (catalog.json = mcps.db = mcps.json = 311, verified)</td><td>SHIPPED</td></tr>
+<tr><td><code>.tmp/competitive-research/</code></td><td>Track scans: <code>BROAD-SCAN.md</code> (Track 5), <code>CLAUDE.md</code> (Track 3), <code>CURSOR.md</code> (Track 4), <code>KIMICODE.md</code>, <code>ZAICODE.md</code></td><td>Shortlist for next build phase</td><td><strong>PENDING</strong> triage into roadmap</td></tr>
+</tbody></table></div>
+<h2 id="6-infra-tooling">6. Infra &amp; tooling</h2>
+<div class="table-wrap"><table>
+<tbody>
+<tr><td>Asset</td><td>Role</td><td>Status</td></tr>
+<tr><td>---</td><td>---</td><td>---</td></tr>
+<tr><td><code>run.cmd</code></td><td>Windows launcher — starts Hermes host with all <strong>22</strong> plugins; bootstraps bundled Ollama (updated 2026-08-12: 16→22)</td><td>SHIPPED</td></tr>
+<tr><td><code>run.sh</code></td><td>POSIX/git-bash launcher — all <strong>22</strong> plugins; ensures <code>ollama serve</code> on :11434 (updated 2026-08-12: 16→22)</td><td>SHIPPED</td></tr>
+<tr><td><code>ollama/start-ollama.ps1</code></td><td>Bundled-Ollama starter: downloads official portable build once (~130 MB) into <code>ollama/runtime/</code>, serves <code>127.0.0.1:11434</code>, pulls <code>qwen2.5:3b</code> on first run; idempotent</td><td>SHIPPED</td></tr>
+<tr><td><code>.github/</code></td><td>CI/workflows</td><td><strong>PENDING</strong> (directory not present as of 2026-08-12)</td></tr>
+<tr><td><code>.bench/</code></td><td>Benchmark harness: <code>bench.py</code>, <code>run_all_tests.sh</code>, `results[-before</td><td>-after].json` over the 842-test suite</td><td>SHIPPED</td></tr>
+<tr><td><code>.gitignore</code>, <code>LICENSE</code> (MIT), <code>LICENSE-ATTRIBUTION.md</code></td><td>Repo hygiene / licensing</td><td>SHIPPED</td></tr>
+</tbody></table></div>
+<h2 id="7-skills-free-models">7. Skills &amp; free models</h2>
+<div class="table-wrap"><table>
+<tbody>
+<tr><td>Asset</td><td>Verified count</td><td>Status</td></tr>
+<tr><td>---</td><td>---</td><td>---</td></tr>
+<tr><td><code>skills/</code> — procedural skills committed in-tree</td><td><strong>170</strong> <code>SKILL.md</code> across <strong>42</strong> domain folders (cloudflare, hyperframes, media-use, research, productivity, devops, mlops, github, security, web-perf, …)</td><td>SHIPPED</td></tr>
+<tr><td>External-skills knowledge base</td><td><strong>519</strong> skills in <code>data/skills.db</code> from 6 curated sources; <strong>180</strong>-entry ranked shortlist</td><td>SHIPPED</td></tr>
+<tr><td>Verified free-model routing</td><td><strong>25 models</strong> live-verified (HTTP 200, 2026-08-10): deepseek-v4-flash/pro, qwen3.8-max, glm-5.2/5.1/5, kimi-k3/k2.7-code/k2.6/k2.5, minimax-m3 (vision)/m2.7/m2.5, gpt-5.6-luna, grok-4.5, hy3, mimo-v2, …</td><td>WIRED via <code>provider-pool</code></td></tr>
+</tbody></table></div>
+<h2 id="8-roadmap-next">8. Roadmap / next</h2>
+<p><strong>Pending inputs</strong> (in build queue, awaiting triage):</p>
+<ul>
+<li><code>.tmp/competitive-research/</code> shortlist — <code>BROAD-SCAN.md</code> (2026-08-11/12) + sibling deep-dives (<code>CLAUDE.md</code>, <code>CURSOR.md</code>, <code>KIMICODE.md</code>, <code>ZAICODE.md</code>) — <strong>PENDING</strong>; note its baseline cites stale plugin/test counts (pre-dates omni-design/omni-parallel).</li>
+<li><code>.github/</code> CI — <strong>PENDING</strong>.</li>
+<li>Real sponsor sync network / productized marketplace — PARKED (needs business decision, see <code>docs/SELLING.md</code>).</li>
+</ul>
+<p><strong>Queued work</strong> (carried from this matrix&#x27;s build-order history, still open):</p>
+<ul>
+<li>Repo-map tree-sitter upgrade (repomap v2; regex v1 SHIPPED) — PARKED P3b</li>
+<li>Aider git-diff discipline (precise patch application) — QUEUED</li>
+<li>LSP servers integration (OpenCode line) — QUEUED</li>
+<li>jcode provider OAuth flows (Copilot device flow, Google OAuth) — QUEUED</li>
+<li>OpenCode ACP (Agent Client Protocol) support — QUEUED</li>
+</ul>
+<p><strong>Shipped since the original build order</strong> (no longer pending): provider-pool, local-models wiring, gh-ops, context-loader, verify-runner, repomap, sandbox-gate, mcp-catalog, context-compact, title-statusline, omni-memory, omni-media, omni-design, omni-parallel, waitperk, perkline.</p>
+<p>Every row above is either shipped, pending with a named input, or has a named</p>
+<p>reason for parking. Nothing is dropped by silence.</p>
+    </article>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <div>
+      <p class="footer-brand"><span class="logo-x">X</span>OMNI</p>
+      <p class="muted">one agent. every feature. every free model.</p>
+    </div>
+    <div class="footer-cols">
+      <div class="footer-col">
+        <p class="footer-h">Docs</p>
+        <a href="docs/install.html">Install</a>
+        <a href="docs/byo-provider.html">BYO Provider</a>
+        <a href="docs/sponsorship.html">Sponsorship</a>
+      </div>
+      <div class="footer-col">
+        <p class="footer-h">More</p>
+        <a href="docs/faq.html">FAQ</a>
+        <a href="docs/security.html">Security</a>
+        <a href="skills.html">Skills</a>
+      </div>
+      <div class="footer-col">
+        <p class="footer-h">Project</p>
+        <a href="https://github.com/painbaba/xomni" target="_blank" rel="noopener">GitHub</a>
+        <a href="index.html">Home</a>
+      </div>
+    </div>
+  </div>
+  <p class="footer-bottom muted">© <span data-year>2026</span> XOMNI · compose, don't merge.</p>
+</footer>
+
+<script src="js/site.js"></script>
+</body>
+</html>

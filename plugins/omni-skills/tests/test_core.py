@@ -135,6 +135,115 @@ class InstallTests(unittest.TestCase):
         self.assertEqual(len(a), 16)
 
 
+class MarketplaceUrlTests(unittest.TestCase):
+    """install_marketplace_url — URL gate, shallow clone, fail-closed."""
+
+    def _target(self):
+        return tempfile.mkdtemp(prefix="omni-skills-ms-tgt-")
+
+    def test_validate_url_accepts_https_and_git(self):
+        for u in ("https://github.com/xomni/skills.git",
+                  "https://github.com/xomni/skills",
+                  "git://github.com/xomni/skills.git"):
+            ok, reason = core.validate_marketplace_url(u)
+            self.assertTrue(ok, reason)
+
+    def test_validate_url_rejects_file_http_and_shell_meta(self):
+        for u in ("file:///etc/passwd", "http://example.com/x", "ssh://h/x",
+                  "https://x/y;rm -rf /", "https://x/y$(id)", "https://x/y`id`",
+                  "https://x/y --upload-pack=sh", "https://x/y && echo pwned",
+                  "", "   "):
+            ok, _ = core.validate_marketplace_url(u)
+            self.assertFalse(ok, u)
+
+    def test_invalid_url_fail_closed_no_state_change(self):
+        target = self._target()
+        try:
+            r = core.install_marketplace_url("file:///etc/passwd", target)
+            self.assertFalse(r["ok"])
+            self.assertIn("invalid URL", r["reason"])
+            self.assertEqual(os.listdir(target), [])  # target untouched
+        finally:
+            shutil.rmtree(target, ignore_errors=True)
+
+    def test_clone_failure_fail_closed_cleans_cache(self):
+        target = self._target()
+        root = tempfile.mkdtemp(prefix="omni-skills-ms-")
+        cache = os.path.join(root, "cache")
+
+        def boom(url, dest):  # simulated partial clone that then fails
+            os.makedirs(dest, exist_ok=True)
+            with open(os.path.join(dest, "partial.txt"), "w") as f:
+                f.write("x")
+            return {"ok": False, "reason": "git clone failed: boom"}
+
+        try:
+            r = core.install_marketplace_url("https://github.com/x/boom.git",
+                                             target, cache_root=cache,
+                                             _runner=boom)
+            self.assertFalse(r["ok"])
+            self.assertEqual(r["reason"], "git clone failed: boom")
+            self.assertEqual(os.listdir(target), [])  # target untouched
+            self.assertFalse(os.path.exists(os.path.join(cache, "boom")))  # cleaned
+        finally:
+            shutil.rmtree(root, ignore_errors=True)
+            shutil.rmtree(target, ignore_errors=True)
+
+    def test_install_reuses_validation_verdicts(self):
+        """Cached clone with one good + one destructive skill: good lands,
+        evil is rejected, nothing partial for the rejected skill."""
+        target = self._target()
+        root = tempfile.mkdtemp(prefix="omni-skills-ms-")
+        repo = os.path.join(root, "cache", "goodrepo")  # pre-populated cache
+        os.makedirs(os.path.join(repo, "good"))
+        with open(os.path.join(repo, "good", "SKILL.md"), "w", encoding="utf-8") as f:
+            f.write(SKILL_A)
+        os.makedirs(os.path.join(repo, "evil"))
+        with open(os.path.join(repo, "evil", "SKILL.md"), "w", encoding="utf-8") as f:
+            f.write(SKILL_BAD)
+        with open(os.path.join(repo, "evil", "run.sh"), "w", encoding="utf-8") as f:
+            f.write("rm -rf /tmp/x\ncat ../secret\n")  # 3 issues -> REJECT
+        try:
+            r = core.install_marketplace_url("https://github.com/x/goodrepo.git",
+                                             target, cache_root=os.path.join(root, "cache"))
+            self.assertTrue(r["ok"])
+            self.assertEqual(r["installed"], 1)
+            self.assertEqual(r["rejected"], 1)
+            self.assertTrue(os.path.isfile(os.path.join(target, "hello-skill", "SKILL.md")))
+            self.assertFalse(os.path.exists(os.path.join(target, "evil-skill")))
+            self.assertEqual(r["cache_dir"], repo)
+        finally:
+            shutil.rmtree(root, ignore_errors=True)
+            shutil.rmtree(target, ignore_errors=True)
+
+    def test_successful_clone_installs_and_caches(self):
+        """Mocked successful clone: repo dir is created by the runner, then
+        skills are installed from it and the cache dir is reported."""
+        target = self._target()
+        root = tempfile.mkdtemp(prefix="omni-skills-ms-")
+        cache = os.path.join(root, "cache")
+
+        def fake_clone(url, dest):
+            os.makedirs(os.path.join(dest, "good"))
+            with open(os.path.join(dest, "good", "SKILL.md"), "w", encoding="utf-8") as f:
+                f.write(SKILL_A)
+            return {"ok": True}
+
+        try:
+            r = core.install_marketplace_url("https://github.com/x/fresh.git",
+                                             target, cache_root=cache,
+                                             _runner=fake_clone)
+            self.assertTrue(r["ok"])
+            self.assertEqual(r["installed"], 1)
+            self.assertEqual(r["rejected"], 0)
+            self.assertTrue(os.path.isfile(os.path.join(target, "hello-skill", "SKILL.md")))
+            self.assertTrue(os.path.isdir(os.path.join(cache, "fresh")))
+            self.assertEqual(r["cache_dir"], os.path.join(cache, "fresh"))
+        finally:
+            shutil.rmtree(root, ignore_errors=True)
+            shutil.rmtree(target, ignore_errors=True)
+
+
 class SearchListStatusTests(unittest.TestCase):
     """Skills search, plugin inventory, env status — the 'full access via any
     API' surface."""

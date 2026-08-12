@@ -7,21 +7,21 @@ file current — it is the workforce's queue.
 
 ## P0 — next wave (highest value, build now)
 
-- [ ] 01. omni-registry: models.dev live-refresh + pinned snapshot + CI conflict check (data/models.snapshot.json, /models2 refresh, ci_gate extension)
-- [ ] 02. codebase-index: optional embeddings layer (Ollama/local-models) with RRF fusion + /cindex hybrid flag
-- [ ] 03. omni-skills: marketplace installer from git URL (anthropics/skills-style) — /skills-marketplace <url>
-- [ ] 04. omni-tools: recall benchmark harness + /tools-stats metrics surface
-- [ ] 05. bharat-pack: expand to 5 more languages (mr/ta/te/kn/gu minimal UI strings + greet)
-- [ ] 06. bench: extend .bench/ci_gate.py import gate to all 22 plugins (<90ms each) + .bench/bench2.py for new plugins
-- [ ] 07. website: FEATURES v3 page (22 plugins, capabilities registry section, new-wave highlights)
-- [ ] 08. docs/PROVIDERS.md: India section — Sarvam/Bhashini/Krutrim real endpoints, env vars, INR pricing
-- [ ] 09. cost-tracker: CSV export + weekly digest text (/cost export, /cost digest)
-- [ ] 10. repo hygiene: README plugin table re-sync (22), sitemap update, count sweep verify 763
-- [ ] 11. TEST-MATRIX.md: add per-plugin runtime column (suite seconds) for the 5 new plugins
+- [x] 01. omni-registry: models.dev live-refresh + pinned snapshot + CI conflict check (data/models.snapshot.json, /models2 refresh, ci_gate extension) — done 2026-08-12 (refresh_from_models_dev + snapshot_load in core.py; models.snapshot.json pinned sha256 ffe72277…; ci_gate MODELS-DEV warn-only check; 25/25 matched, 1 flagged CTX conflict)
+- [x] 02. codebase-index: optional embeddings layer (Ollama/local-models) with RRF fusion + /cindex hybrid flag — done 2026-08-12 (P0 workforce wave)
+- [x] 03. omni-skills: marketplace installer from git URL (anthropics/skills-style) — /skills-marketplace <url> — done 2026-08-12 (P0 workforce wave)
+- [x] 04. omni-tools: recall benchmark harness + /tools-stats metrics surface — done 2026-08-12 (P0 workforce wave)
+- [x] 05. bharat-pack: expand to 5 more languages (mr/ta/te/kn/gu minimal UI strings + greet) — done 2026-08-12 (P0 workforce wave)
+- [x] 06. bench: extend .bench/ci_gate.py import gate to all 22 plugins (<90ms each) + .bench/bench2.py for new plugins — done 2026-08-12 (P0 workforce wave)
+- [x] 07. website: FEATURES v3 page (22 plugins, capabilities registry section, new-wave highlights) — done 2026-08-12 (P0 workforce wave)
+- [x] 08. docs/PROVIDERS.md: India section — Sarvam/Bhashini/Krutrim real endpoints, env vars, INR pricing — done 2026-08-12 (P0 workforce wave)
+- [x] 09. cost-tracker: CSV export + weekly digest text (/cost export, /cost digest) — done 2026-08-12 (P0 workforce wave)
+- [x] 10. repo hygiene: README plugin table re-sync (22), sitemap update, count sweep verify 763 — done 2026-08-12 (P0 workforce wave)
+- [x] 11. TEST-MATRIX.md: add per-plugin runtime column (suite seconds) for the 5 new plugins — done 2026-08-12 (P0 workforce wave)
 
 ## P1 — next-next
 
-- [ ] 12. WhatsApp B2B agent mode: docs + provider snippet (Meta WABA per-message pricing; consumer bots barred — B2B only)
+- [x] 12. WhatsApp B2B agent mode: docs + provider snippet (Meta WABA per-message pricing; consumer bots barred — B2B only)
 - [ ] 13. UPI rails spec: docs/UPI.md (Razorpay UPI Intent/Autopay, 0% MDR, DPDP notes)
 - [ ] 14. omni-memory: MCP adapter (memory tools over JSON-RPC for any MCP client)
 - [ ] 15. gh-ops: PR-review enhancement (draft comment batch + review summary tool)

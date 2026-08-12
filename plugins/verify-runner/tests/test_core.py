@@ -261,6 +261,103 @@ class SummarizeTests(unittest.TestCase):
 
 
 # ---------------------------------------------------------------------------
+# stdlib coverage (verify_coverage / parse_trace_summary / count_cover_file)
+# ---------------------------------------------------------------------------
+
+class CoverageTests(unittest.TestCase):
+    """Coverage mode: trace-summary parsing, cover files, graceful edge cases.
+
+    The e2e tests pin ``discover_test_command`` to unittest so results don't
+    depend on whether pytest happens to be installed on the host.
+    """
+
+    def test_coverage_output_parses(self):
+        """Trace summary rows + .cover files parse into exact per-file stats."""
+        with tempfile.TemporaryDirectory() as d:
+            sample = (
+                "lines   cov%   module   (path)\n"
+                f"   10   100%   argparse   ({os.path.join(d, '..', 'site-packages', 'argparse.py')})\n"
+                f"    6   100%   mathy   ({os.path.join(d, 'mathy.py')})\n"
+                f"   16    81%   test_mathy   ({os.path.join(d, 'test_mathy.py')})\n"
+            )
+            rows = core.parse_trace_summary(sample, d)
+        self.assertEqual(len(rows), 2)
+        self.assertEqual([os.path.basename(r["file"]) for r in rows], ["mathy.py", "test_mathy.py"])
+        self.assertEqual(rows[0]["module"], "mathy")
+        self.assertEqual(rows[0]["total"], 6)
+        self.assertEqual(rows[0]["pct"], 100)
+        self.assertEqual(rows[1]["pct"], 81)
+        with tempfile.TemporaryDirectory() as d2:
+            cover = os.path.join(d2, "mathy.cover")
+            with open(cover, "w", encoding="utf-8") as fh:
+                fh.write("    2: def add(a, b):\n")
+                fh.write("    3:     return a + b\n")
+                fh.write(">>>>>> def never():\n")
+                fh.write("       \n")
+            self.assertEqual(core.count_cover_file(cover), (2, 3))
+
+    def test_verify_coverage_real_run_parses_rows(self):
+        """End-to-end: a tiny project reports exact covered/total per file."""
+        with tempfile.TemporaryDirectory() as d:
+            with open(os.path.join(d, "mathy.py"), "w", encoding="utf-8") as fh:
+                fh.write("def add(a, b):\n    return a + b\n\n\ndef never():\n    return 0\n")
+            with open(os.path.join(d, "test_mathy.py"), "w", encoding="utf-8") as fh:
+                fh.write(
+                    "import unittest\n\n"
+                    "from mathy import add\n\n\n"
+                    "class T(unittest.TestCase):\n"
+                    "    def test_add(self):\n"
+                    "        self.assertEqual(add(1, 2), 3)\n"
+                )
+            with mock.patch.object(core, "discover_test_command", return_value="python -m unittest discover"):
+                res = core.verify_coverage(d)
+        self.assertTrue(res["ok"], res)
+        self.assertEqual(res["exit_code"], 0)
+        self.assertFalse(res["timed_out"])
+        by_name = {os.path.basename(r["file"]): r for r in res["rows"]}
+        self.assertIn("mathy.py", by_name)
+        self.assertIn("test_mathy.py", by_name)
+        row = by_name["mathy.py"]
+        self.assertEqual(row["covered"], 3)  # def add, return a+b, def never (defs run at import)
+        self.assertEqual(row["total"], 4)
+        self.assertEqual(row["pct"], 75)
+        test_row = by_name["test_mathy.py"]
+        self.assertEqual(test_row["covered"], test_row["total"])  # fully covered
+        self.assertEqual(test_row["pct"], 100)
+        self.assertEqual(res["covered"], 3 + test_row["covered"])
+        self.assertEqual(res["total"], res["covered"] + 1)  # mathy's one missing line
+
+    def test_verify_coverage_missing_module_graceful(self):
+        """A test importing a missing module → FAIL verdict, no exception."""
+        with tempfile.TemporaryDirectory() as d:
+            with open(os.path.join(d, "test_broken.py"), "w", encoding="utf-8") as fh:
+                fh.write(
+                    "import unittest\n"
+                    "import definitely_missing_module_xyz\n\n\n"
+                    "class T(unittest.TestCase):\n"
+                    "    def test_x(self):\n"
+                    "        pass\n"
+                )
+            with mock.patch.object(core, "discover_test_command", return_value="python -m unittest discover"):
+                res = core.verify_coverage(d)
+        self.assertFalse(res["ok"])
+        self.assertIsNotNone(res["exit_code"])
+        self.assertNotEqual(res["exit_code"], 0)
+        self.assertIn("definitely_missing_module_xyz", res["stderr_tail"])
+
+    def test_verify_coverage_empty_project_graceful(self):
+        """An empty directory → PASS verdict with zero rows, no exception."""
+        with tempfile.TemporaryDirectory() as d:
+            with mock.patch.object(core, "discover_test_command", return_value="python -m unittest discover"):
+                res = core.verify_coverage(d)
+        self.assertTrue(res["ok"], res)
+        self.assertEqual(res["rows"], [])
+        self.assertEqual(res["total"], 0)
+        self.assertEqual(res["covered"], 0)
+        self.assertEqual(res["pct"], 0.0)
+
+
+# ---------------------------------------------------------------------------
 # Plugin wiring: register() + handler routing
 # ---------------------------------------------------------------------------
 
@@ -309,6 +406,44 @@ class PluginRoutingTests(unittest.TestCase):
                     mock.patch.object(core, "discover_lint_command", return_value="ruff"):
                 out = self._command()["handler"]("")
         self.assertIn(f"VERIFY {d}", out)
+        self.assertIn("VERDICT: PASS", out)
+
+    def test_command_handler_coverage_flag_routes(self):
+        with mock.patch("verify_runner_test.verify_project", return_value="COVERAGE OK") as vp:
+            out = self._command()["handler"]("--coverage /proj/x")
+        vp.assert_called_once_with("/proj/x", coverage=True)
+        self.assertEqual(out, "COVERAGE OK")
+
+    def test_command_handler_plain_dir_is_not_coverage(self):
+        with mock.patch("verify_runner_test.verify_project", return_value="VERIFY OK") as vp:
+            out = self._command()["handler"]("/proj/x")
+        vp.assert_called_once_with("/proj/x", coverage=False)
+        self.assertEqual(out, "VERIFY OK")
+
+    def test_tool_handler_routes_coverage_param(self):
+        with mock.patch("verify_runner_test.verify_project", return_value="COVERAGE OK") as vp:
+            out = self._tool()["handler"]({"dir": "/proj/x", "coverage": True})
+        vp.assert_called_once_with("/proj/x", coverage=True)
+        self.assertEqual(out, "COVERAGE OK")
+
+    def test_verify_project_coverage_renders_rows(self):
+        with tempfile.TemporaryDirectory() as d:
+            fake = {
+                "ok": True, "exit_code": 0, "timed_out": False,
+                "rows": [
+                    {"file": os.path.join(d, "mathy.py"), "module": "mathy",
+                     "covered": 2, "total": 4, "pct": 50},
+                ],
+                "covered": 2, "total": 4, "pct": 50.0,
+                "stdout_tail": "", "stderr_tail": "",
+            }
+            with mock.patch.object(core, "verify_coverage", return_value=fake):
+                out = pkg.verify_project(d, coverage=True)
+        self.assertIn("COVERAGE", out)
+        self.assertIn("COVERAGE PASS (exit 0)", out)
+        self.assertIn("2/4 lines", out)
+        self.assertIn("50%", out)
+        self.assertIn("TOTAL 2/4 lines (50.0%)", out)
         self.assertIn("VERDICT: PASS", out)
 
     def test_tool_handler_unknown_dir(self):

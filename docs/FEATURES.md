@@ -10,14 +10,14 @@ is carried over from memory.
 
 | Metric | Verified value | How verified |
 |---|---|---|
-| Plugins shipped | **16** | `ls plugins/` = 16 dirs; README plugin table (16 rows) |
-| Passing tests | **677 / 677** (0 failures) | `docs/TEST-MATRIX.md` (auto-generated 2026-08-12 00:27) |
+| Plugins shipped | **22** | `ls plugins/` = 22 dirs; README plugin table (22 rows) |
+| Passing tests | **842 / 842** (0 failures) | `docs/TEST-MATRIX.md` (auto-generated 2026-08-12 00:27) |
 | Skills in repo | **170** `SKILL.md` files, **42** domain folders | glob count `skills/**/SKILL.md`; `ls skills/` |
 | External-skills DB | **519 rows** (skills.db), 6 sources; **180** curated shortlist (201 rows carry a rank) | SQLite `COUNT(*)`; `curated-skills.json` (180 entries) + `.stats.json` |
 | MCP server catalog | **311 servers** | `data/mcps.db` (311), `data/mcp/catalog.json` (311), `website/data/mcps.json` (311) |
 | Verified free models | **25** (live HTTP 200, 2026-08-10) | README + FEATURES.md provider-pool row |
 | Source agents composed | **7** (Hermes, OpenCode, jcode, Codex, Aider, Goose, OpenClaw) | README §"The seven agents, one host" |
-| Site assets | index (flagship) + mcp.html + skills.html + **5** docs pages + 404 + favicon + robots + css/js + 2 data JSONs | `ls website/ website/docs/` |
+| Site assets | index (flagship) + skills.html + mcp.html + gallery.html + features.html + **8** docs pages + 404 + favicon + robots + css/js + 2 data JSONs | `ls website/ website/docs/` |
 | Docs | **8** files in `docs/` | `ls docs/` |
 | CI (.github) | **not present — PENDING** | `ls .github/` → no such directory |
 
@@ -39,35 +39,35 @@ Status legend:
 
 ---
 
-## 1. Plugin matrix — all 16, shipped (source of truth: `docs/TEST-MATRIX.md`, README)
+## 1. Plugin matrix — all 22, shipped (source of truth: `docs/TEST-MATRIX.md`, README)
 
 | # | Plugin | Theme | Tests (PASS) | Status | Origin strength |
 |---|---|---|---|---|---|
 | 1 | `waitperk` | WaitPerk-model sponsorship: sponsor line, impression ledger, 50/50 payout math | 34 | SHIPPED | sponsorship (WaitPerk) |
-| 2 | `perkline` | PerkLine v2: CPM/CPC/CPA tiers, relevance match, HMAC receipts, escrow caps, second-price auction | 18 | SHIPPED | sponsorship (researched upgrade) |
-| 3 | `provider-pool` | 25 verified free models, live health checks, per-agent config generation, `/models` `/provider` | 36 | SHIPPED | free models (OpenCode Zen gateway) |
+| 2 | `perkline` | PerkLine v2: CPM/CPC/CPA tiers, relevance match, HMAC receipts, escrow caps, second-price auction | 27 | SHIPPED | sponsorship (researched upgrade) |
+| 3 | `provider-pool` | 25 verified free models, live health checks, per-agent config generation, `/models` `/provider` | 37 | SHIPPED | free models (OpenCode Zen gateway) |
 | 4 | `context-compact` | Long-session compaction, cache-safe context injection | 31 | SHIPPED | jcode (RAM efficiency) |
-| 5 | `sandbox-gate` | Pre-tool risk gate (block/warn/allow) + allowlist | 67 | SHIPPED | Codex (sandboxed execution) |
+| 5 | `sandbox-gate` | Pre-tool risk gate (block/warn/allow) + allowlist | 75 | SHIPPED | Codex (sandboxed execution) |
 | 6 | `mcp-catalog` | MCP server catalog, validation, JSON-RPC shapes | 26 | SHIPPED | Goose (MCP-native) |
 | 7 | `repomap` | Symbol-level repo map (13+ lang families), `rank_files` relevance scoring, stack tags | 42 | SHIPPED | Aider (repo map) |
 | 8 | `context-loader` | `fetch_page` + `describe_image` (vision) context tools | 69 | SHIPPED | Aider (images/web context) |
 | 9 | `verify-runner` | `/verify` tests+lint verdict on projects | 38 | SHIPPED | Aider (lint & test automation) |
-| 10 | `gh-ops` | gh/glab wrappers with strict table parsers | 99 | SHIPPED | OpenCode (GitHub/GitLab) |
+| 10 | `gh-ops` | gh/glab wrappers with strict table parsers | 130 | SHIPPED | OpenCode (GitHub/GitLab) |
 | 11 | `local-models` | Ollama / LM Studio probe (:11434/:1234) + config generation | 87 | SHIPPED | OpenCode (local endpoints) |
 | 12 | `title-statusline` | Sponsor line in the terminal title bar | 32 | SHIPPED | OpenCode (TUI/statusline) |
-| 13 | `omni-memory` | Personal memory: local SQLite facts, `/remember` `/recall`, LLM consolidation | 26 | SHIPPED | OpenClaw (persistent memory) |
+| 13 | `omni-memory` | Personal memory: local SQLite facts, `/remember` `/recall`, LLM consolidation | 29 | SHIPPED | OpenClaw (persistent memory) |
 | 14 | `omni-media` | Media understanding: `/ocr` `/caption` `/mediascan` via verified vision model | 27 | SHIPPED | OpenClaw (media pipeline) |
 | 15 | `omni-design` | `/design` premium self-contained HTML artifacts from a brief, `/design-audit` 10-tell slop audit — zero hooks | 8 | SHIPPED | Claude Design / Stitch |
 | 16 | `omni-parallel` | Parallel-task layer: `/swarm` task queue + context packs + multi-agent judging + PR-split merge plans | 20 | SHIPPED | Kimi / Cursor / Claude |
-| 17 | `omni-skills` | SKILL.md interop: scan/validate/install skills from any marketplace — zero hooks | 17 | SHIPPED | Claude (SKILL.md standard) |
-| 18 | `omni-registry` | Omni Registry | 15 | SHIPPED | Next-feature wave |
-| 19 | `codebase-index` | Codebase Index | 18 | SHIPPED | Next-feature wave |
-| 20 | `omni-tools` | Omni Tools | 18 | SHIPPED | Next-feature wave |
-| 21 | `bharat-pack` | Bharat Pack | 12 | SHIPPED | Next-feature wave |
-| 22 | `cost-tracker` | Cost Tracker | 14 | SHIPPED | Next-feature wave |
+| 17 | `omni-skills` | SKILL.md interop: scan/validate/install skills from any marketplace — zero hooks | 23 | SHIPPED | Claude (SKILL.md standard) |
+| 18 | `omni-registry` | Omni Registry | 22 | SHIPPED | Next-feature wave |
+| 19 | `codebase-index` | Codebase Index | 28 | SHIPPED | Next-feature wave |
+| 20 | `omni-tools` | Omni Tools | 21 | SHIPPED | Next-feature wave |
+| 21 | `bharat-pack` | Bharat Pack | 19 | SHIPPED | Next-feature wave |
+| 22 | `cost-tracker` | Cost Tracker | 17 | SHIPPED | Next-feature wave |
 
-**Totals: 17 plugins · 677 test methods · 677 passed · 0 failed** (TEST-MATRIX.md, 2026-08-12 00:27).
-Row sum check: 34+18+36+31+42+26+42+69+38+99+87+32+26+27+8+20 = 677 ✓
+**Totals: 22 plugins · 842 test methods · 842 passed · 0 failed** (TEST-MATRIX.md, 2026-08-12 14:19).
+Row sum check: 34+27+37+31+75+26+42+69+38+130+87+32+29+27+8+20+23+22+28+21+19+17 = 842 ✓
 
 ## 2. Heritage map — the seven source agents, one host
 
@@ -104,14 +104,16 @@ Row sum check: 34+18+36+31+42+26+42+69+38+99+87+32+26+27+8+20 = 677 ✓
 | `data/mcps.json` | Machine-readable MCP catalog — **311 entries** (verified) | SHIPPED | mcp pipeline |
 | `README.md` | Website layout + regeneration docs | SHIPPED | hand-authored |
 | `scripts/gen_skills.py` | Regenerates `skills.html` + `data/skills.json` | SHIPPED | pipeline (see §5) |
+| `features.html` | Feature-matrix page (generated from `docs/FEATURES.md`) | SHIPPED | `website/scripts/gen_features.py` |
+| `scripts/gen_features.py` | Regenerates `features.html` from `docs/FEATURES.md` | SHIPPED | pipeline (see §5) |
 
 ## 4. Docs (`docs/`, 8 files)
 
 | File | Purpose | Status |
 |---|---|---|
 | `FEATURES.md` | **This file** — master feature matrix, rebuilt 2026-08-12 | SHIPPED |
-| `ARCHITECTURE.md` | Host-core + edge-module architecture (updated 2026-08-12: seven agents, 16 modules) | SHIPPED |
-| `TEST-MATRIX.md` | Auto-generated plugin test matrix — 677/677 PASS (2026-08-12 00:27) | SHIPPED (regenerated by the test harness) |
+| `ARCHITECTURE.md` | Host-core + edge-module architecture (updated 2026-08-12: seven agents, 22 modules) | SHIPPED |
+| `TEST-MATRIX.md` | Auto-generated plugin test matrix — 842/842 PASS (2026-08-12 00:27) | SHIPPED (regenerated by the test harness) |
 | `PERFORMANCE.md` | Bench results (updated 2026-08-12) | SHIPPED |
 | `SELLING.md` | Go-to-market / sponsorship plan (updated 2026-08-12) | SHIPPED |
 | `SKILLS-SECURITY.md` | External-skills security scan report — regenerated by `data/build_db.py` | SHIPPED |
@@ -132,11 +134,11 @@ Row sum check: 34+18+36+31+42+26+42+69+38+99+87+32+26+27+8+20 = 677 ✓
 
 | Asset | Role | Status |
 |---|---|---|
-| `run.cmd` | Windows launcher — starts Hermes host with all **16** plugins; bootstraps bundled Ollama (updated 2026-08-12: 14→16) | SHIPPED |
-| `run.sh` | POSIX/git-bash launcher — all **16** plugins; ensures `ollama serve` on :11434 (updated 2026-08-12: 14→16) | SHIPPED |
+| `run.cmd` | Windows launcher — starts Hermes host with all **22** plugins; bootstraps bundled Ollama (updated 2026-08-12: 16→22) | SHIPPED |
+| `run.sh` | POSIX/git-bash launcher — all **22** plugins; ensures `ollama serve` on :11434 (updated 2026-08-12: 16→22) | SHIPPED |
 | `ollama/start-ollama.ps1` | Bundled-Ollama starter: downloads official portable build once (~130 MB) into `ollama/runtime/`, serves `127.0.0.1:11434`, pulls `qwen2.5:3b` on first run; idempotent | SHIPPED |
 | `.github/` | CI/workflows | **PENDING** (directory not present as of 2026-08-12) |
-| `.bench/` | Benchmark harness: `bench.py`, `run_all_tests.sh`, `results[-before|-after].json` over the 677-test suite | SHIPPED |
+| `.bench/` | Benchmark harness: `bench.py`, `run_all_tests.sh`, `results[-before|-after].json` over the 842-test suite | SHIPPED |
 | `.gitignore`, `LICENSE` (MIT), `LICENSE-ATTRIBUTION.md` | Repo hygiene / licensing | SHIPPED |
 
 ## 7. Skills & free models

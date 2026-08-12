@@ -3,12 +3,15 @@
 Hooks: pre_llm_call (inject a memory brief into non-trivial turns),
 post_tool_call (auto-remember nothing by default — facts are stored on
 purpose). Commands: /remember <fact>, /recall <query>, /memory-status,
-/memory-consolidate. All hooks return None or a context string; the
-module never alters agent behavior beyond injecting the brief.
+/memory-consolidate, /memory mcp-tools (list MCP tool definitions).
+All hooks return None or a context string; the module never alters agent
+behavior beyond injecting the brief.
 """
 from __future__ import annotations
 
+import json
 import time
+from contextlib import closing
 
 from . import core
 
@@ -19,6 +22,7 @@ HELP = (
     "/recall <query>       retrieve matching facts\n"
     "/memory-status        show fact count + store path\n"
     "/memory-consolidate   fold oldest facts into a summary (LLM)\n"
+    "/memory mcp-tools     list MCP tool definitions for omni-memory\n"
 )
 
 
@@ -63,7 +67,7 @@ def _handle_recall(raw: str) -> str:
 
 
 def _handle_status() -> str:
-    with core._conn() as db:  # noqa: SLF001 — internal status read
+    with closing(core._conn()) as db:  # noqa: SLF001 — internal status read
         total = db.execute("SELECT COUNT(*) FROM facts").fetchone()[0]
     return f"omni-memory: {total} fact(s) at {core.DB_PATH}"
 
@@ -83,6 +87,15 @@ def _handle_consolidate() -> str:
     return f"consolidated: {result['before']} -> {result['after']} fact(s)"
 
 
+def _handle_memory(raw: str) -> str:
+    """/memory mcp-tools — render the MCP tool definitions as JSON."""
+    parts = (raw or "").strip().split(None, 1)
+    cmd = parts[0].lower() if parts else ""
+    if cmd == "mcp-tools":
+        return json.dumps(core.mcp_tools(), indent=2)
+    return HELP
+
+
 def register(ctx) -> None:
     global _CTX
     _CTX = ctx
@@ -97,3 +110,6 @@ def register(ctx) -> None:
                          description="Show omni-memory store status")
     ctx.register_command("memory-consolidate", handler=_handle_consolidate,
                          description="Fold oldest facts into a summary")
+    ctx.register_command("memory", handler=_handle_memory,
+                         description="omni-memory MCP surface (mcp-tools)",
+                         args_hint="mcp-tools")

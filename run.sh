@@ -17,6 +17,6 @@ if command -v ollama >/dev/null 2>&1 && ! curl -sf --max-time 2 http://127.0.0.1
         sleep 2
     done
 fi
-echo "[XOMNI] starting standalone XOMNI profile + 17 plugins..."
+echo "[XOMNI] starting standalone XOMNI profile + 22 plugins..."
 export HERMES_HOME="${HERMES_HOME:-$HOME/AppData/Local/hermes/profiles/xomni}"
 hermes "$@"

@@ -8,11 +8,14 @@ slash command only.
 Surface:
   /cindex status [path]           index health (files, symbols, dirty count)
   /cindex build [path]            full rebuild (explicit refresh)
+  /cindex embed [path]            OPT-IN embeddings (Ollama; graceful skip)
   /cindex query <q> [path]        ranked file + symbol hits
+  /cindex query --hybrid <q>      RRF fusion of BM25 + vectors (opt-in)
   tool codebase_query             model-callable version of the query surface
 """
 from __future__ import annotations
 
+import json
 import os
 
 from . import core
@@ -74,15 +77,54 @@ def _handle_cindex(raw: str) -> str:
             return head + "\n" + "\n".join(
                 f"{k}: {v}" for k, v in st.items()
                 if k not in ("db_path", "root"))
-        if sub == "query":
-            if not rest:
-                return "/cindex query <q> [path] — e.g. /cindex query fts5 index"
-            q = rest[0]
-            root = _resolve_root(rest[1] if len(rest) > 1 else None)
+        if sub == "embed":
+            root = _resolve_root(rest[0] if rest else None)
             if not os.path.isdir(root):
                 return f"/cindex: not a directory: {root}"
-            return core.query(root, q)
-        return ("usage: /cindex build|status [path] | /cindex query <q> [path]")
+            r = core.build_embeddings(root)
+            if r["ok"]:
+                return (f"embedded {r['embedded']} files "
+                        f"({r['skipped']} already cached) with {r['model']} "
+                        f"-> {core.get_db_path(root)}")
+            return r["reason"]
+        if sub == "query":
+            toks = raw.split()
+            json_out, symbols_only, hybrid, top = False, False, False, 10
+            positional: list[str] = []
+            i = 1  # skip "query"
+            while i < len(toks):
+                a = toks[i]
+                if a == "--json":
+                    json_out = True
+                elif a == "--hybrid":
+                    hybrid = True
+                elif a == "--symbols-only":
+                    symbols_only = True
+                elif a.startswith("--top="):
+                    try:
+                        top = max(1, int(a.split("=", 1)[1]))
+                    except ValueError:
+                        return f"/cindex: --top expects an integer, got: {a}"
+                else:
+                    positional.append(a)
+                i += 1
+            if not positional:
+                return ("/cindex query [--json] [--hybrid] [--top=N] "
+                        "[--symbols-only] <q> [path] — e.g. "
+                        "/cindex query --hybrid fts5 index")
+            q = positional[0]
+            root = _resolve_root(positional[1] if len(positional) > 1 else None)
+            if not os.path.isdir(root):
+                return f"/cindex: not a directory: {root}"
+            if json_out:
+                return json.dumps(
+                    core.query_json(root, q, top_n=top, symbols_only=symbols_only),
+                    indent=2)
+            if hybrid:
+                return core.query_hybrid(root, q, top_n=top)
+            return core.query(root, q, top_n=top)
+        return ("usage: /cindex build|status|embed [path] | "
+                "/cindex query [--hybrid] <q> [path]")
     except Exception as exc:
         return f"/cindex failed: {exc}"
 
@@ -116,6 +158,6 @@ def register(ctx) -> None:
     )
     ctx.register_command(
         "cindex", handler=_handle_cindex,
-        description="Hybrid codebase index: status, build, ranked query",
-        args_hint="status|build [path] | query <q> [path]",
+        description="Hybrid codebase index: status, build, embed, ranked query",
+        args_hint="status|build|embed [path] | query [--hybrid] <q> [path]",
     )

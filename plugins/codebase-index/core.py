@@ -12,18 +12,27 @@ Design per .tmp/research-next/CODEBASE-INDEX.md:
   - API stays v1-compatible: build_map / rank_files / stack_tags, plus the
     new search_symbols / index_status / query surfaces.
 
-Embeddings are NOT part of this module (opt-in later layer); meta.embedding
-reports "none".
+Embeddings are an OPT-IN layer: `build_embeddings` stores per-file vectors in
+the `vectors` table via a pluggable provider (default: Ollama
+http://127.0.0.1:11434/api/embeddings), and `query_hybrid` fuses BM25 +
+vector rankings with reciprocal-rank fusion (RRF). Every provider call fails
+soft: unreachable Ollama / no vectors => graceful fallback to the plain BM25
+query, never a raise. meta.embedding_model reports the active model tag or
+"none".
 """
 from __future__ import annotations
 
+import array
 import hashlib
+import json
+import math
 import os
 import re
 import sqlite3
 import subprocess
 import sys
 import time
+import urllib.request
 
 SCHEMA_VERSION = "2"
 
@@ -40,6 +49,12 @@ MAX_CHUNK_LINES = 400             # code-aware chunk size cap
 MAX_CHUNK_BYTES = 256_000         # cap on a single chunk's stored content
 MAX_DIRTY_DEFER = 200             # spec: > N dirty files => serve stale + banner
 BM25_PATH_WEIGHT = 10.0           # Continue trick: bm25(fts, 10.0)
+
+RRF_K = 60.0                      # reciprocal-rank fusion constant (standard)
+EMBED_MAX_CHARS = 6000            # per-file embed text cap (path + chunks)
+EMBED_TIMEOUT = float(os.environ.get("CINDEX_EMBED_TIMEOUT", "3"))
+EMBED_BASE_URL = os.environ.get("CINDEX_EMBED_URL", "http://127.0.0.1:11434")
+EMBED_MODEL = os.environ.get("CINDEX_EMBED_MODEL", "nomic-embed-text")
 
 # Text-ish extensions that get chunked into FTS (code langs come from _SYMBOL_PATTERNS).
 TEXT_EXTS = {
@@ -120,6 +135,10 @@ CREATE TABLE IF NOT EXISTS fts_meta (
   id INTEGER PRIMARY KEY, file_id INTEGER, chunk_id INTEGER, path TEXT, cache_key TEXT
 );
 CREATE INDEX IF NOT EXISTS idx_fts_meta_file ON fts_meta(file_id);
+CREATE TABLE IF NOT EXISTS vectors (
+  file_id INTEGER PRIMARY KEY REFERENCES files(id),
+  model TEXT NOT NULL, dim INTEGER NOT NULL, embedding BLOB NOT NULL
+);
 """
 
 
@@ -141,6 +160,12 @@ def _set_meta(conn: sqlite3.Connection, key: str, value: str) -> None:
     conn.execute(
         "INSERT INTO meta(key,value) VALUES(?,?) "
         "ON CONFLICT(key) DO UPDATE SET value=excluded.value", (key, value))
+
+
+def _embedding_model_of(conn: sqlite3.Connection) -> str:
+    """Model tag of stored vectors, or 'none' when the table is empty."""
+    row = conn.execute("SELECT model FROM vectors LIMIT 1").fetchone()
+    return row[0] if row else "none"
 
 
 def _git_head(root: str) -> str | None:
@@ -273,6 +298,7 @@ def _delete_file_rows(conn: sqlite3.Connection, file_id: int) -> None:
         "SELECT id FROM chunks WHERE file_id=?", (file_id,))]
     conn.execute("DELETE FROM symbols WHERE file_id=?", (file_id,))
     conn.execute("DELETE FROM chunks WHERE file_id=?", (file_id,))
+    conn.execute("DELETE FROM vectors WHERE file_id=?", (file_id,))
     conn.execute("DELETE FROM fts_meta WHERE file_id=?", (file_id,))
     for cid in chunk_ids:
         conn.execute("DELETE FROM fts WHERE rowid=?", (cid,))
@@ -398,8 +424,11 @@ def update_index(root: str, db_path: str | None = None, force: bool = False,
                 1 for rel, (size, _m) in disk.items() if size > MAX_FILE_BYTES)
             _set_meta(conn, "schema_version", SCHEMA_VERSION)
             _set_meta(conn, "indexed_at", time.strftime("%Y-%m-%dT%H:%M:%S"))
-            _set_meta(conn, "rebuilt_at", time.strftime("%Y-%m-%dT%H:%M:%S"))
-            _set_meta(conn, "embedding_model", "none")
+            # rebuilt_at only moves when the index actually changed (or was
+            # force/fresh rebuilt): a stat-diff no-op must not bump it.
+            if fresh or force or stats["added"] or stats["updated"] or stats["removed"]:
+                _set_meta(conn, "rebuilt_at", time.strftime("%Y-%m-%dT%H:%M:%S"))
+            _set_meta(conn, "embedding_model", _embedding_model_of(conn))
             _set_meta(conn, "git_head", _git_head(root) or "")
             _set_meta(conn, "root", root)
     finally:
@@ -500,6 +529,64 @@ def search_symbols(root: str, query: str, db_path: str | None = None,
         conn.close()
 
 
+def _ranked_file_ids(conn: sqlite3.Connection, terms: list[str],
+                     top_n: int) -> list[tuple[int, float]]:
+    """BM25(path-weighted) + symbol boost -> ordered [(file_id, score)].
+    Shared by rank_files (v1 surface) and query_hybrid (RRF fusion)."""
+    fq = _fts_query(terms)
+    scored: dict[int, float] = {}
+    path: dict[int, str] = {}
+    if fq:
+        rows = conn.execute(
+            "SELECT fts.rowid AS rid, bm25(fts, ?) AS b, fm.file_id, fm.path "
+            "FROM fts JOIN fts_meta fm ON fm.id = fts.rowid "
+            "WHERE fts MATCH ? ORDER BY b ASC LIMIT 200", (BM25_PATH_WEIGHT, fq))
+        for r in rows:
+            fid = r["file_id"]
+            s = -r["b"]  # bm25: more negative = better -> positive score
+            if fid not in scored or s > scored[fid]:
+                scored[fid] = s
+                path[fid] = r["path"]
+    for fid in scored:
+        scored[fid] += _symbol_boost(fid, terms, conn)
+    # symbol-only hits (short terms / no FTS row): base 0 + boost
+    for r in conn.execute(
+            "SELECT DISTINCT s.file_id AS fid, f.depth AS d, f.path AS p "
+            "FROM symbols s JOIN files f ON f.id=s.file_id"):
+        if r["fid"] not in scored:
+            b = _symbol_boost(r["fid"], terms, conn)
+            if b > 0:
+                scored[r["fid"]] = 0.0 + b
+                path[r["fid"]] = r["p"]
+    ranked = sorted(scored.items(), key=lambda kv: (-kv[1], path.get(kv[0], "")))
+    return ranked[:top_n]
+
+
+def _render_file_ids(conn: sqlite3.Connection,
+                     ranked: list[tuple[int, float]], terms: list[str],
+                     fmt: str = "{:.2f}") -> str:
+    """Render [(file_id, score)] as the v1 ranked-file lines (path, symbols)."""
+    out: list[str] = []
+    total = 0
+    for fid, score in ranked:
+        row = conn.execute(
+            "SELECT depth, path FROM files WHERE id=?", (fid,)).fetchone()
+        if row is None:
+            continue
+        depth, p = row["depth"], row["path"]
+        syms = _file_symbols(conn, fid)
+        line = f"{fmt.format(score)}  {'  ' * depth}{p}"
+        if syms:
+            line += "  [" + ", ".join(syms[:12]) + "]"
+        if len(syms) > 12:
+            line += f" (+{len(syms) - 12} more)"
+        if total + len(line) > DEFAULT_MAX_CHARS:
+            break
+        out.append(line)
+        total += len(line)
+    return "\n".join(out)
+
+
 def rank_files(root: str, query: str, top_n: int = 10,
                db_path: str | None = None) -> str:
     """v1-compatible ranked file list: BM25(path-weighted) + symbol boost."""
@@ -511,50 +598,7 @@ def rank_files(root: str, query: str, top_n: int = 10,
         update_index(root, db_path=db_path)
     conn = _connect(db_path)
     try:
-        fq = _fts_query(terms)
-        scored: dict[int, float] = {}
-        depth: dict[int, int] = {}
-        path: dict[int, str] = {}
-        if fq:
-            rows = conn.execute(
-                "SELECT fts.rowid AS rid, bm25(fts, ?) AS b, fm.file_id, fm.path "
-                "FROM fts JOIN fts_meta fm ON fm.id = fts.rowid "
-                "WHERE fts MATCH ? ORDER BY b ASC LIMIT 200", (BM25_PATH_WEIGHT, fq))
-            for r in rows:
-                fid = r["file_id"]
-                s = -r["b"]  # bm25: more negative = better -> positive score
-                if fid not in scored or s > scored[fid]:
-                    scored[fid] = s
-                    path[fid] = r["path"]
-        for fid in scored:
-            scored[fid] += _symbol_boost(fid, terms, conn)
-            d = conn.execute("SELECT depth FROM files WHERE id=?", (fid,)).fetchone()
-            depth[fid] = d[0] if d else 0
-        # symbol-only hits (short terms / no FTS row): base 0 + boost
-        for r in conn.execute(
-            "SELECT DISTINCT s.file_id AS fid, f.depth AS d, f.path AS p "
-            "FROM symbols s JOIN files f ON f.id=s.file_id"):
-            if r["fid"] not in scored:
-                b = _symbol_boost(r["fid"], terms, conn)
-                if b > 0:
-                    scored[r["fid"]] = 0.0 + b
-                    depth[r["fid"]] = r["d"]
-                    path[r["fid"]] = r["p"]
-        ranked = sorted(scored.items(), key=lambda kv: (-kv[1], path.get(kv[0], "")))
-        out: list[str] = []
-        total = 0
-        for fid, score in ranked[:top_n]:
-            syms = _file_symbols(conn, fid)
-            line = f"{score:.2f}  {'  ' * depth.get(fid, 0)}{path.get(fid, '')}"
-            if syms:
-                line += "  [" + ", ".join(syms[:12]) + "]"
-            if len(syms) > 12:
-                line += f" (+{len(syms) - 12} more)"
-            if total + len(line) > DEFAULT_MAX_CHARS:
-                break
-            out.append(line)
-            total += len(line)
-        return "\n".join(out)
+        return _render_file_ids(conn, _ranked_file_ids(conn, terms, top_n), terms)
     finally:
         conn.close()
 
@@ -628,7 +672,7 @@ def index_status(root: str, db_path: str | None = None) -> dict:
     exists = os.path.isfile(db_path)
     st = {
         "db_path": db_path, "exists": exists, "schema_version": None,
-        "file_count": 0, "symbol_count": 0, "chunk_count": 0,
+        "file_count": 0, "symbol_count": 0, "chunk_count": 0, "vector_count": 0,
         "dirty_count": 0, "indexed_at": None, "rebuilt_at": None,
         "embedding_model": "none", "git_head": None, "db_size_bytes": 0,
         "root": os.path.abspath(root),
@@ -646,6 +690,7 @@ def index_status(root: str, db_path: str | None = None) -> dict:
         st["file_count"] = conn.execute("SELECT COUNT(*) FROM files").fetchone()[0]
         st["symbol_count"] = conn.execute("SELECT COUNT(*) FROM symbols").fetchone()[0]
         st["chunk_count"] = conn.execute("SELECT COUNT(*) FROM chunks").fetchone()[0]
+        st["vector_count"] = conn.execute("SELECT COUNT(*) FROM vectors").fetchone()[0]
     finally:
         conn.close()
     disk = _stat_walk(root)
@@ -698,6 +743,303 @@ def query(root: str, q: str, top_n: int = 10, symbol_limit: int = 20,
     return "\n".join(parts)
 
 
+def query_json(root: str, q: str, top_n: int = 10, symbols_only: bool = False,
+               db_path: str | None = None, freshness: bool = True) -> list[dict]:
+    """Machine-readable ranked hits (JSON-serializable list of dicts).
+
+    Each hit is either a file hit
+      {"type": "file", "path", "score", "symbols": [names]}
+    or a symbol/definition hit
+      {"type": "symbol", "path", "line", "kind", "name"}.
+
+    symbols_only=True filters to symbol/definition hits only (no file rows).
+    top_n caps BOTH sections (default 10). Same freshness semantics as query().
+    """
+    q = (q or "").strip()
+    if not q:
+        return []
+    db_path = db_path or get_db_path(root)
+    if freshness:
+        update_index(root, db_path=db_path)
+    elif not os.path.isfile(db_path):
+        update_index(root, db_path=db_path)
+    terms = [t.lower() for t in re.split(r"\s+", q) if t]
+    if not terms:
+        return []
+    conn = _connect(db_path)
+    try:
+        hits: list[dict] = []
+        # ---- file hits: BM25 (path-weighted) + symbol-name boost --------- #
+        if not symbols_only:
+            scored: dict[int, dict] = {}
+            fq = _fts_query(terms)
+            if fq:
+                rows = conn.execute(
+                    "SELECT fts.rowid AS rid, bm25(fts, ?) AS b, fm.file_id, fm.path "
+                    "FROM fts JOIN fts_meta fm ON fm.id = fts.rowid "
+                    "WHERE fts MATCH ? ORDER BY b ASC LIMIT 200",
+                    (BM25_PATH_WEIGHT, fq))
+                for r in rows:
+                    fid = r["file_id"]
+                    s = -r["b"]  # bm25: more negative = better -> positive score
+                    if fid not in scored or s > scored[fid]["score"]:
+                        scored[fid] = {"score": s, "path": r["path"]}
+            for fid in scored:
+                scored[fid]["score"] += _symbol_boost(fid, terms, conn)
+            # symbol-only hits (short terms / no FTS row): base 0 + boost
+            for r in conn.execute(
+                "SELECT DISTINCT s.file_id AS fid, f.path AS p "
+                "FROM symbols s JOIN files f ON f.id=s.file_id"):
+                if r["fid"] not in scored:
+                    b = _symbol_boost(r["fid"], terms, conn)
+                    if b > 0:
+                        scored[r["fid"]] = {"score": 0.0 + b, "path": r["p"]}
+            ranked = sorted(scored.items(),
+                            key=lambda kv: (-kv[1]["score"], kv[1]["path"]))
+            for fid, info in ranked[:top_n]:
+                hits.append({
+                    "type": "file",
+                    "path": info["path"],
+                    "score": round(info["score"], 2),
+                    "symbols": _file_symbols(conn, fid),
+                })
+        # ---- symbol/definition hits -------------------------------------- #
+        seen: set[tuple] = set()
+        sym_hits: list[dict] = []
+        for t in terms:
+            esc = _like_escape(t)
+            for sql, args in (
+                ("SELECT s.name,s.kind,s.line,f.path FROM symbols s "
+                 "JOIN files f ON f.id=s.file_id WHERE lower(s.name) LIKE ? ESCAPE '\\' "
+                 "ORDER BY (CASE WHEN lower(s.name)=? THEN 0 ELSE 1 END), s.name, f.path LIMIT ?",
+                 (esc + "%", t, top_n)),
+                ("SELECT s.name,s.kind,s.line,f.path FROM symbols s "
+                 "JOIN files f ON f.id=s.file_id WHERE lower(s.name) LIKE ? ESCAPE '\\' "
+                 "ORDER BY s.name, f.path LIMIT ?",
+                 ("%" + esc + "%", top_n)),
+            ):
+                for r in conn.execute(sql, args):
+                    key = (r["path"], r["line"], r["name"])
+                    if key not in seen:
+                        seen.add(key)
+                        sym_hits.append({
+                            "type": "symbol",
+                            "path": r["path"],
+                            "line": r["line"],
+                            "kind": r["kind"],
+                            "name": r["name"],
+                        })
+        hits.extend(sym_hits[:top_n])
+        return hits
+    finally:
+        conn.close()
+
+
+# --------------------------------------------------------------------------- #
+# embeddings (OPT-IN) / RRF hybrid
+# --------------------------------------------------------------------------- #
+
+def _post_json(url: str, payload: dict, timeout: float) -> dict | None:
+    """POST JSON, return parsed dict. None on ANY failure (connect/HTTP/parse)
+    — the single network touchpoint tests mock."""
+    try:
+        req = urllib.request.Request(
+            url, data=json.dumps(payload).encode("utf-8"),
+            headers={"Content-Type": "application/json"}, method="POST")
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            return json.loads(resp.read().decode("utf-8"))
+    except Exception:
+        return None
+
+
+def embed_texts(texts: list[str], model: str = EMBED_MODEL,
+                base_url: str = EMBED_BASE_URL,
+                timeout: float = EMBED_TIMEOUT) -> list[list[float]] | None:
+    """Pluggable embeddings provider (default: Ollama /api/embeddings).
+
+    Returns a vector per input text (aligned order), or None when the
+    provider is unreachable / errors / returns garbage — callers treat None
+    as 'graceful skip' and fall back to BM25. All-or-nothing: a single bad
+    response aborts the batch so stored vectors always align with files.
+    """
+    out: list[list[float]] = []
+    for t in texts:
+        body = _post_json(f"{base_url.rstrip('/')}/api/embeddings",
+                          {"model": model, "prompt": t}, timeout)
+        vec = body.get("embedding") if body else None
+        if not vec:
+            return None
+        out.append([float(x) for x in vec])
+    return out
+
+
+def _pack_vec(v: list[float]) -> bytes:
+    return array.array("f", v).tobytes()
+
+
+def _unpack_vec(blob: bytes) -> list[float]:
+    a = array.array("f")
+    a.frombytes(blob)
+    return list(a)
+
+
+def _cosine(a: list[float], b: list[float]) -> float:
+    if not a or len(a) != len(b):
+        return 0.0
+    dot = sum(x * y for x, y in zip(a, b))
+    na = math.sqrt(sum(x * x for x in a))
+    nb = math.sqrt(sum(y * y for y in b))
+    return dot / (na * nb) if na and nb else 0.0
+
+
+def _file_embed_text(conn: sqlite3.Connection, file_id: int, path: str) -> str:
+    """Embeddable text for a file: relpath + chunk contents, capped."""
+    rows = conn.execute(
+        "SELECT content FROM chunks WHERE file_id=? ORDER BY idx", (file_id,))
+    text = "\n\n".join([path] + [r[0] for r in rows])
+    return text[:EMBED_MAX_CHARS]
+
+
+def build_embeddings(root: str, db_path: str | None = None,
+                     model: str | None = None, base_url: str | None = None,
+                     timeout: float | None = None,
+                     force: bool = False) -> dict:
+    """OPT-IN: embed every indexed file into the `vectors` table.
+
+    Fails soft by design: an unreachable provider returns
+    {"ok": False, "reason": ...} without touching the DB — the index stays
+    fully usable in BM25 mode. Files already embedded with the same model
+    tag are skipped unless force=True (which re-embeds everything).
+    """
+    model = model or EMBED_MODEL
+    base_url = base_url or EMBED_BASE_URL
+    timeout = timeout if timeout is not None else EMBED_TIMEOUT
+    root = os.path.abspath(root)
+    db_path = db_path or get_db_path(root)
+    if not os.path.isfile(db_path):
+        update_index(root, db_path=db_path)
+    conn = _connect(db_path)
+    try:
+        if force:
+            conn.execute("DELETE FROM vectors")
+        existing = {r[0] for r in conn.execute(
+            "SELECT file_id FROM vectors WHERE model=?", (model,))}
+        todo = [(r["id"], r["path"]) for r in conn.execute(
+            "SELECT id, path FROM files ORDER BY id") if r["id"] not in existing]
+        if not todo:
+            with conn:
+                _set_meta(conn, "embedding_model", model)
+            return {"ok": True, "embedded": 0, "skipped": len(existing),
+                    "model": model, "reason": ""}
+        texts = [_file_embed_text(conn, fid, p) for fid, p in todo]
+        vecs = embed_texts(texts, model=model, base_url=base_url, timeout=timeout)
+        if vecs is None:
+            return {"ok": False, "embedded": 0, "skipped": 0, "model": model,
+                    "reason": (f"embedding provider unreachable at "
+                               f"{base_url} (graceful skip; index stays in "
+                               f"BM25 mode)")}
+        with conn:
+            for (fid, _p), vec in zip(todo, vecs):
+                conn.execute(
+                    "INSERT INTO vectors(file_id,model,dim,embedding) "
+                    "VALUES(?,?,?,?) ON CONFLICT(file_id) DO UPDATE SET "
+                    "model=excluded.model, dim=excluded.dim, "
+                    "embedding=excluded.embedding",
+                    (fid, model, len(vec), _pack_vec(vec)))
+            _set_meta(conn, "embedding_model", model)
+        return {"ok": True, "embedded": len(todo), "skipped": len(existing),
+                "model": model, "reason": ""}
+    finally:
+        conn.close()
+
+
+def rrf_fuse(rankings: list[list], k: float = RRF_K) -> list[tuple]:
+    """Reciprocal-rank fusion: score(doc) = Σ 1/(k + rank_i) over rankings.
+
+    Pure math, unit-testable. Higher k flattens the curve; 60 is the
+    standard constant. Ties break on doc id for determinism.
+    """
+    scores: dict = {}
+    for ranking in rankings:
+        for rank, doc in enumerate(ranking, start=1):
+            scores[doc] = scores.get(doc, 0.0) + 1.0 / (k + rank)
+    return sorted(scores.items(), key=lambda kv: (-kv[1], str(kv[0])))
+
+
+def _vector_rank(conn: sqlite3.Connection, q: str,
+                 top_n: int) -> list[tuple[int, float]]:
+    """File ids ranked by cosine similarity of the query embedding, or [] on
+    graceful skip (no vectors stored / provider unreachable / dim mismatch)."""
+    row = conn.execute("SELECT model FROM vectors LIMIT 1").fetchone()
+    if row is None:
+        return []
+    model = row[0]
+    qv = embed_texts([q], model=model)
+    if qv is None:
+        return []
+    qvec = qv[0]
+    scored: list[tuple[float, int]] = []
+    for fid, blob in conn.execute(
+            "SELECT file_id, embedding FROM vectors WHERE model=?", (model,)):
+        scored.append((_cosine(qvec, _unpack_vec(blob)), fid))
+    scored.sort(key=lambda t: (-t[0], t[1]))
+    return [(fid, sim) for sim, fid in scored[:top_n]]
+
+
+def query_hybrid(root: str, q: str, top_n: int = 10, symbol_limit: int = 20,
+                 db_path: str | None = None, k: float = RRF_K,
+                 freshness: bool = True) -> str:
+    """Opt-in hybrid query: RRF fusion of BM25 + embedding rankings.
+
+    Graceful degradation, never raises on the provider: no vectors stored
+    or Ollama unreachable => the plain BM25 ranking, with the mode line
+    saying which path ran.
+    """
+    q = (q or "").strip()
+    if not q:
+        return build_map(root, db_path=db_path)
+    db_path = db_path or get_db_path(root)
+    banner = ""
+    if freshness:
+        st = update_index(root, db_path=db_path)
+        if st.get("deferred"):
+            banner = st["banner"]
+    elif not os.path.isfile(db_path):
+        update_index(root, db_path=db_path)
+    terms = [t.lower() for t in re.split(r"\s+", q) if t]
+    conn = _connect(db_path)
+    try:
+        bm25 = _ranked_file_ids(conn, terms, max(top_n * 3, 30))
+        vec = _vector_rank(conn, q, max(top_n * 3, 30))
+        if vec:
+            fused = rrf_fuse([[fid for fid, _ in bm25],
+                              [fid for fid, _ in vec]], k=k)[:top_n]
+            files_part = _render_file_ids(conn, fused, terms, fmt="{:.4f}")
+            mode = f"hybrid rrf (bm25 + vectors, k={k:g})"
+        else:
+            files_part = _render_file_ids(conn, bm25[:top_n], terms)
+            if _embedding_model_of(conn) == "none":
+                mode = "bm25 (no vectors — run 'cindex embed' to enable hybrid)"
+            else:
+                mode = "bm25 (vector provider unreachable — graceful fallback)"
+        syms_part = search_symbols(root, q, db_path=db_path, limit=symbol_limit)
+        st = index_status(root, db_path=db_path)
+        head = (f"index: {st['file_count']} files, {st['symbol_count']} symbols, "
+                f"{st['chunk_count']} chunks @ {st['indexed_at']} "
+                f"(git {st['git_head'] or '?'}, embeddings {st['embedding_model']})")
+        head += "\nquery mode: " + mode
+        if banner:
+            head += "\n" + banner
+        parts = [head]
+        if files_part:
+            parts.append("-- ranked files --\n" + files_part)
+        if syms_part:
+            parts.append("-- symbol hits --\n" + syms_part)
+        return "\n".join(parts)
+    finally:
+        conn.close()
+
+
 # --------------------------------------------------------------------------- #
 # CLI  (spec: explicit refresh for scripting/CI)
 # --------------------------------------------------------------------------- #
@@ -706,8 +1048,9 @@ def main(argv: list[str] | None = None) -> int:
     argv = list(sys.argv[1:] if argv is None else argv)
     if not argv:
         print(__doc__.splitlines()[0])
-        print("usage: python -m codebase_index build|status <root>")
-        print("       python -m codebase_index query <root> <query>")
+        print("usage: python -m codebase_index build|status|embed <root>")
+        print("       python -m codebase_index query [--hybrid|--json] "
+              "[--top N] <root> <query>")
         return 2
     cmd, rest = argv[0], argv[1:]
     if cmd == "build":
@@ -723,11 +1066,58 @@ def main(argv: list[str] | None = None) -> int:
         for k, v in index_status(root).items():
             print(f"{k}: {v}")
         return 0
+    if cmd == "embed":
+        root = rest[0] if rest else os.getcwd()
+        r = build_embeddings(root)
+        if r["ok"]:
+            print(f"embedded {r['embedded']} files ({r['skipped']} already "
+                  f"cached) with {r['model']} -> {get_db_path(root)}")
+        else:
+            print(r["reason"])
+        return 0
     if cmd == "query":
-        if len(rest) < 2:
-            print("usage: python -m codebase_index query <root> <query>")
+        json_out, symbols_only, hybrid, top = False, False, False, 10
+        positional: list[str] = []
+        i = 0
+        while i < len(rest):
+            a = rest[i]
+            if a == "--json":
+                json_out = True
+            elif a == "--hybrid":
+                hybrid = True
+            elif a == "--symbols-only":
+                symbols_only = True
+            elif a == "--top":
+                i += 1
+                if i >= len(rest):
+                    print("--top expects an integer, e.g. --top 5")
+                    return 2
+                try:
+                    top = max(1, int(rest[i]))
+                except ValueError:
+                    print(f"--top expects an integer, got: {rest[i]}")
+                    return 2
+            elif a.startswith("--top="):
+                try:
+                    top = max(1, int(a.split("=", 1)[1]))
+                except ValueError:
+                    print(f"--top expects an integer, got: {a}")
+                    return 2
+            else:
+                positional.append(a)
+            i += 1
+        if len(positional) < 2:
+            print("usage: python -m codebase_index query [--json] [--hybrid] "
+                  "[--top N] [--symbols-only] <root> <query>")
             return 2
-        print(query(rest[0], " ".join(rest[1:])))
+        root, q = positional[0], " ".join(positional[1:])
+        if json_out:
+            print(json.dumps(query_json(root, q, top_n=top,
+                                        symbols_only=symbols_only), indent=2))
+        elif hybrid:
+            print(query_hybrid(root, q, top_n=top))
+        else:
+            print(query(root, q, top_n=top))
         return 0
     print(f"unknown command: {cmd}")
     return 2

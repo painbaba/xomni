@@ -165,6 +165,51 @@ HERMES_PROVIDER_BLOCK = """\
 #   key_env: OPENROUTER_API_KEY
 """
 
+# ---------------------------------------------------------------------------
+# WABA-connected agent — DOCUMENTED CONFIG SHAPE (WhatsApp B2B mode).
+# Not wired into AGENT_CONFIGS on purpose: a WABA agent is not a new LLM
+# endpoint — it is the SAME free-model gateway below plus a WhatsApp Business
+# Cloud API channel on the Hermes gateway. Full runbook + compliance rules:
+# docs/WHATSAPP-B2B.md (repo root). B2B ONLY in India — Meta's Jan 15, 2026
+# AI-Provider ToS bars third-party consumer AI assistants there.
+# ---------------------------------------------------------------------------
+
+WABA_AGENT_BLOCK = """\
+# --- xomni whatsapp-b2b: business-owned WABA service agent (India) ---
+# Brain: the same free-model gateway as the rest of the stack (see
+# HERMES_PROVIDER_BLOCK above). Channel: Meta WhatsApp Business Cloud API via
+# the Hermes gateway bridge — `hermes whatsapp-cloud` (official adapter),
+# NOT `hermes whatsapp` (Baileys bridge — personal accounts only).
+#
+# .env secrets (exact names from gateway/platforms/whatsapp_cloud.py):
+#   WHATSAPP_CLOUD_PHONE_NUMBER_ID=...   # Meta 15-17 digit INTERNAL ID, NOT the number
+#   WHATSAPP_CLOUD_ACCESS_TOKEN=...      # system-user permanent token (starts EAA...)
+#   WHATSAPP_CLOUD_APP_ID=...
+#   WHATSAPP_CLOUD_APP_SECRET=...        # HMAC key for X-Hub-Signature-256
+#   WHATSAPP_CLOUD_WABA_ID=...
+#   WHATSAPP_CLOUD_VERIFY_TOKEN=...      # hub.verify_token shared secret
+#   WHATSAPP_CLOUD_ALLOWED_USERS=...     # recipient allowlist during rollout
+#
+# config.yaml (Hermes) — model block as usual, e.g.:
+#   model:
+#     provider: opencode-go
+#     model: deepseek-v4-flash
+#     base_url: https://opencode.ai/zen/go/v1
+#     key_env: OPENCODE_GO_API_KEY
+#
+# Webhook (inbound): public HTTPS URL -> gateway, path /whatsapp/webhook,
+# port 8090 (WHATSAPP_CLOUD_WEBHOOK_PORT / _PATH to override). Meta requires
+# a public URL — the documented tunnel is cloudflared.
+#
+# COMPLIANCE (India, Meta ToS 2026-01-15): the WABA belongs to the BUSINESS;
+# XOMNI runs the business's own service agent. A consumer "chat with an AI"
+# bot is barred for third-party AI Providers in India — violation = WABA ban.
+# Cost: free inside the 24h customer-service window; utility/auth templates
+# INR 0.115, marketing INR 0.8631 per message (Meta INR rate card, Jul 1 2026).
+# Migrate WABA billing to INR before Dec 31, 2026 (non-INR WABAs stop
+# delivering Jan 1, 2027).
+"""
+
 AGENT_CONFIGS = {
     "opencode": """\
 // opencode.json (OpenCode Go) — same gateway, same free models

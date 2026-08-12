@@ -252,6 +252,56 @@ class TestRecall(unittest.TestCase):
                                              f"({hits}/{len(_REAL_QUERIES)})")
 
 
+class TestEvalRecall(unittest.TestCase):
+    """Backlog 04: built-in eval set + core.eval_recall() + /tools-stats."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.idx = core.rebuild(use_cache=False)
+
+    def test_eval_recall_runs(self):
+        ev = core.eval_recall(index=self.idx)
+        self.assertIsInstance(ev, dict)
+        self.assertGreaterEqual(len(core.EVAL_SET), 20,
+                                f"built-in eval set must have ~20 queries, got {len(core.EVAL_SET)}")
+        self.assertEqual(ev["queries"], len(core.EVAL_SET))
+        self.assertTrue(0.0 <= ev["recall"] <= 1.0)
+        self.assertLessEqual(ev["hits"], ev["queries"])
+        self.assertTrue(ev["last_eval"], "last_eval timestamp must be set")
+        self.assertEqual(len(ev["results"]), len(core.EVAL_SET))
+        # every expected hit must be findable in the corpus (sanity: no typos)
+        corpus_names = [e["name"].lower() for e in self.idx.corpus]
+        for query, expected in core.EVAL_SET:
+            self.assertTrue(
+                any(expected.lower() in n for n in corpus_names),
+                f"eval target {expected!r} (query {query!r}) not in corpus",
+            )
+
+    def test_eval_recall_planted_set(self):
+        ev = core.eval_recall(index=self.idx)
+        self.assertGreaterEqual(
+            ev["recall"], 0.9,
+            f"built-in eval set top-5 recall {ev['recall']:.2f} < 0.9 "
+            f"({ev['hits']}/{ev['queries']})",
+        )
+
+    def test_eval_persist_and_stats_report(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            db = Path(tmp) / "cache.sqlite3"
+            ev = core.eval_recall(index=self.idx, persist=True, cache_path=db)
+            loaded = core.load_eval(db)
+            self.assertIsNotNone(loaded)
+            self.assertEqual(loaded["hits"], ev["hits"])
+            self.assertAlmostEqual(loaded["recall"], ev["recall"], places=6)
+            self.assertEqual(loaded["last_eval"], ev["last_eval"])
+            # /tools-stats rendering: corpus size + recall + last eval time
+            report = core.stats_report(index=self.idx)
+            self.assertIn("corpus:", report)
+            self.assertIn("recall:", report)
+            self.assertIn("last eval:", report)
+            self.assertIn(str(ev["recall"])[:5], report)
+
+
 class TestRouterTool(unittest.TestCase):
     @classmethod
     def setUpClass(cls):

@@ -110,6 +110,131 @@ def _rule_raw_device_write(cmd: str) -> bool:
     """Writes to raw block devices (`> /dev/sd...`). /dev/null is not matched."""
     return bool(re.search(r">\s*/dev/(?:sd|hd|vd|nvme|mmcblk|sr)[a-z0-9]*", cmd, re.IGNORECASE))
 
+# ---------------------------------------------------------------------------
+# Windows rule pack — PowerShell/cmd destructive verbs (block) and package
+# installs (warn). Every pattern is matched case-insensitively. Destructive
+# verbs are detected anywhere in the command, so `powershell -Command "..."`
+# invocations and bare cmdlet strings are both covered. Get-* / query /
+# display cmdlets (Get-ExecutionPolicy, Format-Table, reg query, sc query,
+# schtasks /query ...) deliberately stay allowed.
+# ---------------------------------------------------------------------------
+
+
+def _win_segment(cmd: str, verb: str) -> str:
+    """Lowercased tail of the command after the first word-bounded ``verb``
+    match, stopping at ``;`` ``|`` ``&`` or newline. Empty when absent."""
+    m = re.search(rf"\b{verb}\b([^;|&\n]*)", cmd, re.IGNORECASE)
+    return m.group(1).lower() if m else ""
+
+
+def _rule_win_remove_item_recurse(cmd: str) -> bool:
+    """PowerShell Remove-Item -Recurse — recursive delete."""
+    tail = _win_segment(cmd, r"Remove-Item")
+    return bool(re.search(r"-(?:Recurse|Rec)\b", tail, re.IGNORECASE))
+
+
+def _rule_win_clear_content(cmd: str) -> bool:
+    """PowerShell Clear-Content — wipes a file's contents."""
+    return bool(re.search(r"\bClear-Content\b", cmd, re.IGNORECASE))
+
+
+def _rule_win_format_disk(cmd: str) -> bool:
+    """PowerShell Format-Volume / Format-Partition — destructive disk format.
+    (Format-Table/List/Wide/Custom are display cmdlets and stay allowed.)"""
+    return bool(re.search(r"\bFormat-(?:Volume|Partition)\b", cmd, re.IGNORECASE))
+
+
+def _rule_win_diskpart(cmd: str) -> bool:
+    """diskpart — disk partitioning tool (clean/format/delete partitions)."""
+    return bool(re.search(r"\bdiskpart(?:\.exe)?\b", cmd, re.IGNORECASE))
+
+
+def _rule_win_reg_delete(cmd: str) -> bool:
+    """reg delete — deletes registry keys/values."""
+    return bool(re.search(r"\breg(?:\.exe)?\s+delete\b", cmd, re.IGNORECASE))
+
+
+def _rule_win_set_execution_policy(cmd: str) -> bool:
+    """Set-ExecutionPolicy — changes PowerShell script execution policy."""
+    return bool(re.search(r"\bSet-ExecutionPolicy\b", cmd, re.IGNORECASE))
+
+
+def _rule_win_cmd_del_s(cmd: str) -> bool:
+    """cmd del /s — recursive file deletion (also erase)."""
+    tail = _win_segment(cmd, r"(?:del|erase)")
+    return bool(re.search(r"[/-]s(?:\s|[/-]|$)", tail))
+
+
+def _rule_win_cmd_rd_s(cmd: str) -> bool:
+    """cmd rd /s /q — recursive directory removal (also rmdir, PS rd -Recurse)."""
+    tail = _win_segment(cmd, r"(?:rd|rmdir)")
+    return bool(re.search(r"(?:[/-]s(?:\s|[/-]|$)|-Recurse\b|-Rec\b)", tail, re.IGNORECASE))
+
+
+def _rule_win_wmic_delete(cmd: str) -> bool:
+    """wmic ... delete — deletes WMI objects (processes, services...)."""
+    tail = _win_segment(cmd, r"wmic(?:\.exe)?")
+    return bool(re.search(r"\bdelete\b", tail))
+
+
+def _rule_win_schtasks_delete(cmd: str) -> bool:
+    """schtasks /delete — removes a scheduled task."""
+    tail = _win_segment(cmd, r"schtasks(?:\.exe)?")
+    return "/delete" in tail
+
+
+def _rule_win_sc_stop_delete(cmd: str) -> bool:
+    """sc stop/delete — stops or deletes a Windows service."""
+    return bool(re.search(r"\bsc(?:\.exe)?\s+(?:stop|delete)\b", cmd, re.IGNORECASE))
+
+
+WINDOWS_BLOCK_RULES = [
+    ("PowerShell Remove-Item -Recurse (recursive delete)", _rule_win_remove_item_recurse),
+    ("PowerShell Clear-Content (wipes file contents)", _rule_win_clear_content),
+    ("PowerShell Format-Volume/Format-Partition (disk format)", _rule_win_format_disk),
+    ("diskpart (disk partitioning tool)", _rule_win_diskpart),
+    ("reg delete (registry key removal)", _rule_win_reg_delete),
+    ("Set-ExecutionPolicy (changes PowerShell execution policy)", _rule_win_set_execution_policy),
+    ("cmd del /s (recursive file delete)", _rule_win_cmd_del_s),
+    ("cmd rd /s /q (recursive directory removal)", _rule_win_cmd_rd_s),
+    ("wmic delete (destructive WMI object deletion)", _rule_win_wmic_delete),
+    ("schtasks /delete (scheduled task removal)", _rule_win_schtasks_delete),
+    ("sc stop/delete (Windows service control)", _rule_win_sc_stop_delete),
+]
+
+
+def _rule_win_choco_install(cmd: str) -> bool:
+    """choco install -y / --yes — unattended package install."""
+    m = re.search(r"\bchoco(?:\.exe)?\s+install\b([^;|&\n]*)", cmd, re.IGNORECASE)
+    if not m:
+        return False
+    tail = m.group(1).lower()
+    return bool(re.search(r"-y(?:\s|$)|--yes(?:\s|$)|--confirm(?:\s|$)", tail))
+
+
+def _rule_win_npm_global(cmd: str) -> bool:
+    """npm i -g / npm install --global — global package install."""
+    m = re.search(r"\bnpm\s+(?:i|install|add)\b([^;|&\n]*)", cmd, re.IGNORECASE)
+    if not m:
+        return False
+    tail = m.group(1).lower()
+    return bool(re.search(r"-g(?:\s|$)|--global(?:\s|$)", tail))
+
+
+def _rule_win_pip_user(cmd: str) -> bool:
+    """pip install --user — user-scope package install."""
+    m = re.search(r"\bpip(?:3(?:\.\d+)?)?\s+install\b([^;|&\n]*)", cmd, re.IGNORECASE)
+    if not m:
+        return False
+    return "--user" in m.group(1).lower()
+
+
+WINDOWS_WARN_RULES = [
+    ("choco install -y (unattended package install)", _rule_win_choco_install),
+    ("npm install -g (global package install)", _rule_win_npm_global),
+    ("pip install --user (user-scope package install)", _rule_win_pip_user),
+]
+
 
 # ---------------------------------------------------------------------------
 # Warn rules (str -> bool). These should escalate to human approval.
@@ -160,6 +285,7 @@ BLOCK_RULES = [
     ("system shutdown / reboot / halt", _rule_shutdown),
     ("fork bomb", _rule_fork_bomb),
     ("write to a raw block device", _rule_raw_device_write),
+    *WINDOWS_BLOCK_RULES,
 ]
 
 WARN_RULES = [
@@ -168,6 +294,7 @@ WARN_RULES = [
     ("curl upload — possible data exfiltration", _rule_curl_upload),
     ("netcat sending file contents to a remote host", _rule_nc_exfil),
     ("scp to a remote host — verify the destination", _rule_scp),
+    *WINDOWS_WARN_RULES,
 ]
 
 

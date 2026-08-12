@@ -11,8 +11,12 @@ the piped-TSV shapes; empty results, absent CLIs, auth failures, network
 errors, and timeouts all collapse into stable, clean messages. Never
 fabricates data (TSV rows have no draft column → `draft: False`).
 
-**Commands/tools:** slash command `/gh status|prs [repo]|issues [repo]|me`
+**Commands/tools:** slash command
+`/gh status|prs [repo]|issues [repo]|me|pr-review <n> <text>|pr-summary <n> <text>`
 plus model tool `gh_ops(action, repo?)` — both share `core.execute`.
+`pr-review`/`pr-summary` post comments via `gh pr review <n> --comment --body <text>`
+(core also exposes `pr_review_batch(pr_number, comments)` for programmatic
+batches, with `path`/`line` position hints rendered as `[path:line]` prefixes).
 Requires the `gh` CLI installed (https://cli.github.com).
 
 **Speed posture:** no hooks — nothing alters agent behavior; each call is

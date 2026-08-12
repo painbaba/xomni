@@ -14,21 +14,27 @@ from . import core
 _CTX = None
 
 HELP = (
-    "/verify [dir] — run the project's tests (pytest/unittest) then lint "
-    "(ruff/py_compile) and print a PASS/FAIL verdict with the failing tail.\n"
-    "Defaults to the current working directory."
+    "/verify [--coverage] [dir] — run the project's tests (pytest/unittest) "
+    "then lint (ruff/py_compile) and print a PASS/FAIL verdict with the "
+    "failing tail; with --coverage, run tests under stdlib line tracing and "
+    "print per-file line coverage instead. Defaults to the current working "
+    "directory."
 )
 
 
-def verify_project(dir: str) -> str:
-    """Run tests, then lint, in ``dir``; return the verdict summary string.
+def verify_project(dir: str, coverage: bool = False) -> str:
+    """Run tests (+ lint, or coverage) in ``dir``; return the verdict string.
 
-    Never raises for a bad directory — returns an error line instead.
+    ``coverage=True`` runs the tests under ``python -m trace`` (stdlib-only)
+    and reports per-file covered/total lines instead of lint. Never raises
+    for a bad directory — returns an error line instead.
     """
     if not dir:
         dir = os.getcwd()
     if not os.path.isdir(dir):
         return f"verify_project: not a directory: {dir}"
+    if coverage:
+        return _verify_coverage_report(dir)
     parts = [f"VERIFY {dir}"]
     test_res = core.run_command(core.discover_test_command(dir), dir)
     parts.append(core.summarize(test_res, "TEST"))
@@ -48,12 +54,34 @@ def verify_project(dir: str) -> str:
     return "\n".join(parts)
 
 
+def _verify_coverage_report(dir: str) -> str:
+    """Render the stdlib coverage run: per-file rows + totals + verdict."""
+    res = core.verify_coverage(dir)
+    parts = [f"COVERAGE {dir}", core.summarize(res, "COVERAGE")]
+    for row in res.get("rows", []):
+        rel = os.path.relpath(row["file"], dir)
+        parts.append(
+            f"  {rel:<40} {row['covered']:>4}/{row['total']:<4} lines  {row['pct']:>3}%"
+        )
+    parts.append(f"TOTAL {res['covered']}/{res['total']} lines ({res['pct']:.1f}%)")
+    parts.append(f"VERDICT: {'PASS' if res.get('ok') else 'FAIL'}")
+    return "\n".join(parts)
+
+
 def _verify_tool(params: dict) -> str:
-    return verify_project((params or {}).get("dir") or "")
+    params = params or {}
+    return verify_project(
+        (params.get("dir") or ""), coverage=bool(params.get("coverage"))
+    )
 
 
 def _handle_verify(raw: str) -> str:
-    return verify_project((raw or "").strip())
+    raw = (raw or "").strip()
+    coverage = False
+    if raw.startswith("--coverage"):
+        coverage = True
+        raw = raw[len("--coverage"):].strip()
+    return verify_project(raw, coverage=coverage)
 
 
 def register(ctx) -> None:
@@ -68,12 +96,15 @@ def register(ctx) -> None:
                 "PASS/FAIL verdict with the failing output tail. The test command "
                 "is discovered as pytest (fallback: python -m unittest discover); "
                 "lint as ruff (fallback: python -m py_compile on changed files). "
+                "Set coverage=True to run the tests under python -m trace instead "
+                "(stdlib-only line coverage, per-file covered/total lines and pct). "
                 "Args: dir (directory to verify; default: current working "
-                "directory). Read-only — never edits files."
+                "directory); coverage (bool, optional). Read-only — never edits files."
             ),
             "type": "object",
             "properties": {
                 "dir": {"type": "string", "description": "directory to run tests + lint in (default: cwd)"},
+                "coverage": {"type": "boolean", "description": "run tests under stdlib line tracing and report per-file coverage (default: false)"},
             },
         },
         handler=_verify_tool,
@@ -82,6 +113,6 @@ def register(ctx) -> None:
     )
     ctx.register_command(
         "verify", handler=_handle_verify,
-        description="Run the project's tests + linter and print a PASS/FAIL verdict",
-        args_hint="[dir]",
+        description="Run the project's tests + linter (or --coverage stdlib line coverage) and print a PASS/FAIL verdict",
+        args_hint="[--coverage] [dir]",
     )

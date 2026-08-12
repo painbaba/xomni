@@ -5,7 +5,7 @@ One agent. Every feature. Every free model.
 Installed via ``pip install .`` from the repo root. Commands:
 
   xomni                      launch the host (Hermes with XOMNI plugins)
-  xomni plugins list         list the 17 plugins + test counts
+  xomni plugins list         list the 22 plugins + test counts
   xomni plugins install [n]  copy plugin dirs into the Hermes plugins dir
   xomni skill search <q>     search skills (DB in checkout, else installed tree)
   xomni skill install <dir>  install a SKILL.md skill/marketplace (fail-closed)
@@ -68,6 +68,13 @@ PROVIDERS = [
      "any GGUF model"),
     ("OpenAI-compatible custom", "CUSTOM_API_KEY", "any https base_url",
      "BYO-provider: any OpenAI-compatible endpoint via config.yaml"),
+    # India channels (backlog 08) — see docs/PROVIDERS.md → "India channels"
+    ("Sarvam AI (India)", "SARVAM_API_KEY", "https://api.sarvam.ai",
+     "100 free credits on signup; Sarvam-105B/30B chat, TTS bulbul:v3 (11 Indic langs), ASR"),
+    ("Bhashini (MeitY, India)", "BHASHINI_API_KEY", "https://api.bhashini.gov.in",
+     "gov ASR/TTS/MT 22+ langs; registration-gated (userid + subscription-id)"),
+    ("Krutrim Cloud (Ola, India)", "KRUTRIM_API_KEY", "https://cloud.olakrutrim.com/v1",
+     "OpenAI-compatible; INR billing, India data residency; free start, no card"),
 ]
 
 PLUGIN_TESTS = {  # from docs/TEST-MATRIX.md

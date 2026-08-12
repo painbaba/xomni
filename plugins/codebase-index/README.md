@@ -26,10 +26,19 @@ Design follows `.tmp/research-next/CODEBASE-INDEX.md` (repomap v2 research).
 - **Freshness**: on query, a stat-diff runs first; if >200 files are dirty the
   stale index is served with a `⚠️ N files pending re-index` banner (spec
   trigger #3); explicit `/cindex build` refreshes fully.
+- **Embeddings (OPT-IN)**: `/cindex embed` embeds every indexed file through a
+  pluggable provider — default Ollama `http://127.0.0.1:11434/api/embeddings`
+  (small model `nomic-embed-text`, override via `CINDEX_EMBED_URL` /
+  `CINDEX_EMBED_MODEL` / `CINDEX_EMBED_TIMEOUT`) — stored as float32 BLOBs in
+  the `vectors` table with a model tag. `query_hybrid` (`/cindex query
+  --hybrid`) fuses BM25 + vector rankings with reciprocal-rank fusion (RRF,
+  k=60). Every provider call fails soft: Ollama down / no vectors => the
+  plain BM25 query, never a raise. `meta.embedding_model` reports the active
+  tag or `none`.
 - **Index location**: `~/.cache/xomni/repomap/<sha1(root)>/index.db`
   (override with `XOMNI_CACHE`), so the scanned tree is never written to.
-  Embeddings: not implemented — `meta.embedding_model` reports `none` (opt-in
-  future layer; BM25 mode is the complete, identical API).
+  BM25 mode is the complete, identical API; embeddings are an additive
+  opt-in layer on top.
 
 ## Schema
 
@@ -44,6 +53,9 @@ CREATE TABLE chunks  (id INTEGER PRIMARY KEY, file_id INTEGER REFERENCES files(i
 CREATE VIRTUAL TABLE fts USING fts5(path, content, tokenize='trigram');
 CREATE TABLE fts_meta (id INTEGER PRIMARY KEY, file_id INTEGER, chunk_id INTEGER,
                        path TEXT, cache_key TEXT);         -- rowid = fts rowid
+CREATE TABLE vectors (file_id INTEGER PRIMARY KEY REFERENCES files(id),
+                      model TEXT NOT NULL, dim INTEGER NOT NULL,
+                      embedding BLOB NOT NULL);            -- float32, OPT-IN
 -- Query: SELECT … FROM fts JOIN fts_meta … WHERE fts MATCH ? ORDER BY bm25(fts, 10.0) LIMIT ?
 ```
 
@@ -52,7 +64,9 @@ CREATE TABLE fts_meta (id INTEGER PRIMARY KEY, file_id INTEGER, chunk_id INTEGER
 ```
 /cindex status [path]            # files, symbols, chunks, dirty count, git head
 /cindex build [path]             # full rebuild (explicit refresh)
+/cindex embed [path]             # OPT-IN: Ollama embeddings (graceful skip if down)
 /cindex query <q> [path]         # ranked files + symbol hits
+/cindex query --hybrid <q>       # RRF fusion of BM25 + vectors (opt-in)
 
 tool: codebase_query(path=…, query=…, limit=…)
 ```
@@ -71,7 +85,10 @@ python -c "import core, sys; sys.exit(core.main(sys.argv[1:]))" status C:\path\t
 `build_map(root)` · `rank_files(root, query)` · `stack_tags(root)` —
 repomap v1 signatures, now served warm from the index (ms, not seconds).
 New: `search_symbols(root, q)` · `index_status(root)` · `query(root, q)` ·
-`update_index(root, force=…)` · `ensure_index(root)`.
+`update_index(root, force=…)` · `ensure_index(root)` · `query_json(root, q)`
+· **`build_embeddings(root, model=…, base_url=…)`** (opt-in vectors) ·
+**`query_hybrid(root, q)`** (RRF fusion) · `rrf_fuse(rankings, k=60)` ·
+`embed_texts(texts, model=…)` (pluggable provider; `None` on failure).
 
 ## Tests
 
@@ -79,11 +96,16 @@ New: `search_symbols(root, q)` · `index_status(root)` · `query(root, q)` ·
 cd plugins/codebase-index && python -m unittest tests.test_core -q
 ```
 
-Covers: schema creation, symbol extraction with lines/kinds, chunk boundaries,
-incremental no-op on unchanged trees, mtime-touch content-hash dedup, edit →
-re-index, delete → removal, skip-dirs, BM25 ranking, symbol-boost ordering,
-path-weight ordering, symbol search, status shape, defer-banner, CLI, and the
-zero-hook surface registration (tool + command, no `register_hook`).
+Covers: schema creation (incl. `vectors`), symbol extraction with lines/kinds,
+chunk boundaries, incremental no-op on unchanged trees, mtime-touch
+content-hash dedup, edit → re-index, delete → removal, skip-dirs, BM25
+ranking, symbol-boost ordering, path-weight ordering, symbol search, JSON
+query, status shape, defer-banner, CLI, the zero-hook surface registration
+(tool + command, no `register_hook`), and the embeddings layer: RRF fusion
+math, cosine similarity, provider-down graceful skip (`embed_texts` /
+`build_embeddings` / hybrid query all return BM25 without raising — the HTTP
+call is mocked, no network), vectors storage with model tag, and hybrid
+query using stored vectors.
 
 ## Perf gate
 

@@ -9,12 +9,12 @@ a built-in **sponsorship engine** that pays you for your installs.
 
 - **Free forever.** MIT sources, no license key, no "pro" wall. The agent is
   the free bait; the sponsorship network is the product.
-- **One command to install.** Windows + POSIX launchers, all 17 plugins loaded
+- **One command to install.** Windows + POSIX launchers, all 22 plugins loaded
   automatically.
 - **25 verified free models** — every one tested to actually work (deepseek-v4-*,
   qwen3.8-max, glm-5.2, kimi-k3, minimax-m3 vision, and more) via the provider
   pool with live health checks.
-- **677 passing tests** across the plugin suite.
+- **842 passing tests** across the plugin suite.
 - **Earn while you work**: 50/50 impression-share sponsorship payouts, receipts,
   escrow caps, second-price auctions.
 
@@ -38,7 +38,7 @@ a built-in **sponsorship engine** that pays you for your installs.
 | Goose | Rust | MCP-native extensibility | MCP-server catalog conventions | SHIPPED (`plugins/mcp-catalog`) |
 | OpenClaw | TypeScript | Personal assistant: persistent semantic memory, media understanding (OCR/vision), platform-native automation | Local memory + media pipeline | SHIPPED (`plugins/omni-memory`, `plugins/omni-media`) |
 
-## The 17 plugins
+## The 22 plugins
 
 | Plugin | What it does | Origin strength |
 |---|---|---|
@@ -59,6 +59,11 @@ a built-in **sponsorship engine** that pays you for your installs.
 | `omni-design` | Omni Design: generate premium self-contained HTML artifacts from a brief (/design), 10-tell slop audit (/design-audit) — zero hooks | Claude Design / Stitch |
 | `omni-parallel` | Parallel-task layer: /swarm task queue + context packs + multi-agent judging + PR-split merge plans | Kimi / Cursor / Claude |
 | `omni-skills` | SKILL.md interop: scan/validate/install skills from any marketplace — zero hooks | Claude (SKILL.md standard) |
+| `omni-registry` | Capability-declared model registry (corrected 1M-context flags) | next-feature wave |
+| `codebase-index` | FTS5 codebase index (repomap v2): full-text symbol search | next-feature wave |
+| `omni-tools` | Tool-search corpus + BM25 router: catalog-in-context, load-on-use | next-feature wave |
+| `bharat-pack` | Hindi + Indian model pool, Devanagari prompt support | next-feature wave |
+| `cost-tracker` | Per-run token/cost ledger + budget caps | next-feature wave |
 
 ## Install (one command)
 
@@ -67,7 +72,7 @@ a built-in **sponsorship engine** that pays you for your installs.
 ```bash
 pip install .            # from the repo root — or: pip install git+https://github.com/painbaba/xomni
 xomni doctor             # verify the environment
-xomni plugins install    # load all 17 plugins into the Hermes plugins dir
+xomni plugins install    # load all 22 plugins into the Hermes plugins dir
 xomni skill search <q>   # search skills from the terminal
 xomni providers          # every provider Hermes supports, one table
 ```
@@ -82,7 +87,7 @@ run.cmd
 ./run.sh
 ```
 
-The launcher starts the Hermes host with all 17 plugins loaded — interactive
+The launcher starts the Hermes host with all 22 plugins loaded — interactive
 chat, `-q` one-shots, `--continue` resume. Plugins are also drop-in installable:
 
 ```bash
@@ -95,22 +100,24 @@ hermes plugins enable waitperk perkline repomap
 ```bash
 cd plugins/waitperk && python -m unittest tests.test_core -v
 cd plugins/repomap  && python -m unittest tests.test_core -v
-# ... 677 tests total across the suite
+# ... 842 tests total across the suite
 ```
 
-Verified live (2026-08-12): **677/677 tests pass, 0 failures.**
+Verified live (2026-08-12): **842/842 tests pass, 0 failures.**
 
 | Plugin | Tests | Plugin | Tests |
 |---|---|---|---|
-| gh-ops | 99 | verify-runner | 38 |
+| gh-ops | 130 | verify-runner | 38 |
 | context-loader | 69 | context-compact | 31 |
-| local-models | 87 | sandbox-gate | 67 |
+| local-models | 87 | sandbox-gate | 75 |
 | title-statusline | 32 | mcp-catalog | 26 |
-| provider-pool | 36 | repomap | 42 |
-| waitperk | 34 | perkline | 18 |
-| omni-media | 27 | omni-memory | 26 |
+| provider-pool | 37 | repomap | 42 |
+| waitperk | 34 | perkline | 27 |
+| omni-media | 27 | omni-memory | 29 |
 | omni-design | 8 | omni-parallel | 20 |
-| omni-skills | 17 |  |  |
+| omni-skills | 23 | omni-registry | 22 |
+| codebase-index | 28 | omni-tools | 21 |
+| bharat-pack | 19 | cost-tracker | 17 |
 
 ## Verified free-model routing (live-tested)
 
@@ -146,6 +153,12 @@ fallback_providers:
 Keys live in `.env`, one per provider (`OPENAI_API_KEY`, `ANTHROPIC_API_KEY`,
 ...), and `/provider` prints the ready-to-paste snippet for every agent in the
 stack (Hermes/OpenCode/Codex/Aider/Goose).
+
+**WhatsApp B2B agent mode:** run XOMNI as a *business's own* WhatsApp service
+agent on its Meta WABA — per-message INR pricing (free 24h window, ₹0.115
+utility), the India B2B-only rule, template approval, and the
+`hermes whatsapp-cloud` gateway bridge:
+[`docs/WHATSAPP-B2B.md`](docs/WHATSAPP-B2B.md).
 
 ## Local models, zero install — Ollama bundled
 

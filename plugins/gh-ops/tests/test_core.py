@@ -659,5 +659,238 @@ class ExecuteTests(unittest.TestCase):
         self.assertIn("network error", out)
 
 
+class RenderCommentBodyTests(unittest.TestCase):
+    """Position-hint rendering: path[:line] prefixes, never invented hints."""
+
+    def test_bare_body_passes_through(self):
+        self.assertEqual(core.render_comment_body({"body": "looks good"}), "looks good")
+
+    def test_path_only_hint(self):
+        self.assertEqual(
+            core.render_comment_body({"body": "fix this", "path": "src/main.py"}),
+            "[src/main.py] fix this",
+        )
+
+    def test_path_and_line_hint(self):
+        self.assertEqual(
+            core.render_comment_body({"body": "nit", "path": "src/main.py", "line": 42}),
+            "[src/main.py:42] nit",
+        )
+
+    def test_hint_without_body(self):
+        self.assertEqual(
+            core.render_comment_body({"path": "README.md", "line": 1}),
+            "[README.md:1]",
+        )
+
+    def test_non_numeric_line_keeps_bare_path(self):
+        self.assertEqual(
+            core.render_comment_body({"body": "x", "path": "a.py", "line": "abc"}),
+            "[a.py] x",
+        )
+
+    def test_non_dict_or_empty_body(self):
+        self.assertEqual(core.render_comment_body(None), "")
+        self.assertEqual(core.render_comment_body({"body": "   "}), "")
+        self.assertEqual(core.render_comment_body("not a dict"), "")
+
+
+class PrReviewArgvTests(unittest.TestCase):
+    def test_argv_construction(self):
+        self.assertEqual(
+            core.pr_review_argv(42, "nice work"),
+            ["gh", "pr", "review", "42", "--comment", "--body", "nice work"],
+        )
+
+    def test_argv_with_repo(self):
+        self.assertEqual(
+            core.pr_review_argv(7, "fix", "cli/cli"),
+            ["gh", "pr", "review", "7", "--comment", "--body", "fix", "--repo", "cli/cli"],
+        )
+
+    def test_argv_empty_repo_omits_flag(self):
+        for repo in ("", "   ", None):
+            self.assertEqual(
+                core.pr_review_argv(1, "x", repo),
+                ["gh", "pr", "review", "1", "--comment", "--body", "x"],
+            )
+
+    def test_argv_number_coerced_and_stripped(self):
+        self.assertEqual(
+            core.pr_review_argv(" 99 ", "x"),
+            ["gh", "pr", "review", "99", "--comment", "--body", "x"],
+        )
+
+
+class PrReviewBatchTests(unittest.TestCase):
+    """Batch posting: one `gh pr review <n> --comment` call per comment, mocked."""
+
+    def _fake(self, returncode=0, stdout="", stderr=""):
+        return mock.Mock(returncode=returncode, stdout=stdout, stderr=stderr)
+
+    def test_batch_posts_one_call_per_comment_with_hints(self):
+        comments = [
+            {"body": "LGTM"},
+            {"body": "use a constant here", "path": "src/main.py", "line": 12},
+        ]
+        fake = self._fake(stdout="Reviewed pull request #42")
+        with mock.patch.object(core.subprocess, "run", return_value=fake) as m:
+            results = core.pr_review_batch(42, comments)
+        self.assertEqual(m.call_count, 2)
+        calls = [c.args[0] for c in m.call_args_list]
+        self.assertEqual(
+            calls[0],
+            ["gh", "pr", "review", "42", "--comment", "--body", "LGTM"],
+        )
+        self.assertEqual(
+            calls[1],
+            ["gh", "pr", "review", "42", "--comment", "--body", "[src/main.py:12] use a constant here"],
+        )
+        self.assertEqual(len(results), 2)
+        self.assertTrue(all(r["ok"] for r in results))
+        self.assertEqual(results[1]["body"], "[src/main.py:12] use a constant here")
+
+    def test_batch_with_repo_flag(self):
+        fake = self._fake(stdout="Reviewed pull request #42")
+        with mock.patch.object(core.subprocess, "run", return_value=fake) as m:
+            core.pr_review_batch(42, [{"body": "x"}], "cli/cli")
+        m.assert_called_once_with(
+            ["gh", "pr", "review", "42", "--comment", "--body", "x", "--repo", "cli/cli"],
+            capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=30.0,
+        )
+
+    def test_batch_skips_empty_bodies_and_non_dicts(self):
+        fake = self._fake(stdout="")
+        with mock.patch.object(core.subprocess, "run", return_value=fake) as m:
+            results = core.pr_review_batch(1, [
+                {"body": ""},
+                None,
+                "nope",
+                {"body": "   "},
+                {"body": "real"},
+            ])
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0]["body"], "real")
+        m.assert_called_once()
+
+    def test_batch_no_comments_returns_empty(self):
+        with mock.patch.object(core.subprocess, "run") as m:
+            self.assertEqual(core.pr_review_batch(1, []), [])
+            self.assertEqual(core.pr_review_batch(1, None), [])
+        m.assert_not_called()
+
+    def test_batch_one_failure_does_not_block_others(self):
+        ok = self._fake(stdout="Reviewed pull request #42")
+        bad = self._fake(returncode=1, stderr="boom")
+        with mock.patch.object(core.subprocess, "run", side_effect=[bad, ok]) as m:
+            results = core.pr_review_batch(42, [{"body": "a"}, {"body": "b"}])
+        self.assertEqual(m.call_count, 2)
+        self.assertFalse(results[0]["ok"])
+        self.assertEqual(results[0]["error"], "gh error: boom")
+        self.assertTrue(results[1]["ok"])
+
+
+class PrReviewSummaryTests(unittest.TestCase):
+    def test_summary_single_call(self):
+        fake = mock.Mock(returncode=0, stdout="Reviewed pull request #42", stderr="")
+        with mock.patch.object(core.subprocess, "run", return_value=fake) as m:
+            res = core.pr_review_summary(42, "overall: solid")
+        m.assert_called_once_with(
+            ["gh", "pr", "review", "42", "--comment", "--body", "overall: solid"],
+            capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=30.0,
+        )
+        self.assertTrue(res["ok"])
+        self.assertEqual(res["stdout"], "Reviewed pull request #42")
+
+    def test_summary_error_shape(self):
+        fake = mock.Mock(returncode=1, stderr="gh: please run 'gh auth login' first.", stdout="")
+        with mock.patch.object(core.subprocess, "run", return_value=fake):
+            res = core.pr_review_summary(3, "x")
+        self.assertFalse(res["ok"])
+        self.assertIn("not authenticated", res["error"])
+
+
+class ParseReviewOutputTests(unittest.TestCase):
+    """gh pr review stdout shapes collapse to stable strings."""
+
+    def test_known_success_wordings(self):
+        for out in (
+            "Reviewed pull request #42",
+            "Review submitted",
+            "review posted\n",
+        ):
+            with self.subTest(out=out):
+                self.assertEqual(
+                    core.parse_review_output(out, 42), "Posted review comment on PR #42."
+                )
+
+    def test_empty_stdout_is_success(self):
+        self.assertEqual(core.parse_review_output("", 42), "Posted review comment on PR #42.")
+        self.assertEqual(core.parse_review_output(None, None), "Posted review comment.")
+
+    def test_unknown_output_returns_first_line_verbatim(self):
+        self.assertEqual(core.parse_review_output("weird chatter\nmore", 1), "weird chatter")
+
+    def test_format_batch_mixed(self):
+        results = [
+            {"ok": True, "stdout": "Reviewed pull request #7", "stderr": "", "error": None, "body": "a"},
+            {"ok": False, "stdout": "", "stderr": "boom", "error": "gh error: boom", "body": "b"},
+        ]
+        out = core.format_review_batch(results, 7)
+        self.assertIn("Posted review comment on PR #7.", out)
+        self.assertIn("gh error: boom", out)
+
+    def test_format_batch_empty(self):
+        self.assertEqual(core.format_review_batch([], 7), "No review comments to post.")
+
+
+class ExecutePrReviewTests(unittest.TestCase):
+    """Slash-command orchestration paths for pr-review / pr-summary."""
+
+    def test_pr_review_full_chain(self):
+        fake = mock.Mock(returncode=0, stdout="Reviewed pull request #42", stderr="")
+        with mock.patch.object(core.subprocess, "run", return_value=fake) as m, \
+             mock.patch.object(core, "detect_cli", return_value={"gh": True, "glab": False}):
+            out = core.execute_pr_review(42, "looks good")
+        m.assert_called_once_with(
+            ["gh", "pr", "review", "42", "--comment", "--body", "looks good"],
+            capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=30.0,
+        )
+        self.assertEqual(out, "Posted review comment on PR #42.")
+
+    def test_pr_summary_full_chain(self):
+        fake = mock.Mock(returncode=0, stdout="Reviewed pull request #9", stderr="")
+        with mock.patch.object(core.subprocess, "run", return_value=fake) as m, \
+             mock.patch.object(core, "detect_cli", return_value={"gh": True, "glab": False}):
+            out = core.execute_pr_summary(9, "overall: merge after fixing the nit")
+        m.assert_called_once_with(
+            ["gh", "pr", "review", "9", "--comment", "--body", "overall: merge after fixing the nit"],
+            capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=30.0,
+        )
+        self.assertEqual(out, "Posted review comment on PR #9.")
+
+    def test_empty_body_returns_usage_hint(self):
+        with mock.patch.object(core, "detect_cli", return_value={"gh": True, "glab": False}), \
+             mock.patch.object(core.subprocess, "run") as m:
+            self.assertIn("needs a comment body", core.execute_pr_review(42, "   "))
+            self.assertIn("needs text", core.execute_pr_summary(42, ""))
+        m.assert_not_called()
+
+    def test_gh_missing_message(self):
+        with mock.patch.object(core, "detect_cli", return_value={"gh": False, "glab": False}), \
+             mock.patch.object(core.subprocess, "run") as m:
+            out = core.execute_pr_review(42, "x")
+        m.assert_not_called()
+        self.assertIn("gh CLI not installed", out)
+
+    def test_summary_error_propagates(self):
+        with mock.patch.object(core, "detect_cli", return_value={"gh": True, "glab": False}), \
+             mock.patch.object(core, "pr_review_summary", return_value={
+                 "ok": False, "stdout": "", "stderr": "boom", "error": "gh error: boom",
+             }):
+            out = core.execute_pr_summary(1, "x")
+        self.assertEqual(out, "gh error: boom")
+
+
 if __name__ == "__main__":
     unittest.main()

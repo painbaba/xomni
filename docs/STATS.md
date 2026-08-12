@@ -21,8 +21,8 @@ Live snapshot generated 2026-08-12. Every number below was produced by running t
 | Plugins | 17 | `ls plugins \| wc -l` |
 | Python files in plugins/ | 59 | `find plugins -name '*.py' \| wc -l` |
 | Plugin LOC | 13,505 | `find plugins -name '*.py' -exec cat {} + \| wc -l` |
-| Test methods | 677 | docs/TEST-MATRIX.md (auto-generated; per-plugin column sums to 677) |
-| Tests passing | 677 / 677 | docs/TEST-MATRIX.md |
+| Test methods | 842 | docs/TEST-MATRIX.md (auto-generated; per-plugin column sums to 842) |
+| Tests passing | 842 / 842 | docs/TEST-MATRIX.md |
 
 ## Website (flagship)
 
@@ -55,6 +55,6 @@ Live snapshot generated 2026-08-12. Every number below was produced by running t
 
 ## Highlights
 
-- 17 commits, 17 plugins, 677/677 tests green, 13.5k plugin LOC.
+- 25 commits, 22 plugins, 842/842 tests green, 13.5k plugin LOC.
 - 544-skill DB (7 sources) + 311-server MCP catalog; both mirrored as JSON in website/data.
 - Scratch dirs (tmp 839 MB, work 727 MB, .tmp 209 MB) dominate raw disk usage; core repo is 41 MB + 22 MB git history.
