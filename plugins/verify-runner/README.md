@@ -12,9 +12,14 @@ the last 3000 chars, and never lets a hung process outlive the timeout.
 Returns `TEST PASS|FAIL`, `LINT PASS|FAIL`, the failing tail, and a final
 `VERDICT: PASS|FAIL`.
 
-**Commands/tools:** slash command `/verify [dir]` (defaults to cwd) plus
-model tool `verify_project(dir)` — read-only, never edits files, never
-raises on a bad directory.
+**Commands/tools:** slash command `/verify [--coverage] [dir]` (defaults to
+cwd) plus model tool `verify_project(dir, coverage=False)` — read-only,
+never edits files, never raises on a bad directory. With `--coverage`
+(or `coverage=True`), the tests run under `python -m trace --count --missing`
+— pure stdlib, no pytest-cov dependency — and the report shows per-file
+covered/total line counts with percentages plus a project total. The test
+command runs once plainly for the authoritative exit code (`python -m trace`
+swallows the child's exit status), then again under tracing for the counts.
 
 **Speed posture:** no hooks; subprocesses only when invoked (tests + lint),
 each bounded by timeout with tail-truncated output.

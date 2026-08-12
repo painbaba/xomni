@@ -22,16 +22,16 @@ file current — it is the workforce's queue.
 ## P1 — next-next
 
 - [x] 12. WhatsApp B2B agent mode: docs + provider snippet (Meta WABA per-message pricing; consumer bots barred — B2B only)
-- [ ] 13. UPI rails spec: docs/UPI.md (Razorpay UPI Intent/Autopay, 0% MDR, DPDP notes)
-- [ ] 14. omni-memory: MCP adapter (memory tools over JSON-RPC for any MCP client)
-- [ ] 15. gh-ops: PR-review enhancement (draft comment batch + review summary tool)
-- [ ] 16. codebase-index: query CLI polish (/cindex query --json, top-N, symbols-only)
-- [ ] 17. sandbox-gate: Windows-specific rule pack (powershell/cmd destructive verbs)
-- [ ] 18. verify-runner: coverage summary mode (--coverage with stdlib trace)
-- [ ] 19. website: client-side search for docs (tiny JS index, zero network)
-- [ ] 20. bharat-pack: TTS preview via Sarvam free tier (text_to_speech-compatible snippet)
-- [ ] 21. omni-registry: /models2 diff view (what changed vs last refresh)
-- [ ] 22. homepage perf audit: lighthouse-style checklist + results in docs
+- [x] 13. UPI rails spec: docs/UPI.md (Razorpay UPI Intent/Autopay, 0% MDR, DPDP notes) — done 2026-08-12 (P1 workforce wave)
+- [x] 14. omni-memory: MCP adapter (memory tools over JSON-RPC for any MCP client) — done 2026-08-12 (P1 workforce wave)
+- [x] 15. gh-ops: PR-review enhancement (draft comment batch + review summary tool) — done 2026-08-12 (P1 workforce wave)
+- [x] 16. codebase-index: query CLI polish (/cindex query --json, top-N, symbols-only) — done 2026-08-12 (P1 workforce wave)
+- [x] 17. sandbox-gate: Windows-specific rule pack (powershell/cmd destructive verbs) — done 2026-08-12 (P1 workforce wave)
+- [x] 18. verify-runner: coverage summary mode (--coverage with stdlib trace) — done 2026-08-12 (P1 workforce wave)
+- [x] 19. website: client-side search for docs (tiny JS index, zero network) — done 2026-08-12 (P1 workforce wave)
+- [x] 20. bharat-pack: TTS preview via Sarvam free tier (text_to_speech-compatible snippet) — done 2026-08-12 (P1 workforce wave)
+- [x] 21. omni-registry: /models2 diff view (what changed vs last refresh) — done 2026-08-12 (P1 workforce wave)
+- [x] 22. homepage perf audit: lighthouse-style checklist + results in docs — done 2026-08-12 (P1 workforce wave)
 
 ## P2 — scale
 

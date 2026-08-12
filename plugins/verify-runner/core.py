@@ -18,6 +18,14 @@ Execution
 ``run_command`` captures stdout/stderr, keeps only the last ``TAIL_LEN``
 chars of each stream, and never lets a hung process outlive the timeout
 (subprocess kills it) — a stuck test can never hang the agent.
+
+Coverage
+--------
+``verify_coverage`` runs the same discovered test command twice: plainly
+(for the authoritative exit code — ``python -m trace`` swallows the
+child's status) and under ``python -m trace --count --missing --summary``,
+parsing the per-file summary plus the ``.cover`` files into exact
+covered/total line counts and percentages. Stdlib only; no pytest-cov.
 """
 from __future__ import annotations
 
