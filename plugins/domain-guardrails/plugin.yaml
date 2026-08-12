@@ -1,0 +1,3 @@
+name: domain-guardrails
+version: "1.0.0"
+description: "Per-domain approval policies (trading/money/medical/legal/crypto/code-exec). Trading analysis OK; trading execution requires explicit approval. Zero hooks."
