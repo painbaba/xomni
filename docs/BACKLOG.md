@@ -20,6 +20,17 @@ Owned by the improvement workforce (cron: xomni-improvement-workforce, every 3h)
 status: `[ ]` open · `[~]` in progress (date) · `[x]` done (date). Keep this
 file current — it is the workforce's queue.
 
+- [ ] U8. Domain guardrails: per-domain approval policies (trading/money/medical/legal/crypto/code-exec) — trading stack defaults to analysis-OK, execution-requires-explicit-approval; /guardrails commands. BUILDING (deleg_38cc4b9b).
+
+## MOONSHOTS (proposals — pick or add yours)
+
+- [ ] M1. XOMNI as a service: OpenAI-compatible gateway mode — any app (VS Code, Excel, WhatsApp, custom) talks to XOMNI as a localhost API.
+- [ ] M2. Self-hosted XOMNI Marketplace live: skills/MCPs/plugins with 15% rails + UPI payouts — the ecosystem bet (design exists in MONETIZATION-V2.md).
+- [ ] M3. Voice-native Bharat agent: full-duplex Hindi/regional TTS+STT via Sarvam/Bhashini — talk to XOMNI like a phone call.
+- [ ] M4. Agent-to-agent economy: XOMNI instances trading services + verification receipts (autonomous-agent-economy).
+- [ ] M5. Offline-first XOMNI: full local stack (Ollama + local embeddings + local search) — works on a no-internet laptop.
+- [ ] M6. Self-improving operator: XOMNI runs its own improvement + task-execution loop 24/7 with human-on-top approvals (the cron is the seed).
+
 ## P0 — next wave (highest value, build now)
 
 - [x] 01. omni-registry: models.dev live-refresh + pinned snapshot + CI conflict check (data/models.snapshot.json, /models2 refresh, ci_gate extension) — done 2026-08-12 (refresh_from_models_dev + snapshot_load in core.py; models.snapshot.json pinned sha256 ffe72277…; ci_gate MODELS-DEV warn-only check; 25/25 matched, 1 flagged CTX conflict)
