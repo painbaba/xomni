@@ -26,7 +26,7 @@ HEAD = """<!DOCTYPE html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Features — XOMNI Docs</title>
-<meta name="description" content="XOMNI feature matrix: 22 plugins, 842 tests, every feature of every source repo, tracked.">
+<meta name="description" content="XOMNI feature matrix: 35 plugins, 1142 tests, every feature of every source repo, tracked.">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="stylesheet" href="css/style.css">
 

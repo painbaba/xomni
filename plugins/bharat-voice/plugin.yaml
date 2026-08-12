@@ -1,0 +1,3 @@
+name: bharat-voice
+version: "0.1.0"
+description: "Voice-native Bharat: Hindi + 5 regional languages (ta, te, kn, mr, gu) TTS/STT via Sarvam (api.sarvam.ai) and Bhashini (MeitY ULCA) REST endpoints — pure stdlib, fail-loud, key-safe, zero hooks"

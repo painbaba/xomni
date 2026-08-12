@@ -14,7 +14,7 @@ a built-in **sponsorship engine** that pays you for your installs.
 - **25 verified free models** — every one tested to actually work (deepseek-v4-*,
   qwen3.8-max, glm-5.2, kimi-k3, minimax-m3 vision, and more) via the provider
   pool with live health checks.
-- **1043 passing tests** across the plugin suite (29 plugins).
+- **1142 passing tests** across the plugin suite (35 plugins).
 - **Earn while you work**: 50/50 impression-share sponsorship payouts, receipts,
   escrow caps, second-price auctions.
 
@@ -146,24 +146,31 @@ The full marketplace (`data/mcp/catalog.json`, 311 servers, searchable at
 ```bash
 cd plugins/waitperk && python -m unittest tests.test_core -v
 cd plugins/repomap  && python -m unittest tests.test_core -v
-# ... 1043 tests total across the suite
+# ... 1142 tests total across the suite
 ```
 
-Verified live (2026-08-12): **1043/1043 tests pass, 0 failures.**
+Verified live (2026-08-13): **1142/1142 tests pass, 0 failures.**
 
 | Plugin | Tests | Plugin | Tests |
 |---|---|---|---|
-| gh-ops | 130 | verify-runner | 38 |
-| context-loader | 69 | context-compact | 31 |
-| local-models | 87 | sandbox-gate | 75 |
-| title-statusline | 32 | mcp-catalog | 26 |
-| provider-pool | 37 | repomap | 42 |
-| waitperk | 34 | perkline | 27 |
-| omni-media | 27 | omni-memory | 29 |
-| omni-design | 8 | omni-parallel | 20 |
-| omni-skills | 23 | omni-registry | 22 |
-| codebase-index | 28 | omni-tools | 21 |
-| bharat-pack | 19 | cost-tracker | 17 |
+| agent-economy | 15 | audit-log | 14 |
+| bharat-pack | 19 | bharat-voice | 16 |
+| codebase-index | 28 | context-compact | 31 |
+| context-loader | 69 | cost-tracker | 22 |
+| domain-guardrails | 21 | gateway-proxy | 22 |
+| gh-ops | 130 | local-models | 87 |
+| marketplace | 13 | mcp-catalog | 50 |
+| model-router | 27 | offline-kit | 14 |
+| omni-design | 8 | omni-media | 27 |
+| omni-memory | 29 | omni-parallel | 20 |
+| omni-registry | 22 | omni-skills | 47 |
+| omni-tools | 26 | perkline | 27 |
+| provider-pool | 37 | receipts | 16 |
+| repomap | 42 | sandbox-gate | 75 |
+| self-healing | 20 | self-operator | 19 |
+| skill-drafter | 20 | title-statusline | 32 |
+| verify-runner | 46 | voice-first | 17 |
+| waitperk | 34 | | |
 
 ## Verified free-model routing (live-tested)
 

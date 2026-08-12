@@ -46,12 +46,12 @@ All 11 items dispatched in parallel 2026-08-12. Universal = provider/model/surfa
 
 ## MOONSHOTS (proposals — pick or add yours)
 
-- [~] M1. XOMNI as a service: OpenAI-compatible gateway mode — any app (VS Code, Excel, WhatsApp, custom) talks to XOMNI as a localhost API. in progress 2026-08-13
-- [~] M2. Self-hosted XOMNI Marketplace live: skills/MCPs/plugins with 15% rails + UPI payouts — the ecosystem bet (design exists in MONETIZATION-V2.md). in progress 2026-08-13
-- [~] M3. Voice-native Bharat agent: full-duplex Hindi/regional TTS+STT via Sarvam/Bhashini — talk to XOMNI like a phone call. in progress 2026-08-13
-- [~] M4. Agent-to-agent economy: XOMNI instances trading services + verification receipts (autonomous-agent-economy). in progress 2026-08-13
-- [~] M5. Offline-first XOMNI: full local stack (Ollama + local embeddings + local search) — works on a no-internet laptop. in progress 2026-08-13
-- [~] M6. Self-improving operator: XOMNI runs its own improvement + task-execution loop 24/7 with human-on-top approvals (the cron is the seed). in progress 2026-08-13
+- [x] M1. XOMNI as a service: OpenAI-compatible gateway mode — any app (VS Code, Excel, WhatsApp, custom) talks to XOMNI as a localhost API. done 2026-08-13 (gateway-proxy plugin: /v1/chat/completions + /v1/models, RouterBackend → model-router, 22 tests)
+- [x] M2. Self-hosted XOMNI Marketplace live: skills/MCPs/plugins with 15% rails + UPI payouts — the ecosystem bet (design exists in MONETIZATION-V2.md). done 2026-08-13 (marketplace plugin + data/marketplace/catalog.json seed, 15% rails receipts, 13 tests)
+- [x] M3. Voice-native Bharat agent: full-duplex Hindi/regional TTS+STT via Sarvam/Bhashini — talk to XOMNI like a phone call. done 2026-08-13 (bharat-voice plugin: Sarvam TTS + Bhashini STT/TTS, hi/ta/te/kn/mr/gu, key-safe fail-loud, 16 tests)
+- [x] M4. Agent-to-agent economy: XOMNI instances trading services + verification receipts (autonomous-agent-economy). done 2026-08-13 (agent-economy plugin: offer/request lifecycle CREATED→SETTLED + sha256 receipts, 15 tests)
+- [x] M5. Offline-first XOMNI: full local stack (Ollama + local embeddings + local search) — works on a no-internet laptop. done 2026-08-13 (offline-kit plugin: Ollama probe + offline stack plan + markdown report, 14 tests)
+- [x] M6. Self-improving operator: XOMNI runs its own improvement + task-execution loop 24/7 with human-on-top approvals (the cron is the seed). done 2026-08-13 (self-operator plugin: parse→propose→approve→execute→audit trail, 19 tests)
 
 ## P0 — next wave (highest value, build now)
 

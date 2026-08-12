@@ -157,3 +157,23 @@ request.
   layer.
 - **Prompt-only surface** — the proxy exposes chat and model listing only;
   no file access, no tool calls, no admin endpoints.
+
+## Implementation
+
+The M1 implementation lives in `plugins/gateway-proxy/` (stdlib only,
+zero hooks): `core.py` exposes `build_handler(backend)` (returns a
+`BaseHTTPRequestHandler` subclass), `start_server(port, backend,
+host='127.0.0.1')` (returns `(server, thread)`; port `0` = ephemeral for
+tests), and the pure function `route_openai(payload, backend)`. The default
+`RouterBackend` lazily imports `plugins/model-router/core.py` `route()` via
+`sys.path` insertion (fallback: static `FALLBACK_MODELS` tier table and
+model list `['xomni-quick', 'xomni-reasoning', 'xomni-vision']`). Error
+paths are fail-loud OpenAI-style envelopes: `stream: true` → 400, malformed
+JSON → 400, unknown path → 404, backend failure → 502. Run the tests with
+`python -m unittest tests.test_core -q` from the plugin dir.
+
+```bash
+cd plugins/gateway-proxy && python -c "from core import start_server, RouterBackend; s,t=start_server(8787, RouterBackend()); print('gateway on', s.server_address)" &
+curl -s http://127.0.0.1:8787/v1/models
+curl -s http://127.0.0.1:8787/v1/chat/completions -H "Content-Type: application/json" -d '{"model":"gpt-4o-mini","messages":[{"role":"user","content":"hello"}]}'
+```

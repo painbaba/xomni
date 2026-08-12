@@ -10,8 +10,8 @@ is carried over from memory.
 
 | Metric | Verified value | How verified |
 |---|---|---|
-| Plugins shipped | **22** | `ls plugins/` = 22 dirs; README plugin table (22 rows) |
-| Passing tests | **842 / 842** (0 failures) | `docs/TEST-MATRIX.md` (auto-generated 2026-08-12 00:27) |
+| Plugins shipped | **35** | `ls plugins/` = 35 dirs; README plugin table (35 rows) |
+| Passing tests | **1142 / 1142** (0 failures) | `docs/TEST-MATRIX.md` (auto-generated 2026-08-13) |
 | Skills in repo | **170** `SKILL.md` files, **42** domain folders | glob count `skills/**/SKILL.md`; `ls skills/` |
 | External-skills DB | **519 rows** (skills.db), 6 sources; **180** curated shortlist (201 rows carry a rank) | SQLite `COUNT(*)`; `curated-skills.json` (180 entries) + `.stats.json` |
 | MCP server catalog | **311 servers** | `data/mcps.db` (311), `data/mcp/catalog.json` (311), `website/data/mcps.json` (311) |
@@ -39,7 +39,7 @@ Status legend:
 
 ---
 
-## 1. Plugin matrix — all 22, shipped (source of truth: `docs/TEST-MATRIX.md`, README)
+## 1. Plugin matrix — all 35, shipped (source of truth: `docs/TEST-MATRIX.md`, README)
 
 | # | Plugin | Theme | Tests (PASS) | Status | Origin strength |
 |---|---|---|---|---|---|
@@ -48,10 +48,10 @@ Status legend:
 | 3 | `provider-pool` | 25 verified free models, live health checks, per-agent config generation, `/models` `/provider` | 37 | SHIPPED | free models (OpenCode Zen gateway) |
 | 4 | `context-compact` | Long-session compaction, cache-safe context injection | 31 | SHIPPED | jcode (RAM efficiency) |
 | 5 | `sandbox-gate` | Pre-tool risk gate (block/warn/allow) + allowlist | 75 | SHIPPED | Codex (sandboxed execution) |
-| 6 | `mcp-catalog` | MCP server catalog, validation, JSON-RPC shapes | 26 | SHIPPED | Goose (MCP-native) |
+| 6 | `mcp-catalog` | MCP server catalog, validation, JSON-RPC shapes | 50 | SHIPPED | Goose (MCP-native) |
 | 7 | `repomap` | Symbol-level repo map (13+ lang families), `rank_files` relevance scoring, stack tags | 42 | SHIPPED | Aider (repo map) |
 | 8 | `context-loader` | `fetch_page` + `describe_image` (vision) context tools | 69 | SHIPPED | Aider (images/web context) |
-| 9 | `verify-runner` | `/verify` tests+lint verdict on projects | 38 | SHIPPED | Aider (lint & test automation) |
+| 9 | `verify-runner` | `/verify` tests+lint verdict on projects | 46 | SHIPPED | Aider (lint & test automation) |
 | 10 | `gh-ops` | gh/glab wrappers with strict table parsers | 130 | SHIPPED | OpenCode (GitHub/GitLab) |
 | 11 | `local-models` | Ollama / LM Studio probe (:11434/:1234) + config generation | 87 | SHIPPED | OpenCode (local endpoints) |
 | 12 | `title-statusline` | Sponsor line in the terminal title bar | 32 | SHIPPED | OpenCode (TUI/statusline) |
@@ -59,15 +59,28 @@ Status legend:
 | 14 | `omni-media` | Media understanding: `/ocr` `/caption` `/mediascan` via verified vision model | 27 | SHIPPED | OpenClaw (media pipeline) |
 | 15 | `omni-design` | `/design` premium self-contained HTML artifacts from a brief, `/design-audit` 10-tell slop audit — zero hooks | 8 | SHIPPED | Claude Design / Stitch |
 | 16 | `omni-parallel` | Parallel-task layer: `/swarm` task queue + context packs + multi-agent judging + PR-split merge plans | 20 | SHIPPED | Kimi / Cursor / Claude |
-| 17 | `omni-skills` | SKILL.md interop: scan/validate/install skills from any marketplace — zero hooks | 23 | SHIPPED | Claude (SKILL.md standard) |
+| 17 | `omni-skills` | SKILL.md interop: scan/validate/install skills from any marketplace — zero hooks | 47 | SHIPPED | Claude (SKILL.md standard) |
 | 18 | `omni-registry` | Omni Registry | 22 | SHIPPED | Next-feature wave |
 | 19 | `codebase-index` | Codebase Index | 28 | SHIPPED | Next-feature wave |
-| 20 | `omni-tools` | Omni Tools | 21 | SHIPPED | Next-feature wave |
+| 20 | `omni-tools` | Omni Tools | 26 | SHIPPED | Next-feature wave |
 | 21 | `bharat-pack` | Bharat Pack | 19 | SHIPPED | Next-feature wave |
-| 22 | `cost-tracker` | Cost Tracker | 17 | SHIPPED | Next-feature wave |
+| 22 | `cost-tracker` | Cost Tracker | 22 | SHIPPED | Next-feature wave |
+| 23 | `agent-economy` | Agent-to-agent economy: offer/request trade lifecycle + verification receipts — zero hooks | 15 | SHIPPED | Moonshot M4 |
+| 24 | `audit-log` | Enterprise audit log for sensitive operations | 14 | SHIPPED | Enterprise tier |
+| 25 | `bharat-voice` | Voice-native Bharat: Sarvam/Bhashini TTS+STT for hi/ta/te/kn/mr/gu — zero hooks | 16 | SHIPPED | Moonshot M3 |
+| 26 | `domain-guardrails` | Per-domain approval policies (trading/money/medical/legal/crypto/code-exec) | 21 | SHIPPED | User-driven |
+| 27 | `gateway-proxy` | OpenAI-compatible localhost gateway: `/v1/chat/completions` + `/v1/models` — zero hooks | 22 | SHIPPED | Moonshot M1 |
+| 28 | `marketplace` | Self-hosted marketplace: skills/MCPs/plugins, 15% rails + UPI receipts — zero hooks | 13 | SHIPPED | Moonshot M2 |
+| 29 | `model-router` | Task-type routing over 25 free models (deterministic pre_llm_call hook) | 27 | SHIPPED | User-driven |
+| 30 | `offline-kit` | Offline-first probe: Ollama + local embeddings + local search report — zero hooks | 14 | SHIPPED | Moonshot M5 |
+| 31 | `receipts` | Verifiable handles (sha/url/exit) for external side-effects; /receipts audit coverage report | 20 | SHIPPED | User-driven |
+| 32 | `self-healing` | Watchdog kills silent hangs + postcondition checks + heal.jsonl audit | 20 | SHIPPED | User-driven |
+| 33 | `self-operator` | Self-improving operator: BACKLOG parse → plan → human approval → execute → audit — zero hooks | 19 | SHIPPED | Moonshot M6 |
+| 34 | `skill-drafter` | Auto-draft skills from successful tool-call runs | 20 | SHIPPED | User-driven |
+| 35 | `voice-first` | Hands-free voice CLI (mic → STT → host → TTS) | 17 | SHIPPED | User-driven |
 
-**Totals: 22 plugins · 842 test methods · 842 passed · 0 failed** (TEST-MATRIX.md, 2026-08-12 14:19).
-Row sum check: 34+27+37+31+75+26+42+69+38+130+87+32+29+27+8+20+23+22+28+21+19+17 = 842 ✓
+**Totals: 35 plugins · 1142 test methods · 1142 passed · 0 failed** (TEST-MATRIX.md, 2026-08-13).
+Row sum check: 34+27+37+31+75+50+42+69+46+130+87+32+29+27+8+20+47+22+28+26+19+22+15+14+16+21+22+13+27+14+16+20+19+20+17 = 1142 ✓
 
 ## 2. Heritage map — the seven source agents, one host
 
@@ -113,7 +126,7 @@ Row sum check: 34+27+37+31+75+26+42+69+38+130+87+32+29+27+8+20+23+22+28+21+19+17
 |---|---|---|
 | `FEATURES.md` | **This file** — master feature matrix, rebuilt 2026-08-12 | SHIPPED |
 | `ARCHITECTURE.md` | Host-core + edge-module architecture (updated 2026-08-12: seven agents, 22 modules) | SHIPPED |
-| `TEST-MATRIX.md` | Auto-generated plugin test matrix — 842/842 PASS (2026-08-12 00:27) | SHIPPED (regenerated by the test harness) |
+| `TEST-MATRIX.md` | Auto-generated plugin test matrix — 1142/1142 PASS (2026-08-13) | SHIPPED (regenerated by the test harness) |
 | `PERFORMANCE.md` | Bench results (updated 2026-08-12) | SHIPPED |
 | `SELLING.md` | Go-to-market / sponsorship plan (updated 2026-08-12) | SHIPPED |
 | `SKILLS-SECURITY.md` | External-skills security scan report — regenerated by `data/build_db.py` | SHIPPED |
@@ -138,7 +151,7 @@ Row sum check: 34+27+37+31+75+26+42+69+38+130+87+32+29+27+8+20+23+22+28+21+19+17
 | `run.sh` | POSIX/git-bash launcher — all **22** plugins; ensures `ollama serve` on :11434 (updated 2026-08-12: 16→22) | SHIPPED |
 | `ollama/start-ollama.ps1` | Bundled-Ollama starter: downloads official portable build once (~130 MB) into `ollama/runtime/`, serves `127.0.0.1:11434`, pulls `qwen2.5:3b` on first run; idempotent | SHIPPED |
 | `.github/` | CI/workflows | **PENDING** (directory not present as of 2026-08-12) |
-| `.bench/` | Benchmark harness: `bench.py`, `run_all_tests.sh`, `results[-before|-after].json` over the 842-test suite | SHIPPED |
+| `.bench/` | Benchmark harness: `bench.py`, `run_all_tests.sh`, `results[-before|-after].json` over the 1142-test suite | SHIPPED |
 | `.gitignore`, `LICENSE` (MIT), `LICENSE-ATTRIBUTION.md` | Repo hygiene / licensing | SHIPPED |
 
 ## 7. Skills & free models

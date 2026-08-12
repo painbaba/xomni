@@ -1,6 +1,6 @@
 # XOMNI Quickstart — running in 5 minutes
 
-XOMNI = the Hermes host + 22 plugins (842 tests), 170 bundled skills, 25
+XOMNI = the Hermes host + 35 plugins (1142 tests), 170 bundled skills, 25
 verified free models, a 311-server MCP catalog, and a sponsorship engine that
 pays you for installs. No API keys required.
 
@@ -12,12 +12,12 @@ Node.js 18+ (only for npx-based MCP servers, step 6).
 run.cmd      # Windows (cmd or git-bash)
 ./run.sh     # POSIX / git-bash
 ```
-Starts the Hermes host with all 22 plugins loaded and best-effort boots the
+Starts the Hermes host with all 35 plugins loaded and best-effort boots the
 bundled Ollama runtime so local models work with zero extra installs.
 
 ## 2. First launch — what you see
 
-`[XOMNI] starting host + 22 plugins...`, then the interactive prompt, a status
+`[XOMNI] starting host + 35 plugins...`, then the interactive prompt, a status
 line in the terminal title bar (`title-statusline`), and a **sponsor line**
 while the agent works (that line pays you — see step 7).
 
@@ -84,10 +84,10 @@ sponsor's payment, capped at `0.5 × P`, with signed receipts and escrow.
 ```bash
 cd plugins/repomap && python -m unittest tests.test_core -v   # 15 tests
 ```
-Full suite: 842/842 pass. See `docs/VALIDATION.md`.
+Full suite: 1142/1142 pass. See `docs/VALIDATION.md`.
 
 ## Next steps
 
-- `docs/FEATURES.md` — everything the 22 plugins do · `docs/SELLING.md` — the
+- `docs/FEATURES.md` — everything the 35 plugins do · `docs/SELLING.md` — the
   go-to-market plan · `data/mcp/catalog.json` — all 311 servers
   (`hermes mcp add <name> -- <install_command>`)

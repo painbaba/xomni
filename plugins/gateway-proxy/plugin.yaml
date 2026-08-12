@@ -1,0 +1,3 @@
+name: gateway-proxy
+version: "0.1.0"
+description: "OpenAI-compatible localhost gateway (stdlib only): /v1/models + /v1/chat/completions on 127.0.0.1, translating OpenAI payloads into plugins/model-router route() calls. Zero hooks, no streaming, fail-loud OpenAI-style errors."

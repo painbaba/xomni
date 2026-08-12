@@ -1,0 +1,11 @@
+name: self-operator
+version: 0.1.0
+description: >-
+  Zero-hook, human-gated improvement loop engine: parse backlog -> propose
+  plan -> human approval -> execute -> audit. Stdlib only; never creates
+  cron jobs.
+type: plugin
+runtime: stdlib
+hooks: []
+entry: core.py
+python: ">=3.11"

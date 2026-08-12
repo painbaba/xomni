@@ -1,0 +1,3 @@
+name: offline-kit
+version: "0.1.0"
+description: "Offline-first readiness kit: probe the local Ollama stack (chat + embeddings) and fts5 local search, produce an offline-ready report + model plan (pure stdlib, zero hooks)"

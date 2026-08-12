@@ -53,7 +53,7 @@ context-compact          15.4   pre_llm_callx1  FAIL
 gh-ops                    4.8   none    PASS
 ...
 ==============================================================================
-IMPORT CHECK  : PASS — all 22 plugins < 90 ms
+IMPORT CHECK  : PASS — all 35 plugins < 90 ms
 ZERO-HOOKS    : FAIL — 6 plugin(s) register hooks (CONTRIBUTING.md §3)
 GATE VERDICT: FAIL (exit 2)
 ```

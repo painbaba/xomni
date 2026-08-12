@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Features — XOMNI Docs</title>
-<meta name="description" content="XOMNI feature matrix: 22 plugins, 842 tests, every feature of every source repo, tracked.">
+<meta name="description" content="XOMNI feature matrix: 35 plugins, 1142 tests, every feature of every source repo, tracked.">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="stylesheet" href="css/style.css">
 
@@ -105,8 +105,8 @@ header.site-nav.scrolled{box-shadow:0 8px 24px rgba(0,0,0,.5)}
 <tbody>
 <tr><td>Metric</td><td>Verified value</td><td>How verified</td></tr>
 <tr><td>---</td><td>---</td><td>---</td></tr>
-<tr><td>Plugins shipped</td><td><strong>22</strong></td><td><code>ls plugins/</code> = 22 dirs; README plugin table (22 rows)</td></tr>
-<tr><td>Passing tests</td><td><strong>842 / 842</strong> (0 failures)</td><td><code>docs/TEST-MATRIX.md</code> (auto-generated 2026-08-12 00:27)</td></tr>
+<tr><td>Plugins shipped</td><td><strong>35</strong></td><td><code>ls plugins/</code> = 35 dirs; README plugin table (35 rows)</td></tr>
+<tr><td>Passing tests</td><td><strong>1142 / 1142</strong> (0 failures)</td><td><code>docs/TEST-MATRIX.md</code> (auto-generated 2026-08-13)</td></tr>
 <tr><td>Skills in repo</td><td><strong>170</strong> <code>SKILL.md</code> files, <strong>42</strong> domain folders</td><td>glob count <code>skills/**/SKILL.md</code>; <code>ls skills/</code></td></tr>
 <tr><td>External-skills DB</td><td><strong>519 rows</strong> (skills.db), 6 sources; <strong>180</strong> curated shortlist (201 rows carry a rank)</td><td>SQLite <code>COUNT(*)</code>; <code>curated-skills.json</code> (180 entries) + <code>.stats.json</code></td></tr>
 <tr><td>MCP server catalog</td><td><strong>311 servers</strong></td><td><code>data/mcps.db</code> (311), <code>data/mcp/catalog.json</code> (311), <code>website/data/mcps.json</code> (311)</td></tr>
@@ -132,7 +132,7 @@ header.site-nav.scrolled{box-shadow:0 8px 24px rgba(0,0,0,.5)}
 <li><code>PARKED</code> — tracked, consciously deferred with a reason</li>
 </ul>
 <p>---</p>
-<h2 id="1-plugin-matrix-all-22-shipped-source-of-truth-docs-test-matrix-md-readme">1. Plugin matrix — all 22, shipped (source of truth: <code>docs/TEST-MATRIX.md</code>, README)</h2>
+<h2 id="1-plugin-matrix-all-35-shipped-source-of-truth-docs-test-matrix-md-readme">1. Plugin matrix — all 35, shipped (source of truth: <code>docs/TEST-MATRIX.md</code>, README)</h2>
 <div class="table-wrap"><table>
 <tbody>
 <tr><td>#</td><td>Plugin</td><td>Theme</td><td>Tests (PASS)</td><td>Status</td><td>Origin strength</td></tr>
@@ -142,10 +142,10 @@ header.site-nav.scrolled{box-shadow:0 8px 24px rgba(0,0,0,.5)}
 <tr><td>3</td><td><code>provider-pool</code></td><td>25 verified free models, live health checks, per-agent config generation, <code>/models</code> <code>/provider</code></td><td>37</td><td>SHIPPED</td><td>free models (OpenCode Zen gateway)</td></tr>
 <tr><td>4</td><td><code>context-compact</code></td><td>Long-session compaction, cache-safe context injection</td><td>31</td><td>SHIPPED</td><td>jcode (RAM efficiency)</td></tr>
 <tr><td>5</td><td><code>sandbox-gate</code></td><td>Pre-tool risk gate (block/warn/allow) + allowlist</td><td>75</td><td>SHIPPED</td><td>Codex (sandboxed execution)</td></tr>
-<tr><td>6</td><td><code>mcp-catalog</code></td><td>MCP server catalog, validation, JSON-RPC shapes</td><td>26</td><td>SHIPPED</td><td>Goose (MCP-native)</td></tr>
+<tr><td>6</td><td><code>mcp-catalog</code></td><td>MCP server catalog, validation, JSON-RPC shapes</td><td>50</td><td>SHIPPED</td><td>Goose (MCP-native)</td></tr>
 <tr><td>7</td><td><code>repomap</code></td><td>Symbol-level repo map (13+ lang families), <code>rank_files</code> relevance scoring, stack tags</td><td>42</td><td>SHIPPED</td><td>Aider (repo map)</td></tr>
 <tr><td>8</td><td><code>context-loader</code></td><td><code>fetch_page</code> + <code>describe_image</code> (vision) context tools</td><td>69</td><td>SHIPPED</td><td>Aider (images/web context)</td></tr>
-<tr><td>9</td><td><code>verify-runner</code></td><td><code>/verify</code> tests+lint verdict on projects</td><td>38</td><td>SHIPPED</td><td>Aider (lint &amp; test automation)</td></tr>
+<tr><td>9</td><td><code>verify-runner</code></td><td><code>/verify</code> tests+lint verdict on projects</td><td>46</td><td>SHIPPED</td><td>Aider (lint &amp; test automation)</td></tr>
 <tr><td>10</td><td><code>gh-ops</code></td><td>gh/glab wrappers with strict table parsers</td><td>130</td><td>SHIPPED</td><td>OpenCode (GitHub/GitLab)</td></tr>
 <tr><td>11</td><td><code>local-models</code></td><td>Ollama / LM Studio probe (:11434/:1234) + config generation</td><td>87</td><td>SHIPPED</td><td>OpenCode (local endpoints)</td></tr>
 <tr><td>12</td><td><code>title-statusline</code></td><td>Sponsor line in the terminal title bar</td><td>32</td><td>SHIPPED</td><td>OpenCode (TUI/statusline)</td></tr>
@@ -153,15 +153,28 @@ header.site-nav.scrolled{box-shadow:0 8px 24px rgba(0,0,0,.5)}
 <tr><td>14</td><td><code>omni-media</code></td><td>Media understanding: <code>/ocr</code> <code>/caption</code> <code>/mediascan</code> via verified vision model</td><td>27</td><td>SHIPPED</td><td>OpenClaw (media pipeline)</td></tr>
 <tr><td>15</td><td><code>omni-design</code></td><td><code>/design</code> premium self-contained HTML artifacts from a brief, <code>/design-audit</code> 10-tell slop audit — zero hooks</td><td>8</td><td>SHIPPED</td><td>Claude Design / Stitch</td></tr>
 <tr><td>16</td><td><code>omni-parallel</code></td><td>Parallel-task layer: <code>/swarm</code> task queue + context packs + multi-agent judging + PR-split merge plans</td><td>20</td><td>SHIPPED</td><td>Kimi / Cursor / Claude</td></tr>
-<tr><td>17</td><td><code>omni-skills</code></td><td>SKILL.md interop: scan/validate/install skills from any marketplace — zero hooks</td><td>23</td><td>SHIPPED</td><td>Claude (SKILL.md standard)</td></tr>
+<tr><td>17</td><td><code>omni-skills</code></td><td>SKILL.md interop: scan/validate/install skills from any marketplace — zero hooks</td><td>47</td><td>SHIPPED</td><td>Claude (SKILL.md standard)</td></tr>
 <tr><td>18</td><td><code>omni-registry</code></td><td>Omni Registry</td><td>22</td><td>SHIPPED</td><td>Next-feature wave</td></tr>
 <tr><td>19</td><td><code>codebase-index</code></td><td>Codebase Index</td><td>28</td><td>SHIPPED</td><td>Next-feature wave</td></tr>
-<tr><td>20</td><td><code>omni-tools</code></td><td>Omni Tools</td><td>21</td><td>SHIPPED</td><td>Next-feature wave</td></tr>
+<tr><td>20</td><td><code>omni-tools</code></td><td>Omni Tools</td><td>26</td><td>SHIPPED</td><td>Next-feature wave</td></tr>
 <tr><td>21</td><td><code>bharat-pack</code></td><td>Bharat Pack</td><td>19</td><td>SHIPPED</td><td>Next-feature wave</td></tr>
-<tr><td>22</td><td><code>cost-tracker</code></td><td>Cost Tracker</td><td>17</td><td>SHIPPED</td><td>Next-feature wave</td></tr>
+<tr><td>22</td><td><code>cost-tracker</code></td><td>Cost Tracker</td><td>22</td><td>SHIPPED</td><td>Next-feature wave</td></tr>
+<tr><td>23</td><td><code>agent-economy</code></td><td>Agent-to-agent economy: offer/request trade lifecycle + verification receipts — zero hooks</td><td>15</td><td>SHIPPED</td><td>Moonshot M4</td></tr>
+<tr><td>24</td><td><code>audit-log</code></td><td>Enterprise audit log for sensitive operations</td><td>14</td><td>SHIPPED</td><td>Enterprise tier</td></tr>
+<tr><td>25</td><td><code>bharat-voice</code></td><td>Voice-native Bharat: Sarvam/Bhashini TTS+STT for hi/ta/te/kn/mr/gu — zero hooks</td><td>16</td><td>SHIPPED</td><td>Moonshot M3</td></tr>
+<tr><td>26</td><td><code>domain-guardrails</code></td><td>Per-domain approval policies (trading/money/medical/legal/crypto/code-exec)</td><td>21</td><td>SHIPPED</td><td>User-driven</td></tr>
+<tr><td>27</td><td><code>gateway-proxy</code></td><td>OpenAI-compatible localhost gateway: <code>/v1/chat/completions</code> + <code>/v1/models</code> — zero hooks</td><td>22</td><td>SHIPPED</td><td>Moonshot M1</td></tr>
+<tr><td>28</td><td><code>marketplace</code></td><td>Self-hosted marketplace: skills/MCPs/plugins, 15% rails + UPI receipts — zero hooks</td><td>13</td><td>SHIPPED</td><td>Moonshot M2</td></tr>
+<tr><td>29</td><td><code>model-router</code></td><td>Task-type routing over 25 free models (deterministic pre_llm_call hook)</td><td>27</td><td>SHIPPED</td><td>User-driven</td></tr>
+<tr><td>30</td><td><code>offline-kit</code></td><td>Offline-first probe: Ollama + local embeddings + local search report — zero hooks</td><td>14</td><td>SHIPPED</td><td>Moonshot M5</td></tr>
+<tr><td>31</td><td><code>receipts</code></td><td>Verifiable handles (sha/url/exit) for external side-effects</td><td>16</td><td>SHIPPED</td><td>User-driven</td></tr>
+<tr><td>32</td><td><code>self-healing</code></td><td>Watchdog kills silent hangs + postcondition checks + heal.jsonl audit</td><td>20</td><td>SHIPPED</td><td>User-driven</td></tr>
+<tr><td>33</td><td><code>self-operator</code></td><td>Self-improving operator: BACKLOG parse → plan → human approval → execute → audit — zero hooks</td><td>19</td><td>SHIPPED</td><td>Moonshot M6</td></tr>
+<tr><td>34</td><td><code>skill-drafter</code></td><td>Auto-draft skills from successful tool-call runs</td><td>20</td><td>SHIPPED</td><td>User-driven</td></tr>
+<tr><td>35</td><td><code>voice-first</code></td><td>Hands-free voice CLI (mic → STT → host → TTS)</td><td>17</td><td>SHIPPED</td><td>User-driven</td></tr>
 </tbody></table></div>
-<p><strong>Totals: 22 plugins · 842 test methods · 842 passed · 0 failed</strong> (TEST-MATRIX.md, 2026-08-12 14:19).</p>
-<p>Row sum check: 34+27+37+31+75+26+42+69+38+130+87+32+29+27+8+20+23+22+28+21+19+17 = 842 ✓</p>
+<p><strong>Totals: 35 plugins · 1142 test methods · 1142 passed · 0 failed</strong> (TEST-MATRIX.md, 2026-08-13).</p>
+<p>Row sum check: 34+27+37+31+75+50+42+69+46+130+87+32+29+27+8+20+47+22+28+26+19+22+15+14+16+21+22+13+27+14+16+20+19+20+17 = 1142 ✓</p>
 <h2 id="2-heritage-map-the-seven-source-agents-one-host">2. Heritage map — the seven source agents, one host</h2>
 <div class="table-wrap"><table>
 <tbody>
@@ -209,7 +222,7 @@ header.site-nav.scrolled{box-shadow:0 8px 24px rgba(0,0,0,.5)}
 <tr><td>---</td><td>---</td><td>---</td></tr>
 <tr><td><code>FEATURES.md</code></td><td><strong>This file</strong> — master feature matrix, rebuilt 2026-08-12</td><td>SHIPPED</td></tr>
 <tr><td><code>ARCHITECTURE.md</code></td><td>Host-core + edge-module architecture (updated 2026-08-12: seven agents, 22 modules)</td><td>SHIPPED</td></tr>
-<tr><td><code>TEST-MATRIX.md</code></td><td>Auto-generated plugin test matrix — 842/842 PASS (2026-08-12 00:27)</td><td>SHIPPED (regenerated by the test harness)</td></tr>
+<tr><td><code>TEST-MATRIX.md</code></td><td>Auto-generated plugin test matrix — 1142/1142 PASS (2026-08-13)</td><td>SHIPPED (regenerated by the test harness)</td></tr>
 <tr><td><code>PERFORMANCE.md</code></td><td>Bench results (updated 2026-08-12)</td><td>SHIPPED</td></tr>
 <tr><td><code>SELLING.md</code></td><td>Go-to-market / sponsorship plan (updated 2026-08-12)</td><td>SHIPPED</td></tr>
 <tr><td><code>SKILLS-SECURITY.md</code></td><td>External-skills security scan report — regenerated by <code>data/build_db.py</code></td><td>SHIPPED</td></tr>
@@ -236,7 +249,7 @@ header.site-nav.scrolled{box-shadow:0 8px 24px rgba(0,0,0,.5)}
 <tr><td><code>run.sh</code></td><td>POSIX/git-bash launcher — all <strong>22</strong> plugins; ensures <code>ollama serve</code> on :11434 (updated 2026-08-12: 16→22)</td><td>SHIPPED</td></tr>
 <tr><td><code>ollama/start-ollama.ps1</code></td><td>Bundled-Ollama starter: downloads official portable build once (~130 MB) into <code>ollama/runtime/</code>, serves <code>127.0.0.1:11434</code>, pulls <code>qwen2.5:3b</code> on first run; idempotent</td><td>SHIPPED</td></tr>
 <tr><td><code>.github/</code></td><td>CI/workflows</td><td><strong>PENDING</strong> (directory not present as of 2026-08-12)</td></tr>
-<tr><td><code>.bench/</code></td><td>Benchmark harness: <code>bench.py</code>, <code>run_all_tests.sh</code>, `results[-before</td><td>-after].json` over the 842-test suite</td><td>SHIPPED</td></tr>
+<tr><td><code>.bench/</code></td><td>Benchmark harness: <code>bench.py</code>, <code>run_all_tests.sh</code>, `results[-before</td><td>-after].json` over the 1142-test suite</td><td>SHIPPED</td></tr>
 <tr><td><code>.gitignore</code>, <code>LICENSE</code> (MIT), <code>LICENSE-ATTRIBUTION.md</code></td><td>Repo hygiene / licensing</td><td>SHIPPED</td></tr>
 </tbody></table></div>
 <h2 id="7-skills-free-models">7. Skills &amp; free models</h2>
