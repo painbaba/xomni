@@ -1,0 +1,3 @@
+name: voice-first
+version: "0.1.0"
+description: "Optional voice-first mode: hands-free CLI via mic capture (ffmpeg/arecord), STT (faster-whisper or Gemini), TTS (edge-tts); /voice test|ask|on — zero hooks"
