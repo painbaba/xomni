@@ -32,17 +32,17 @@ file current — it is the workforce's queue.
 
 All 11 items dispatched in parallel 2026-08-12. Universal = provider/model/surface-agnostic; no hardcoded tables.
 
-- [ ] U-CORE-1. capability-probe: live probe any provider's /models into the registry (OpenAI/Anthropic shapes, loud failures, key never printed), /probe <id> + /probe all. BUILDING.
-- [ ] U-CORE-2. universal-router: model-router routes over the LIVE registry (live-probe > verified > spec), any pool, empty-registry loud fallback, /route shows pool size + source. BUILDING.
-- [ ] U-CORE-3. universal-telemetry: spend caps (5h/1d/7d/30d; warn@80%/park@100%, parked_models heavy tier), /cost caps + rollups (today/week/model/top). BUILDING.
-- [ ] U-SURF-1. MCP self-cataloging: installed/imported MCPs auto-index into the catalog (badges, source=user-added, idempotent), /mcp add <name> <url-or-command>. BUILDING.
-- [ ] U-SURF-2. universal skills lifecycle: draft->validate->save->receipt->publish in one pipeline (/skill from-session <id>), cross-profile sync (/skill sync, no-clobber). BUILDING.
-- [ ] U-SURF-3. pluggable voice backends: STT (whisper/gemini/sarvam) + TTS (edge/sarvam/bhashini) registry, auto-pick + /voice set, payload builders fail loud without keys. BUILDING.
-- [ ] U-SURF-4. universal-notify: telegram/whatsapp/local fan-out, jsonl queue, digests, /notify send|digest|status|channels, never sends by default. BUILDING.
-- [ ] U-ASSURE-1. receipts everywhere: audit all mutating paths, wire issue() into gaps, /receipts audit coverage table. BUILDING.
-- [ ] U-ASSURE-2. multi-profile heal: self-healing scans base + all profiles, /heal profiles|scan|fix, per-profile audit. BUILDING.
-- [ ] U-ASSURE-3. universal guardrails: policy engine extends to MCP tools (decide_tool) + skill installs (decide_skill), /guardrails check-tool + check-skill. BUILDING.
-- [ ] U-ASSURE-4. universal CI: ci_gate advisory stages — capability freshness (<30d) + receipts coverage, warn-only, gate stays exit 0. BUILDING.
+- [x] U-CORE-1. capability-probe: live probe any provider's /models into the registry (OpenAI/Anthropic shapes, loud failures, key never printed), /probe <id> + /probe all. DONE (2026-08-13, deleg_55c4383a).
+- [x] U-CORE-2. universal-router: model-router routes over the LIVE registry (live-probe > verified > spec), any pool, empty-registry loud fallback, /route shows pool size + source. DONE (2026-08-13, deleg_55c4383a).
+- [x] U-CORE-3. universal-telemetry: spend caps (5h/1d/7d/30d; warn@80%/park@100%, parked_models heavy tier), /cost caps + rollups (today/week/model/top). DONE (2026-08-13, deleg_55c4383a).
+- [x] U-SURF-1. MCP self-cataloging: installed/imported MCPs auto-index into the catalog (badges, source=user-added, idempotent), /mcp add <name> <url-or-command>. DONE (2026-08-13, deleg_55c4383a).
+- [x] U-SURF-2. universal skills lifecycle: draft->validate->save->receipt->publish in one pipeline (/skill from-session <id>), cross-profile sync (/skill sync, no-clobber). DONE (2026-08-13, deleg_55c4383a).
+- [x] U-SURF-3. pluggable voice backends: STT (whisper/gemini/sarvam) + TTS (edge/sarvam/bhashini) registry, auto-pick + /voice set, payload builders fail loud without keys. DONE (2026-08-13, deleg_55c4383a).
+- [x] U-SURF-4. universal-notify: telegram/whatsapp/local fan-out, jsonl queue, digests, /notify send|digest|status|channels, never sends by default. DONE (2026-08-13, deleg_55c4383a).
+- [x] U-ASSURE-1. receipts everywhere: audit all mutating paths, wire issue() into gaps, /receipts audit coverage table. DONE (2026-08-13, deleg_55c4383a).
+- [x] U-ASSURE-2. multi-profile heal: self-healing scans base + all profiles, /heal profiles|scan|fix, per-profile audit. DONE (2026-08-13, deleg_55c4383a).
+- [x] U-ASSURE-3. universal guardrails: policy engine extends to MCP tools (decide_tool) + skill installs (decide_skill), /guardrails check-tool + check-skill. DONE (2026-08-13, deleg_55c4383a).
+- [x] U-ASSURE-4. universal CI: ci_gate advisory stages — capability freshness (<30d) + receipts coverage, warn-only, gate stays exit 0. DONE (2026-08-13, deleg_55c4383a).
 
 ## MOONSHOTS (proposals — pick or add yours)
 
