@@ -1,0 +1,3 @@
+name: receipts
+version: "1.0.0"
+description: "Receipts-by-default JSONL ledger (~/.xomni-receipts/receipts.jsonl): every external side-effect issues a verifiable handle (sha256 / URL 200 / exit code+tail) and /receipts verify re-checks it. Integrated into skill install, MCP add, and CLI mutating paths. Zero hooks, zero per-turn cost."

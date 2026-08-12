@@ -5,6 +5,7 @@ into a target skills surface.
 """
 from __future__ import annotations
 
+import datetime
 import hashlib
 import json
 import os
@@ -164,22 +165,46 @@ def install_skill(skill_dir: str, target_root: str, dry_run: bool = False) -> di
         return {"ok": True, "verdict": check["verdict"], "dest": dest,
                 "files": [name] + meta["files"], "dry_run": True}
     os.makedirs(dest, exist_ok=True)
-    shutil.copytree(skill_dir, dest, dirs_exist_ok=True)
+    try:
+        shutil.copytree(skill_dir, dest, dirs_exist_ok=True)
+    except OSError as exc:  # read-only target, missing perms, ... — fail LOUD
+        return {"ok": False, "reason": f"copy failed: {exc}",
+                "verdict": check["verdict"], "issues": check["issues"]}
     return {"ok": True, "verdict": check["verdict"], "dest": dest, "files": [name] + meta["files"]}
 
 
 def install_marketplace(root: str, target_root: str, dry_run: bool = False,
                         recursive: bool = False) -> dict:
-    """Install every skill dir in a marketplace repo root. Fail-closed per skill."""
+    """Install every skill dir in a marketplace repo root. Fail-closed per skill.
+
+    Never a silent cancel: when nothing installs, the result carries a
+    ``reason`` naming why (no skills found, or every skill rejected with its
+    issues).
+    """
     results = []
     for meta in scan_skills(root, recursive=recursive):
-        r = install_skill(meta["dir"], target_root, dry_run=dry_run)
+        try:
+            r = install_skill(meta["dir"], target_root, dry_run=dry_run)
+        except Exception as exc:
+            r = {"ok": False, "reason": f"install error: {exc}",
+                 "name": meta["name"]}
         r["name"] = meta["name"]
         results.append(r)
     ok = [r for r in results if r["ok"]]
     rejected = [r for r in results if not r["ok"]]
-    return {"ok": len(ok) > 0, "installed": len(ok), "rejected": len(rejected),
-            "results": results, "dry_run": dry_run}
+    out = {"ok": len(ok) > 0, "installed": len(ok), "rejected": len(rejected),
+           "results": results, "dry_run": dry_run}
+    if not ok:
+        if not results:
+            out["reason"] = f"no SKILL.md skills found under {root}"
+        else:
+            detail = "; ".join(
+                f"{r.get('name', '?')}: {r.get('reason', 'rejected')}"
+                + (f" ({'; '.join(f for f, _ in r['issues'][:3])})"
+                   if r.get("issues") else "")
+                for r in rejected[:5])
+            out["reason"] = (f"all {len(rejected)} skill(s) rejected: {detail}")
+    return out
 
 
 # ------------------------------------------------------------------ git marketplace
@@ -211,6 +236,21 @@ def _marketplace_name(url: str) -> str:
     return re.sub(r"[^A-Za-z0-9._-]", "-", name) or "marketplace"
 
 
+def _resolve_exe(name: str) -> str:
+    """Resolve *name* to its real executable, honoring .cmd/.bat shims (Windows).
+
+    ``shutil.which`` honors PATHEXT on Windows, so ``npx`` resolves to
+    ``npx.CMD``. subprocess with shell=False CAN launch the full path to a
+    .cmd/.bat shim, but the bare name raises FileNotFoundError (CreateProcess
+    does no PATHEXT search). Plain .exe tools (git.exe) work bare, so we only
+    substitute when a shim is actually found.
+    """
+    found = shutil.which(name)
+    if found and os.path.splitext(found)[1].lower() in (".cmd", ".bat"):
+        return found
+    return name
+
+
 def _git_clone(url: str, dest: str, timeout: int = 120) -> dict:
     """Shallow clone via `git clone --depth 1 -- <url> <dest>`.
 
@@ -219,7 +259,7 @@ def _git_clone(url: str, dest: str, timeout: int = 120) -> dict:
     """
     try:
         proc = subprocess.run(
-            ["git", "clone", "--depth", "1", "--", url, dest],
+            [_resolve_exe("git"), "clone", "--depth", "1", "--", url, dest],
             capture_output=True, text=True, timeout=timeout,
         )
     except Exception as exc:  # FileNotFoundError, TimeoutExpired, ...
@@ -378,3 +418,240 @@ def env_status() -> dict:
                 data[f] = "?"
     return {"xomni_home": home, "plugins": plugins,
             "plugins_total": len(plugins), "skills_total": skills_count, "data": data}
+
+
+# ------------------------------------------------------------------ publish
+# U11 — cross-session skill market. publish_skill validates, credit-stamps,
+# and copies a skill into a repo's skills/ tree — the content model of the
+# skills.sh directory ('The Agent Skills Directory', https://skills.sh):
+# git repos containing SKILL.md files, source = owner/repo, installable via
+# `npx skills add <owner/repo>` or XOMNI's /skills-marketplace.
+CREDIT_SOURCE = "xomni"
+
+
+def _git_config_get(key: str, cwd: str | None = None) -> str | None:
+    """`git config --get <key>` (repo-local + global), or None when unset."""
+    try:
+        cmd = [_resolve_exe("git"), "config", "--get", key]
+        if cwd:
+            cmd[1:1] = ["-C", cwd]
+        proc = subprocess.run(cmd, capture_output=True, text=True, timeout=15)
+    except Exception:
+        return None
+    if proc.returncode != 0:
+        return None
+    return proc.stdout.strip() or None
+
+
+def _origin_from_url(url: str) -> str | None:
+    """Normalize a git remote URL to owner/repo — or None when it can't."""
+    u = (url or "").strip()
+    if not u:
+        return None
+    u = u.rstrip("/")
+    if u.endswith(".git"):
+        u = u[:-4]
+    parts = [p for p in re.split(r"[/:]", u) if p]
+    if len(parts) < 2:
+        return None
+    owner, repo = parts[-2], parts[-1]
+    if not re.fullmatch(r"[A-Za-z0-9._-]+", owner) or not re.fullmatch(r"[A-Za-z0-9._-]+", repo):
+        return None
+    return f"{owner}/{repo}"
+
+
+def detect_origin(skill_dir: str, git_config=None) -> str | None:
+    """owner/repo of the git remote the skill lives in, if detectible."""
+    getter = git_config or _git_config_get
+    try:
+        url = str(getter("remote.origin.url", cwd=skill_dir) or "").strip()
+    except Exception:
+        url = ""
+    return _origin_from_url(url)
+
+
+def derive_author(author: str | None = None, env: dict | None = None,
+                  git_config=None) -> str:
+    """Publisher identity: explicit author > XOMNI_USER env > git user.name
+    > git user.email > 'xomni-user'. Never empty, never None."""
+    if author and str(author).strip():
+        return str(author).strip()
+    env = os.environ if env is None else env
+    env_author = str(env.get("XOMNI_USER") or "").strip()
+    if env_author:
+        return env_author
+    getter = git_config or _git_config_get
+    for key in ("user.name", "user.email"):
+        try:
+            val = str(getter(key) or "").strip()
+        except Exception:
+            val = ""
+        if val:
+            return val
+    return "xomni-user"
+
+
+def _category_from_meta(meta: dict) -> str:
+    """Market category = first frontmatter tag (sanitized), else 'general'."""
+    tags = meta.get("tags") or []
+    if isinstance(tags, str):
+        tags = [tags]
+    for t in tags:
+        t = re.sub(r"[^a-z0-9._-]", "-", str(t).strip().lower())
+        if t:
+            return t
+    return "general"
+
+
+def _dir_sha256(skill_dir: str) -> str:
+    """Full sha256 over every file's relative path + content in a skill dir."""
+    h = hashlib.sha256()
+    for base, dirs, names in os.walk(skill_dir):
+        dirs[:] = [d for d in dirs if d != ".git"]
+        for n in sorted(names):
+            p = os.path.join(base, n)
+            rel = os.path.relpath(p, skill_dir).replace("\\", "/")
+            h.update(rel.encode("utf-8", "replace"))
+            try:
+                with open(p, "rb") as f:
+                    h.update(f.read())
+            except OSError:
+                pass
+    return h.hexdigest()
+
+
+def stamp_credit(skill_dir: str, author: str | None = None,
+                 published_at: str | None = None,
+                 env: dict | None = None, git_config=None) -> dict:
+    """Stamp CREDIT frontmatter into SKILL.md: author (publisher, derived),
+    source: xomni, published_at (ISO date), origin (owner/repo if detectible).
+
+    Idempotent — an existing xomni stamp (source + published_at present) is
+    returned untouched, never double-stamped. A pre-existing ``author`` key
+    naming the skill's original creator is preserved as ``original_author``
+    so credit is never destroyed. Returns {ok, stamped, credit, path}."""
+    path = os.path.join(skill_dir, "SKILL.md")
+    if not os.path.isfile(path):
+        return {"ok": False, "reason": "no SKILL.md", "stamped": False,
+                "credit": {}, "path": path}
+    try:
+        with open(path, encoding="utf-8", errors="replace", newline="") as f:
+            text = f.read()
+    except OSError as exc:
+        return {"ok": False, "reason": f"read failed: {exc}", "stamped": False,
+                "credit": {}, "path": path}
+    m = FM_RE.search(text)
+    if not m:
+        return {"ok": False, "reason": "no frontmatter to stamp",
+                "stamped": False, "credit": {}, "path": path}
+    fm = parse_frontmatter(text)
+    if fm.get("source") == CREDIT_SOURCE and fm.get("published_at"):
+        credit = {"author": str(fm.get("author") or ""),
+                  "source": CREDIT_SOURCE,
+                  "published_at": str(fm.get("published_at"))}
+        if fm.get("origin"):
+            credit["origin"] = str(fm["origin"])
+        if fm.get("original_author"):
+            credit["original_author"] = str(fm["original_author"])
+        return {"ok": True, "stamped": False, "credit": credit, "path": path,
+                "reason": "already stamped"}
+    pub = published_at or datetime.date.today().isoformat()
+    publisher = derive_author(author=author, env=env, git_config=git_config)
+    origin = detect_origin(skill_dir, git_config=git_config)
+    credit = {"author": publisher, "source": CREDIT_SOURCE, "published_at": pub}
+    if origin:
+        credit["origin"] = origin
+    # A pre-existing scalar `author:` naming the skill's original creator is
+    # replaced in place by the publisher and preserved as original_author —
+    # credit is never destroyed and the frontmatter never gets duplicate keys.
+    orig = fm.get("author")
+    orig = str(orig).strip() if isinstance(orig, str) else ""
+    if orig and orig != publisher and "original_author" not in fm:
+        credit["original_author"] = orig
+    newline = "\r\n" if "\r\n" in text else "\n"
+    inner = m.group(1)
+    if inner.endswith("\r"):
+        inner = inner[:-1]  # CRLF file: the \r before the closing \n--- is fence
+    replaced = False
+    rebuilt = []
+    for ln in inner.split(newline):
+        key, _, val = ln.partition(":")
+        if key.strip() == "author" and val.strip() and not replaced:
+            rebuilt.append(f'author: "{publisher}"')
+            replaced = True
+        else:
+            rebuilt.append(ln)
+    if replaced:
+        inner = newline.join(rebuilt)
+    extra = []
+    for k in ("author", "source", "published_at", "origin", "original_author"):
+        if k not in credit:
+            continue
+        if k == "author" and replaced:
+            continue  # already written in place
+        v = credit[k]
+        extra.append(f"{k}: {CREDIT_SOURCE}" if k == "source"
+                     else f'{k}: "{v}"')
+    tail = text[m.end(1):]
+    if newline == "\r\n" and tail.startswith("\n"):
+        tail = "\r\n" + tail[1:]  # keep CRLF endings consistent
+    try:
+        with open(path, "w", encoding="utf-8", newline="") as f:
+            f.write(text[:m.start(1)] + inner + newline + newline.join(extra)
+                    + tail)
+    except OSError as exc:
+        return {"ok": False, "reason": f"write failed: {exc}", "stamped": False,
+                "credit": {}, "path": path}
+    return {"ok": True, "stamped": True, "credit": credit, "path": path}
+
+
+def publish_skill(skill_dir: str, target_repo_dir: str,
+                  author: str | None = None, published_at: str | None = None,
+                  env: dict | None = None, git_config=None) -> dict:
+    """Validate + credit-stamp + copy a skill into a repo's skills/ tree at
+    <target_repo_dir>/skills/<category>/<name>/ — the skills.sh content model.
+
+    Refuses to publish REJECT skills (reuses validate_skill, fail-closed).
+    The stamp happens on the source SKILL.md (idempotent), the copy inherits
+    it. Returns a receipt dict: name, sha256 (full), path, author, plus the
+    stamp and the git push steps for the target repo."""
+    if not os.path.isdir(skill_dir):
+        return {"ok": False, "reason": f"skill dir not found: {skill_dir}"}
+    check = validate_skill(skill_dir)
+    if check["verdict"] == "REJECT":
+        return {"ok": False, "reason": "REJECT", "verdict": "REJECT",
+                "issues": check["issues"]}
+    meta = skill_meta(skill_dir)
+    if meta is None:
+        return {"ok": False, "reason": "no SKILL.md"}
+    if not meta["has_frontmatter"]:
+        return {"ok": False, "reason": "no frontmatter to stamp"}
+    st = stamp_credit(skill_dir, author=author, published_at=published_at,
+                      env=env, git_config=git_config)
+    if not st["ok"]:
+        return {"ok": False, "reason": st["reason"]}
+    category = _category_from_meta(meta)
+    name = re.sub(r"[^a-z0-9._-]", "-", meta["name"].lower())
+    dest = os.path.join(target_repo_dir, "skills", category, name)
+    try:
+        os.makedirs(dest, exist_ok=True)
+        shutil.copytree(skill_dir, dest, dirs_exist_ok=True)
+    except OSError as exc:
+        return {"ok": False, "reason": f"copy failed: {exc}"}
+    return {
+        "ok": True,
+        "name": name,
+        "category": category,
+        "path": os.path.abspath(dest),
+        "author": st["credit"]["author"],
+        "source": st["credit"]["source"],
+        "published_at": st["credit"]["published_at"],
+        "origin": st["credit"].get("origin"),
+        "original_author": st["credit"].get("original_author"),
+        "stamped": st["stamped"],
+        "sha256": _dir_sha256(dest),
+        "fingerprint": fingerprint(dest),
+        "git": {"repo": os.path.abspath(target_repo_dir),
+                "add": f"skills/{category}/{name}",
+                "commit": f"publish skill: {name}"},
+    }

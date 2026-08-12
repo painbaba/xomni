@@ -1,0 +1,22 @@
+{
+  "name": "home-automation",
+  "description": "Home automation stack: Home Assistant (ha-mcp), Windows machine control (windows-mcp), mobile device control (mobile-mcp), time/state utilities, plus device-control skills. Smoke test verifies the ha-mcp package is live on PyPI.",
+  "skills": [
+    "control-ui-e2e",
+    "systematic-debugging",
+    "writing-plans",
+    "openclaw-testing"
+  ],
+  "mcp_servers": [
+    "ha-mcp",
+    "windows-mcp",
+    "mobile-mcp",
+    "time",
+    "memory"
+  ],
+  "config": {},
+  "smoke_test": {
+    "command": "curl -s -w \"\\nHTTP_STATUS:%{http_code}\" \"https://pypi.org/pypi/ha-mcp/json\"",
+    "expect": "HTTP_STATUS:200"
+  }
+}

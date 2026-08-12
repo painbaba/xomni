@@ -4,12 +4,14 @@
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT" || exit 1
 OUT="$ROOT/docs/TEST-MATRIX.md"
+TMPD="$ROOT/.bench/.tmp"
+mkdir -p "$TMPD" || exit 1
 echo "# Plugin Test Matrix (auto-generated $(date '+%Y-%m-%d %H:%M'))" > "$OUT"
 echo "" >> "$OUT"
 TOTAL=0; PASSED=0; FAILED_SUITES=""
 for p in "$ROOT"/plugins/*/; do
   name=$(basename "$p")
-  LOG=/tmp/xomni_tests_$name.log
+  LOG="$TMPD/xomni_tests_$name.log"
   cd "$p" || continue
   mods=$(ls tests/test_*.py 2>/dev/null | sed 's|/|.|g; s|\.py$||')
   if [ -z "$mods" ]; then

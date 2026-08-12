@@ -8,6 +8,19 @@ servers as agent tools. Pure stdlib, no Hermes imports.
 - `parse_catalog` / `validate_catalog` — turn a JSON catalog document into a
   validated list of `{name, command, args, env, description}` entries with
   clear error messages (duplicate names, bad types, command not on PATH).
+- **Marketplace install path (U2):** `install_server(name, host_config_path)`
+  resolves a rich catalog entry (`install_command` + `connect_steps` from
+  `data/mcp/catalog.json`, 311 servers) into a host `mcp_servers` block
+  (`command`/`args`/`url`/`env`) and appends it to the host `config.yaml`
+  surgically — idempotent (skips when already registered), and every failure
+  (unknown server, no launcher, config missing/read-only) raises a loud
+  `CatalogError` naming the file and the fix. `launch_config` strips shell
+  install prefixes (`pip install X && uvx foo` → `uvx foo`) and maps
+  `hermes mcp add <name> --url <url>` entries to `url:` blocks.
+- **Marketplace badges:** `/mcp list` renders the rich catalog with
+  stars (`★108.8k`), keyless (`keyless`/`needs-key` from secret hints in
+  description/purpose/connect_steps), and security verdict
+  (`VERIFIED`/`REVIEW`/`UNVERIFIED` from the catalog's `verified`+`source`).
 - JSON-RPC 2.0 message shapes per the MCP spec (2025-06-18):
   `initialize_message`, `list_tools_message`, `call_tool_message`,
   `initialized_notification`, `rpc_envelope` (newline-delimited stdio JSON).
@@ -18,8 +31,11 @@ servers as agent tools. Pure stdlib, no Hermes imports.
 
 ## Tools / commands
 
-- Commands: `/mcp`, `/mcp list`, `/mcp tools [server]`, `/mcp add <path>`,
-  `/mcp status`, `/mcp validate <path>`.
+- Commands: `/mcp`, `/mcp list` (badged marketplace), `/mcp tools [server]`,
+  `/mcp add <path>` (import a catalog file), `/mcp add <name> [--yes]`
+  (install from the marketplace into host `config.yaml` `mcp_servers` —
+  without `--yes` it prints the plan and asks for confirmation; with `--yes`
+  it installs directly, idempotently), `/mcp status`, `/mcp validate <path>`.
 - Model tool: `mcp_call(server, tool, args)` — dispatches through the host
   registry (`mcp__<server>__<tool>`) when the server is registered.
 

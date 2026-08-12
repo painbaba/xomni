@@ -7,6 +7,10 @@ Commands:
                                   install every skill from a git marketplace
                                   URL (https:// or git://, shallow clone) or a
                                   local repo dir
+  /skills publish <dir> [--author=NAME] [--repo=<target>]
+                                  credit-stamp + copy a skill into a repo's
+                                  skills/ tree (skills.sh market), print the
+                                  push steps + submission note + receipt
 Tool:     skills_import(dir, target, dry_run)
 No hooks registered — zero per-turn cost.
 """
@@ -21,8 +25,80 @@ _CTX = None
 DEFAULT_TARGET = os.path.expanduser("~/AppData/Local/hermes/skills")
 
 
+# ─── receipts-by-default (U7) ────────────────────────────────────────────────
+# Every successful install issues a verifiable receipt into the JSONL ledger
+# (plugins/receipts: sha256 of the installed SKILL.md). The receipts plugin
+# is optional — if it cannot be loaded or the ledger cannot be written,
+# installs behave exactly as before.
+_RECEIPTS = None
+
+
+def _receipts_core():
+    """Lazily resolve receipts.core (installed package, else XOMNI checkout)."""
+    global _RECEIPTS
+    if _RECEIPTS is None:
+        mod = None
+        try:
+            from receipts import core as mod
+        except Exception:
+            mod = None
+        if mod is None:
+            try:
+                import importlib.util
+                import sys as _sys
+                home = os.environ.get("XOMNI_HOME", "")
+                if not home:
+                    home = os.path.abspath(os.path.join(
+                        os.path.dirname(os.path.abspath(__file__)), "..", ".."))
+                cand = os.path.join(home, "plugins", "receipts", "core.py")
+                if os.path.isfile(cand):
+                    fspec = importlib.util.spec_from_file_location("receipts_core", cand)
+                    mod = importlib.util.module_from_spec(fspec)
+                    _sys.modules["receipts_core"] = mod
+                    fspec.loader.exec_module(mod)
+            except Exception:
+                mod = None
+        _RECEIPTS = mod if mod is not None else False
+    return _RECEIPTS or None
+
+
+def _receipt_for_install(r: dict, action: str, base: str) -> int:
+    """Issue one sha256-handled receipt per installed skill (never raises).
+
+    Returns the number of receipts issued; 0 when nothing was installed,
+    when dry-running, or when the receipts plugin is unavailable.
+    """
+    if not r or not r.get("ok") or r.get("dry_run"):
+        return 0
+    mod = _receipts_core()
+    if mod is None:
+        return 0
+    n = 0
+    results = r.get("results")
+    if results:  # marketplace: one receipt per installed skill
+        for res in results:
+            if res.get("ok") and res.get("dest"):
+                if mod.try_file_receipt(action, os.path.join(res["dest"], "SKILL.md"),
+                                        "%s %s" % (res.get("verdict", "OK"),
+                                                   res.get("name", "")),
+                                        {"skill": res.get("name", ""), "source": base}):
+                    n += 1
+        return n
+    dest = r.get("dest")
+    if dest:
+        if mod.try_file_receipt(action, os.path.join(dest, "SKILL.md"),
+                                r.get("verdict", "OK"), {"skill": base}):
+            n += 1
+    return n
+
+
 def _parse_args(raw: str) -> tuple:
-    target, dry = DEFAULT_TARGET, False
+    """Parse shared flags. Returns (path, target, dry_run, yes).
+
+    --yes / -y (U3 — non-interactive): accepted and stripped; these commands
+    never prompt, and the flag guarantees no confirmation is ever requested.
+    """
+    target, dry, yes = DEFAULT_TARGET, False, False
     parts = (raw or "").split()
     keep = []
     for p in parts:
@@ -30,9 +106,11 @@ def _parse_args(raw: str) -> tuple:
             target = p.split("=", 1)[1].strip()
         elif p == "--dry-run":
             dry = True
+        elif p in ("--yes", "-y"):
+            yes = True
         else:
             keep.append(p)
-    return " ".join(keep).strip(), target, dry
+    return " ".join(keep).strip(), target, dry, yes
 
 
 def _handle_scan(raw: str) -> str:
@@ -94,9 +172,9 @@ def _handle_status(raw: str) -> str:
 
 
 def _handle_install(raw: str) -> str:
-    path, target, dry = _parse_args(raw)
+    path, target, dry, _yes = _parse_args(raw)
     if not path:
-        return "/skills-install <dir> [--target=...] [--dry-run]"
+        return "/skills-install <dir> [--yes] [--target=...] [--dry-run]"
     if not os.path.isdir(path):
         return f"/skills-install: not a directory: {path}"
     if os.path.isfile(os.path.join(path, "SKILL.md")):
@@ -106,6 +184,7 @@ def _handle_install(raw: str) -> str:
     mode = "DRY-RUN " if dry else ""
     if not r["ok"]:
         return f"/skills-install: {mode}FAILED — {r.get('reason', 'see details')}"
+    _receipt_for_install(r, action="skill.install", base=os.path.basename(path))
     if "installed" in r:  # marketplace
         return (f"/skills-install: {mode}OK — {r['installed']} installed, "
                 f"{r['rejected']} rejected -> {target}")
@@ -115,9 +194,9 @@ def _handle_install(raw: str) -> str:
 def _handle_marketplace(raw: str) -> str:
     """/skills-marketplace <url-or-dir> — git URL (https/git, shallow clone,
     cached under ~/.xomni-marketplaces) or a local marketplace dir."""
-    path, target, dry = _parse_args(raw)
+    path, target, dry, _yes = _parse_args(raw)
     if not path:
-        return ("/skills-marketplace <url-or-dir> [--target=...] [--dry-run] — "
+        return ("/skills-marketplace <url-or-dir> [--yes] [--target=...] [--dry-run] — "
                 "install every skill from a git marketplace URL (https:// or "
                 "git://, shallow clone) or a local repo dir.")
     mode = "DRY-RUN " if dry else ""
@@ -126,6 +205,7 @@ def _handle_marketplace(raw: str) -> str:
         r = core.install_marketplace_url(path, target, dry_run=dry)
         if not r["ok"]:
             return f"/skills-marketplace: {mode}FAILED — {r.get('reason', 'see details')}"
+        _receipt_for_install(r, action="skill.marketplace", base=path)
         return (f"/skills-marketplace: {mode}OK — {r['installed']} installed, "
                 f"{r['rejected']} rejected (cached {r.get('cache_dir', '')}) -> {target}")
     if not os.path.isdir(path):
@@ -133,8 +213,70 @@ def _handle_marketplace(raw: str) -> str:
     r = core.install_marketplace(path, target, dry_run=dry)
     if not r["ok"]:
         return f"/skills-marketplace: {mode}FAILED — {r.get('reason', 'see details')}"
+    _receipt_for_install(r, action="skill.marketplace", base=os.path.basename(path))
     return (f"/skills-marketplace: {mode}OK — {r['installed']} installed, "
             f"{r['rejected']} rejected -> {target}")
+
+
+def _handle_publish(raw: str) -> str:
+    """/skills publish <dir> [--author=NAME] [--repo=<target-repo-dir>] —
+    credit-stamp a skill (author/source/published_at/origin) and copy it into
+    a repo's skills/ tree for the skills.sh market (push + index + install)."""
+    parts = (raw or "").split()
+    author, repo = None, ""
+    keep = []
+    for p in parts:
+        if p.startswith("--author="):
+            author = p.split("=", 1)[1].strip() or None
+        elif p.startswith("--repo="):
+            repo = p.split("=", 1)[1].strip()
+        else:
+            keep.append(p)
+    path = " ".join(keep).strip().strip('"')
+    if not path:
+        return ("/skills publish <dir> [--author=NAME] [--repo=<target-repo-dir>] — "
+                "credit-stamp + copy a skill into a repo's skills/ tree for the "
+                "skills.sh market (https://skills.sh).")
+    if not repo:
+        repo = core.find_xomni_home() or os.getcwd()
+    r = core.publish_skill(path, repo, author=author)
+    if not r["ok"]:
+        detail = ""
+        if r.get("issues"):
+            detail = " (" + "; ".join(f for f, _ in r["issues"][:3]) + ")"
+        return f"/skills publish: FAILED — {r.get('reason', 'see details')}{detail}"
+    credit_lines = [f"  author       : {r['author']}",
+                    f"  source       : {r['source']}",
+                    f"  published_at : {r['published_at']}"]
+    if r.get("origin"):
+        credit_lines.append(f"  origin       : {r['origin']}")
+    if r.get("original_author"):
+        credit_lines.append(f"  original_author (preserved): {r['original_author']}")
+    git = r["git"]
+    target_origin = core.detect_origin(git["repo"]) or r.get("origin")
+    npx_target = target_origin or "<owner/repo>"
+    return "\n".join([
+        f"/skills publish: OK — {r['name']} "
+        f"(credit {'stamped' if r['stamped'] else 'already present, untouched'})",
+        "CREDIT",
+        *credit_lines,
+        f"copied to : {r['path']}",
+        "",
+        "PUSH (from the target repo):",
+        f"  cd {git['repo']}",
+        f"  git add {git['add']}",
+        f"  git commit -m '{git['commit']}'",
+        "  git push",
+        "",
+        "SKILLS.SH SUBMISSION: once the repo is public and indexed by the",
+        "directory (https://skills.sh — 'The Agent Skills Directory'), anyone",
+        "installs it via:",
+        f"  npx skills add {npx_target}",
+        "  or XOMNI: /skills-marketplace <git-url>  (shallow clone, fail-closed)",
+        "",
+        f"RECEIPT: name={r['name']} sha256={r['sha256']} "
+        f"path={r['path']} author={r['author']}",
+    ])
 
 
 def _tool_skills_import(params: dict) -> str:
@@ -146,8 +288,10 @@ def _tool_skills_import(params: dict) -> str:
             return f"skills_import: not a directory: {d}"
         if os.path.isfile(os.path.join(d, "SKILL.md")):
             r = core.install_skill(d, t, dry_run=dry)
+            _receipt_for_install(r, action="skill.install", base=os.path.basename(d))
             return f"skills_import OK{' (dry-run)' if dry else ''}: {os.path.basename(r['dest'])}"
         r = core.install_marketplace(d, t, dry_run=dry)
+        _receipt_for_install(r, action="skill.marketplace", base=os.path.basename(d))
         return (f"skills_import OK{' (dry-run)' if dry else ''}: "
                 f"{r['installed']} installed, {r['rejected']} rejected")
     except Exception as exc:
@@ -182,10 +326,13 @@ def register(ctx) -> None:
                          args_hint="")
     ctx.register_command("skills-install", handler=_handle_install,
                          description="Install a skill or marketplace (SKILL.md interop) into the skills surface.",
-                         args_hint="<dir> [--target=...] [--dry-run]")
+                         args_hint="<dir> [--yes] [--target=...] [--dry-run]")
     ctx.register_command("skills-marketplace", handler=_handle_marketplace,
                          description="Install every skill from a git marketplace URL (https/git, shallow clone, cached) or a local repo dir.",
-                         args_hint="<url-or-dir> [--target=...] [--dry-run]")
+                         args_hint="<url-or-dir> [--yes] [--target=...] [--dry-run]")
+    ctx.register_command("skills-publish", handler=_handle_publish,
+                         description="Credit-stamp (author/source/published_at/origin) a skill and copy it into a repo's skills/ tree for the skills.sh market, with push steps + receipt.",
+                         args_hint="<dir> [--author=NAME] [--repo=<target-repo-dir>]")
     ctx.register_tool("skills_import", toolset="skills", schema=TOOL_SCHEMA,
                       handler=_tool_skills_import,
                       description="Import SKILL.md skills (single dir or marketplace) into the Hermes skills surface, fail-closed.")

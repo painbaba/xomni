@@ -10,6 +10,7 @@ No Hermes imports; unit-testable in isolation.
 """
 from __future__ import annotations
 
+import os
 import re
 import shutil
 import subprocess
@@ -265,12 +266,29 @@ def classify_error(stderr, returncode):
     return f"gh error: {err.splitlines()[0]}"
 
 
+def _resolve_exe(name: str) -> str:
+    """Resolve *name* to its real executable, honoring .cmd/.bat shims (Windows).
+
+    ``shutil.which`` honors PATHEXT on Windows, so ``npx`` resolves to
+    ``npx.CMD``. subprocess with shell=False CAN launch the full path to a
+    .cmd/.bat shim, but the bare name raises FileNotFoundError (CreateProcess
+    does no PATHEXT search). Plain .exe tools (gh.exe, git.exe) work bare, so
+    we only substitute when a shim is actually found.
+    """
+    found = shutil.which(name)
+    if found and os.path.splitext(found)[1].lower() in (".cmd", ".bat"):
+        return found
+    return name
+
+
 def run_gh(argv, timeout=30.0):
     """Run *argv* via subprocess; return ``{'ok', 'stdout', 'stderr', 'error'}``.
 
     Absent CLI (FileNotFoundError), timeouts and non-zero exits are translated
     into clean ``error`` strings instead of raising.
     """
+    argv = list(argv)
+    argv[0] = _resolve_exe(argv[0])  # .cmd shim fix: gh is gh.exe normally; npx-style shims need the full path
     try:
         proc = subprocess.run(
             argv,

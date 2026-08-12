@@ -1,0 +1,28 @@
+{
+  "watchdog": [
+    {
+      "name": "demo-silent-sleep",
+      "cmd": ["python", "-c", "import time; time.sleep(300)"],
+      "timeout": 10,
+      "quiet_after_s": 3,
+      "note": "vectorbt-hang class: alive but silent for 3s -> watchdog kills it (proves the kill)"
+    },
+    {
+      "name": "vectorbt-install-hang",
+      "cmd": ["python", "-m", "pip", "install", "vectorbt"],
+      "timeout": 180,
+      "quiet_after_s": 60,
+      "enabled": false,
+      "note": "the real-world case from the owner's brief: pip install vectorbt hanging 180s. Enabled by default = false (network install); flip to true to arm it."
+    }
+  ],
+  "postconditions": [
+    {
+      "name": "xomni-cli-present",
+      "type": "file_exists",
+      "target": "{XOMNI_ROOT}/xomni_cli/__init__.py",
+      "value": true,
+      "cmd": ["python", "-c", "import sys; sys.path.insert(0, r'{XOMNI_ROOT}'); import xomni_cli; print('xomni_cli ok')"]
+    }
+  ]
+}

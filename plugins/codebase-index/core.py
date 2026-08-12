@@ -28,6 +28,7 @@ import json
 import math
 import os
 import re
+import shutil
 import sqlite3
 import subprocess
 import sys
@@ -168,10 +169,25 @@ def _embedding_model_of(conn: sqlite3.Connection) -> str:
     return row[0] if row else "none"
 
 
+def _resolve_exe(name: str) -> str:
+    """Resolve *name* to its real executable, honoring .cmd/.bat shims (Windows).
+
+    ``shutil.which`` honors PATHEXT on Windows, so ``npx`` resolves to
+    ``npx.CMD``. subprocess with shell=False CAN launch the full path to a
+    .cmd/.bat shim, but the bare name raises FileNotFoundError (CreateProcess
+    does no PATHEXT search). Plain .exe tools (git.exe) work bare, so we only
+    substitute when a shim is actually found.
+    """
+    found = shutil.which(name)
+    if found and os.path.splitext(found)[1].lower() in (".cmd", ".bat"):
+        return found
+    return name
+
+
 def _git_head(root: str) -> str | None:
     try:
         out = subprocess.run(
-            ["git", "-C", root, "rev-parse", "--short", "HEAD"],
+            [_resolve_exe("git"), "-C", root, "rev-parse", "--short", "HEAD"],
             capture_output=True, text=True, timeout=2)
         return out.stdout.strip() or None
     except Exception:

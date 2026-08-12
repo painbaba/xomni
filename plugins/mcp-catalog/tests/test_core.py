@@ -1,9 +1,15 @@
 """Tests for mcp-catalog core (core.py) — catalog parsing, validation,
-formatting, JSON-RPC message shapes, and state round-trip."""
+formatting, JSON-RPC message shapes, state round-trip, and the U2
+marketplace install path (host-config append, badges, /mcp add <name>)."""
+import importlib.util
 import json
 import os
+import shutil
+import sys
 import tempfile
+import types
 import unittest
+from unittest import mock
 
 import core
 
@@ -254,6 +260,282 @@ class StateRoundTripTests(unittest.TestCase):
         servers = core.parse_catalog(json.dumps(SAMPLE))
         self.assertEqual(core.find_server(servers, "fetch")["command"], "uvx")
         self.assertIsNone(core.find_server(servers, "ghost"))
+
+
+class InstallServerTests(unittest.TestCase):
+    """U2 marketplace install path: launch derivation, host config append
+    (idempotent + loud failures), badge rendering."""
+
+    def setUp(self):
+        self.tmp = tempfile.mkdtemp()
+        self.cfg = os.path.join(self.tmp, "config.yaml")
+        self.catalog = [
+            {
+                "name": "mcp-yfinance",
+                "install_command": "uvx mcp-yfinance",
+                "connect_steps": ["1. uvx mcp-yfinance"],
+                "description": "yahoo finance data",
+                "stars": 1,
+                "verified": True,
+                "source": "pypi",
+            },
+            {
+                "name": "browser-use-mcp",
+                "install_command": "pip install browser-use && uvx browser-use",
+                "connect_steps": ["2. Add to config.yaml mcp_servers: command=uvx, args=['browser-use']"],
+                "description": "browser agent",
+                "stars": 108796,
+                "verified": True,
+                "source": "github",
+            },
+            {
+                "name": "plaid-mcp",
+                "install_command": "hermes mcp add plaid --url https://mcp.plaid.com/mcp --auth oauth",
+                "connect_steps": ["hosted"],
+                "description": "plaid finance api",
+                "stars": 28,
+                "verified": True,
+                "source": "github",
+            },
+            {
+                "name": "equibles-mcp",
+                "install_command": "see repo",
+                "connect_steps": ["1. read the repo README"],
+                "description": "stock market data",
+                "stars": None,
+                "verified": False,
+                "source": "blog:6 Best Stock Market MCP Servers",
+            },
+            {
+                "name": "secret-srv",
+                "install_command": "uvx secret-srv",
+                "connect_steps": ["set SECRET_API_KEY env var"],
+                "description": "needs API key",
+                "stars": 500,
+                "verified": False,
+                "source": "reddit:top-15",
+            },
+        ]
+
+    def tearDown(self):
+        if os.path.exists(self.cfg):
+            try:
+                os.chmod(self.cfg, 0o644)
+            except OSError:
+                pass
+        shutil.rmtree(self.tmp, ignore_errors=True)
+
+    def _write_cfg(self, text):
+        with open(self.cfg, "w", encoding="utf-8") as f:
+            f.write(text)
+
+    def test_install_server_appends_block_and_preserves_rest(self):
+        self._write_cfg(
+            "session_reset:\n"
+            "  at_hour: 4\n"
+            "mcp_servers:\n"
+            "  ffmpeg:\n"
+            "    command: npx\n"
+            "    args:\n"
+            "      - -y\n"
+            "      - ffmpeg-mcp\n"
+            "plugins:\n"
+            "  enabled: []\n"
+        )
+        result = core.install_server("mcp-yfinance", self.cfg, self.catalog)
+        self.assertTrue(result["written"])
+        self.assertEqual(result["block"], {"command": "uvx", "args": ["mcp-yfinance"]})
+        with open(self.cfg, encoding="utf-8") as f:
+            text = f.read()
+        self.assertIn(
+            "  mcp-yfinance:\n    command: uvx\n    args:\n      - mcp-yfinance", text
+        )
+        # untouched sections + ordering (block inserted inside mcp_servers)
+        self.assertIn("session_reset:\n  at_hour: 4", text)
+        self.assertIn("  ffmpeg:", text)
+        self.assertIn("plugins:\n  enabled: []", text)
+        self.assertLess(text.index("mcp-yfinance"), text.index("plugins:"))
+
+    def test_install_server_idempotent_skips_existing(self):
+        self._write_cfg(
+            "mcp_servers:\n"
+            "  mcp-yfinance:\n"
+            "    command: uvx\n"
+            "    args:\n"
+            "      - mcp-yfinance\n"
+        )
+        result = core.install_server("mcp-yfinance", self.cfg, self.catalog)
+        self.assertFalse(result["written"])
+        self.assertEqual(result["path"], self.cfg)
+        with open(self.cfg, encoding="utf-8") as f:
+            text = f.read()
+        self.assertEqual(text.count("mcp-yfinance:"), 1)  # no duplicate block
+
+    def test_install_server_creates_section_when_missing(self):
+        self._write_cfg("session_reset:\n  at_hour: 4\n")
+        result = core.install_server("mcp-yfinance", self.cfg, self.catalog)
+        self.assertTrue(result["written"])
+        with open(self.cfg, encoding="utf-8") as f:
+            text = f.read()
+        self.assertIn("mcp_servers:\n  mcp-yfinance:\n    command: uvx", text)
+        self.assertIn("session_reset:\n  at_hour: 4", text)
+
+    def test_install_server_missing_config_raises_loud(self):
+        missing = os.path.join(self.tmp, "nope.yaml")
+        with self.assertRaises(core.CatalogError) as cm:
+            core.install_server("mcp-yfinance", missing, self.catalog)
+        msg = str(cm.exception)
+        self.assertIn(missing, msg)
+        self.assertIn("config", msg.lower())
+
+    def test_install_server_read_only_raises_loud(self):
+        self._write_cfg("mcp_servers: {}\n")
+        os.chmod(self.cfg, 0o444)
+        try:
+            with self.assertRaises(core.CatalogError) as cm:
+                core.install_server("mcp-yfinance", self.cfg, self.catalog)
+            msg = str(cm.exception)
+            self.assertIn(self.cfg, msg)
+            self.assertTrue(
+                "read-only" in msg.lower() or "permission" in msg.lower()
+            )
+        finally:
+            os.chmod(self.cfg, 0o644)
+
+    def test_install_server_unknown_server_raises(self):
+        with self.assertRaises(core.CatalogError) as cm:
+            core.install_server("no-such-server", self.cfg, self.catalog)
+        msg = str(cm.exception)
+        self.assertIn("no-such-server", msg)
+        self.assertIn("not found", msg)
+
+    def test_install_server_no_launch_raises_with_manual_steps(self):
+        with self.assertRaises(core.CatalogError) as cm:
+            core.install_server("equibles-mcp", self.cfg, self.catalog)
+        msg = str(cm.exception)
+        self.assertIn("equibles-mcp", msg)
+        self.assertIn("see repo", msg)
+        self.assertIn("read the repo README", msg)  # connect_steps surfaced
+
+    def test_launch_config_derives_command_args_url_and_none(self):
+        self.assertEqual(
+            core.launch_config(self.catalog[0]),
+            {"command": "uvx", "args": ["mcp-yfinance"]},
+        )
+        # shell install prefix stripped: 'pip install X && uvx browser-use'
+        self.assertEqual(
+            core.launch_config(self.catalog[1]),
+            {"command": "uvx", "args": ["browser-use"]},
+        )
+        # hosted HTTP server -> url block
+        self.assertEqual(
+            core.launch_config(self.catalog[2]),
+            {"url": "https://mcp.plaid.com/mcp"},
+        )
+        # 'see repo' -> None
+        self.assertIsNone(core.launch_config(self.catalog[3]))
+        # npx launcher keeps flags
+        self.assertEqual(
+            core.launch_config(
+                {"install_command": "npx -y @modelcontextprotocol/server-filesystem C:/data"}
+            ),
+            {"command": "npx", "args": ["-y", "@modelcontextprotocol/server-filesystem", "C:/data"]},
+        )
+
+    def test_security_badge_helpers_keyless_and_verdict(self):
+        self.assertTrue(core.keyless(self.catalog[0]))    # no secret hints
+        self.assertFalse(core.keyless(self.catalog[4]))   # API key + env var hints
+        self.assertEqual(core.security_verdict(self.catalog[0]), "VERIFIED")    # pypi+verified
+        self.assertEqual(core.security_verdict(self.catalog[2]), "VERIFIED")    # github+verified
+        self.assertEqual(core.security_verdict(self.catalog[4]), "UNVERIFIED")  # not verified
+        # verified but secondary source -> REVIEW
+        review = dict(self.catalog[4], verified=True)
+        self.assertEqual(core.security_verdict(review), "REVIEW")
+
+    def test_format_badges_and_badged_list_render(self):
+        badges = core.format_badges(self.catalog[1])  # 108796★, keyless, github
+        self.assertIn("★108.8k", badges)
+        self.assertIn("keyless", badges)
+        self.assertIn("VERIFIED", badges)
+        no_stars = core.format_badges(self.catalog[3])
+        self.assertIn("★-", no_stars)
+        self.assertIn("UNVERIFIED", no_stars)
+        listing = core.list_catalog_badged(self.catalog)
+        self.assertIn("5 server(s)", listing)
+        self.assertIn("mcp-yfinance  [", listing)
+        self.assertIn("install: uvx mcp-yfinance", listing)
+
+
+class InstallWiringTests(unittest.TestCase):
+    """/mcp add <name> [--yes] handler routing — the --yes install path and the
+    plan-without-confirmation path. __init__.py loads via the importlib
+    package recipe (its `from . import core` cannot run as a plain module)."""
+
+    @classmethod
+    def setUpClass(cls):
+        plugin_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        pkg = types.ModuleType("pkg")
+        pkg.__path__ = [plugin_dir]
+        sys.modules["pkg"] = pkg
+        spec = importlib.util.spec_from_file_location(
+            "pkg.__init__", os.path.join(plugin_dir, "__init__.py")
+        )
+        mod = importlib.util.module_from_spec(spec)
+        sys.modules["pkg.__init__"] = mod
+        spec.loader.exec_module(mod)
+        cls.mod = mod
+
+    def setUp(self):
+        self.tmp = tempfile.mkdtemp()
+        self.cfg = os.path.join(self.tmp, "config.yaml")
+        with open(self.cfg, "w", encoding="utf-8") as f:
+            f.write("session_reset:\n  at_hour: 4\n")
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp, ignore_errors=True)
+
+    def test_add_install_yes_path_calls_install_server(self):
+        mod = self.mod
+        with mock.patch.object(mod, "_host_config_path", return_value=self.cfg), mock.patch.object(
+            mod.core,
+            "install_server",
+            return_value={
+                "name": "mcp-yfinance",
+                "block": {"command": "uvx", "args": ["mcp-yfinance"]},
+                "written": True,
+                "path": self.cfg,
+            },
+        ) as inst:
+            out = mod._handle_mcp("add mcp-yfinance --yes")
+        inst.assert_called_once()
+        self.assertEqual(inst.call_args.args[0], "mcp-yfinance")
+        self.assertIn("installed", out)
+        self.assertIn("mcp-yfinance", out)
+
+    def test_add_install_without_yes_prints_plan_and_asks(self):
+        mod = self.mod
+        with mock.patch.object(mod, "_host_config_path", return_value=self.cfg), mock.patch.object(
+            mod.core, "install_server"
+        ) as inst, mock.patch.object(
+            mod.core,
+            "load_rich_catalog",
+            return_value=[
+                {
+                    "name": "mcp-yfinance",
+                    "install_command": "uvx mcp-yfinance",
+                    "connect_steps": ["run it"],
+                    "description": "d",
+                    "stars": 1,
+                    "verified": True,
+                    "source": "pypi",
+                }
+            ],
+        ):
+            out = mod._handle_mcp("add mcp-yfinance")
+        inst.assert_not_called()
+        self.assertIn("plan:", out)
+        self.assertIn("--yes", out)
+        self.assertIn("uvx mcp-yfinance", out)
 
 
 if __name__ == "__main__":

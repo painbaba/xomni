@@ -93,11 +93,26 @@ def _pyproject_wants_ruff(dir: str) -> bool:
         return False
 
 
+def _resolve_exe(name: str) -> str:
+    """Resolve *name* to its real executable, honoring .cmd/.bat shims (Windows).
+
+    shutil.which honors PATHEXT on Windows, so npx resolves to npx.CMD.
+    subprocess with shell=False CAN launch the full path to a .cmd/.bat shim,
+    but the bare name raises FileNotFoundError (CreateProcess does no PATHEXT
+    search). Plain .exe tools (git.exe) work bare, so we only substitute when a
+    shim is actually found.
+    """
+    found = shutil.which(name)
+    if found and os.path.splitext(found)[1].lower() in (".cmd", ".bat"):
+        return found
+    return name
+
+
 def _git_repo_root(dir: str) -> str:
-    """Repo toplevel for ``dir``, or ``""`` when not inside a git repo."""
+    """Repo toplevel for ``dir``, or empty string when not inside a git repo."""
     try:
         r = subprocess.run(
-            ["git", "rev-parse", "--show-toplevel"],
+            [_resolve_exe("git"), "rev-parse", "--show-toplevel"],
             cwd=dir, capture_output=True, text=True, timeout=10,
         )
     except Exception:
@@ -130,11 +145,11 @@ def changed_py_files(dir: str) -> list[str]:
     if root:
         try:
             diff = subprocess.run(
-                ["git", "diff", "--name-only", "HEAD"],
+                [_resolve_exe("git"), "diff", "--name-only", "HEAD"],
                 cwd=root, capture_output=True, text=True, timeout=10,
             )
             untracked = subprocess.run(
-                ["git", "ls-files", "--others", "--exclude-standard"],
+                [_resolve_exe("git"), "ls-files", "--others", "--exclude-standard"],
                 cwd=root, capture_output=True, text=True, timeout=10,
             )
             files: list[str] = []
@@ -206,6 +221,8 @@ def run_command(
             "stdout_tail": "", "stderr_tail": f"bad command: {exc}",
             "timed_out": False,
         }
+    if argv:
+        argv[0] = _resolve_exe(argv[0])  # .cmd shim fix (npx/npm/gh/git on Windows)
     try:
         proc = subprocess.run(
             argv, cwd=cwd, capture_output=True, text=True,

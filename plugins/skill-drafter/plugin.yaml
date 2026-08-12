@@ -1,0 +1,3 @@
+name: skill-drafter
+version: "1.0.0"
+description: "Auto-skill from successful sessions: draft_skill from transcripts, /skill draft + /skill save + /skill draft-session, 5+ tool-call gate, validation before save (fail-loud on REJECT). Zero hooks, zero per-turn cost."

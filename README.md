@@ -9,7 +9,7 @@ a built-in **sponsorship engine** that pays you for your installs.
 
 - **Free forever.** MIT sources, no license key, no "pro" wall. The agent is
   the free bait; the sponsorship network is the product.
-- **One command to install.** Windows + POSIX launchers, all 22 plugins loaded
+- **One command to install.** Windows + POSIX launchers, all 23 plugins loaded
   automatically.
 - **25 verified free models** — every one tested to actually work (deepseek-v4-*,
   qwen3.8-max, glm-5.2, kimi-k3, minimax-m3 vision, and more) via the provider
@@ -38,7 +38,7 @@ a built-in **sponsorship engine** that pays you for your installs.
 | Goose | Rust | MCP-native extensibility | MCP-server catalog conventions | SHIPPED (`plugins/mcp-catalog`) |
 | OpenClaw | TypeScript | Personal assistant: persistent semantic memory, media understanding (OCR/vision), platform-native automation | Local memory + media pipeline | SHIPPED (`plugins/omni-memory`, `plugins/omni-media`) |
 
-## The 22 plugins
+## The 23 plugins
 
 | Plugin | What it does | Origin strength |
 |---|---|---|
@@ -64,6 +64,7 @@ a built-in **sponsorship engine** that pays you for your installs.
 | `omni-tools` | Tool-search corpus + BM25 router: catalog-in-context, load-on-use | next-feature wave |
 | `bharat-pack` | Hindi + Indian model pool, Devanagari prompt support | next-feature wave |
 | `cost-tracker` | Per-run token/cost ledger + budget caps | next-feature wave |
+| `receipts` | Receipts-by-default JSONL ledger: every side-effect issues a verifiable handle (sha256 / URL 200 / exit code) + `/receipts verify` re-checks it | U7 (owner demand) |
 
 ## Install (one command)
 
@@ -72,9 +73,11 @@ a built-in **sponsorship engine** that pays you for your installs.
 ```bash
 pip install .            # from the repo root — or: pip install git+https://github.com/painbaba/xomni
 xomni doctor             # verify the environment
-xomni plugins install    # load all 22 plugins into the Hermes plugins dir
+xomni plugins install    # load all 23 plugins into the Hermes plugins dir
 xomni skill search <q>   # search skills from the terminal
 xomni providers          # every provider Hermes supports, one table
+xomni stacks             # list one-command vertical stacks
+xomni add <stack>        # install a stack's MCPs in one command
 ```
 
 **B) launcher (zero-pip, from a checkout):**
@@ -87,13 +90,43 @@ run.cmd
 ./run.sh
 ```
 
-The launcher starts the Hermes host with all 22 plugins loaded — interactive
+The launcher starts the Hermes host with all 23 plugins loaded — interactive
 chat, `-q` one-shots, `--continue` resume. Plugins are also drop-in installable:
 
 ```bash
 cp -r plugins/* ~/AppData/Local/hermes/plugins/
 hermes plugins enable waitperk perkline repomap
 ```
+
+## One-command vertical stacks — `xomni add <stack>`
+
+Prebuilt vertical stacks install a curated set of MCP servers + skills in a
+single non-interactive command. `xomni add` validates the stack def, prints the
+plan, then **appends** the servers to your host's `config.yaml` `mcp_servers`
+block (stdio servers → `command`/`args`, hosted servers → `url`) — it never
+invokes the interactive `hermes mcp add` and never touches existing entries
+(re-runs are idempotent: already-present servers are skipped).
+
+| Stack | Skills | MCP servers | Smoke test (live) |
+|---|---|---|---|
+| `trading-stack` | 4 | yfinance, TradingView, CoinGecko, AlphaVantage, Polymarket | CoinGecko BTC price API → 200 |
+| `data-science` | 6 | arXiv, DuckDuckGo, Fetch, chroma, time | Crossref API → 200 |
+| `web-dev` | 6 | Playwright, Chrome DevTools, Cloudflare, Supabase, Neon | npm registry → 200 |
+| `home-automation` | 4 | Home Assistant (ha-mcp), Windows, mobile, time, memory | PyPI ha-mcp → 200 |
+
+```bash
+xomni stacks                      # list available stacks
+xomni add trading-stack           # install: appends 5 MCPs to config.yaml
+xomni add trading-stack --dry-run # preview the plan, write nothing
+xomni add web-dev --smoke         # install + run the stack's live smoke test
+```
+
+The write is a textual insert into the existing `mcp_servers:` block — comments,
+ordering, and every other config section are preserved byte-for-byte. If
+`config.yaml` is missing or read-only the command fails loudly with the exact
+fix. Stack definitions live in `data/stacks/*.json` (skills must exist in
+`data/curated-skills.json`, MCPs in `data/mcp/catalog.json`). Restart the host
+(or `/reload-mcp`) after installing.
 
 ## Verify
 

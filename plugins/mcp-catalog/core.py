@@ -24,6 +24,17 @@ What lives here (all pure, all stdlib, no Hermes imports):
     transport (one JSON object per line).
   * :func:`load_catalog_file` / :func:`save_catalog_file` /
     :func:`round_trip` — catalog state round-trip (parse -> dump -> parse).
+  * :func:`load_rich_catalog` — the marketplace catalog
+    (``data/mcp/catalog.json``, 311 entries with ``install_command`` /
+    ``connect_steps`` / ``stars`` / ``verified`` / ``source``).
+  * :func:`install_server` / :func:`install_plan` / :func:`launch_config` —
+    the install path: resolve a rich catalog entry into a host
+    ``mcp_servers`` block (``command``/``args``/``url``/``env``) and append
+    it to the host config.yaml — idempotent, with loud failures that name
+    the file and the fix.
+  * :func:`format_badges` / :func:`keyless` / :func:`security_verdict` /
+    :func:`list_catalog_badged` — stars / keyless / security badges for
+    ``/mcp list``.
 
 Catalog location convention: catalogs live in ``~/.hermes-mcp/catalogs/``
 (override with the ``HERMES_MCP_CATALOG_DIR`` env var). Each ``*.json`` file
@@ -36,6 +47,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import shutil
 from typing import Any, Dict, List, Optional
 
@@ -382,3 +394,340 @@ def load_all_catalogs(dir_path: Optional[str] = None) -> List[dict]:
         except (CatalogError, OSError):
             continue
     return merged
+
+
+# ─── Marketplace install path (U2) ───────────────────────────────────────────
+
+# Host config resolution order: MCP_HOST_CONFIG > HERMES_CONFIG >
+# HERMES_HOME/config.yaml > ~/.hermes/config.yaml. The plugin's __init__
+# passes the exact runtime path (hermes_cli.config.get_config_path()) when the
+# Hermes runtime is importable; these are the pure-stdlib fallbacks.
+HOST_CONFIG_ENV = "MCP_HOST_CONFIG"
+_HOST_CONFIG_FALLBACK = os.path.join(os.path.expanduser("~"), ".hermes", "config.yaml")
+
+# Shell install prefixes stripped from install_command before deriving the
+# launch line: 'pip install browser-use && uvx browser-use' -> 'uvx browser-use'.
+_SHELL_INSTALL_RE = re.compile(
+    r"^\s*(?:pip|pip3|python\s+-m\s+pip|npm|pnpm|yarn|uv|brew|apt|apt-get|cargo|go)\s+"
+    r"(?:install|i|add|get)\s+\S+\s*(?:&&|;)\s*",
+    re.IGNORECASE,
+)
+
+_NO_LAUNCH_MARKERS = {
+    "see repo", "see readme", "see repository", "n/a", "na", "-", "none", "manual",
+}
+
+# Sources treated as primary (verifiable upstream) for the security verdict.
+_TRUSTED_SOURCE_HINTS = ("github", "pypi", "npm", "official", "smithery", "glama", "awesome-mcp")
+
+# Secret/auth hints for the keyless badge (lowercased substring match).
+_KEY_HINTS = (
+    "api key", "api_key", "apikey", " token", "secret", "bearer", "oauth",
+    "password", "credential", "env var", "env_var", "environment variable",
+)
+
+
+def default_rich_catalog_path() -> str:
+    """The marketplace catalog path (repo ``data/mcp/catalog.json``), resolved
+    from this file's location so it works regardless of the cwd."""
+    here = os.path.dirname(os.path.abspath(__file__))      # plugins/mcp-catalog
+    repo = os.path.dirname(os.path.dirname(here))          # repo root
+    return os.path.join(repo, "data", "mcp", "catalog.json")
+
+
+def load_rich_catalog(path: Optional[str] = None) -> List[dict]:
+    """Load the marketplace catalog (``data/mcp/catalog.json``): 311 rich
+    entries carrying ``install_command``/``connect_steps``/``stars``/
+    ``verified``/``source``. Raises :class:`CatalogError` naming the file on
+    any read/parse problem."""
+    path = path or default_rich_catalog_path()
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            text = f.read()
+    except OSError as exc:
+        raise CatalogError(f"cannot read MCP catalog {path}: {exc}") from exc
+    try:
+        data = json.loads(text)
+    except json.JSONDecodeError as exc:
+        raise CatalogError(f"invalid JSON in MCP catalog {path}: {exc}") from exc
+    if not isinstance(data, list):
+        raise CatalogError(
+            f"MCP catalog {path} must be a JSON array of server objects, "
+            f"got {type(data).__name__}"
+        )
+    return data
+
+
+def default_host_config_path() -> str:
+    """The host Hermes config.yaml path (``MCP_HOST_CONFIG`` >
+    ``HERMES_CONFIG`` > ``HERMES_HOME``/config.yaml > ``~/.hermes/config.yaml``)."""
+    for var in (HOST_CONFIG_ENV, "HERMES_CONFIG"):
+        val = os.environ.get(var, "")
+        if val.strip():
+            return os.path.expanduser(val.strip())
+    home = os.environ.get("HERMES_HOME", "")
+    if home.strip():
+        return os.path.join(os.path.expanduser(home.strip()), "config.yaml")
+    return _HOST_CONFIG_FALLBACK
+
+
+def launch_config(entry: dict) -> Optional[dict]:
+    """Derive the host ``mcp_servers`` block shape from a rich catalog entry.
+
+    Returns ``{"command": str, "args": [str]}`` for stdio servers (shell
+    install prefixes like ``pip install X && `` are stripped), ``{"url": str}``
+    for hosted HTTP servers (``hermes mcp add <name> --url <url>``), or None
+    when the entry has no auto-installable launcher (e.g. ``see repo``)."""
+    raw = (entry.get("install_command") or "").strip()
+    if not raw or raw.lower() in _NO_LAUNCH_MARKERS:
+        return None
+    if raw.lower().startswith("hermes mcp add"):
+        match = re.search(r"--url\s+(\S+)", raw)
+        if match:
+            return {"url": match.group(1).strip("\"'")}
+        return None
+    cmd = _SHELL_INSTALL_RE.sub("", raw)
+    cmd = cmd.split("&&")[0].split(";")[0].strip()
+    tokens = [t for t in cmd.split() if t not in ("&&", ";", "|", "||")]
+    if not tokens:
+        return None
+    return {"command": tokens[0], "args": tokens[1:]}
+
+
+# ─── Host config editing (surgical, preserves the rest of the file) ──────────
+
+_SAFE_SCALAR_RE = re.compile(r"^[A-Za-z0-9_@./+~%-]+$")
+
+
+def _yaml_scalar(value: Any) -> str:
+    """Render a YAML scalar; single-quote anything outside the safe charset."""
+    value = str(value)
+    if _SAFE_SCALAR_RE.match(value):
+        return value
+    return "'" + value.replace("'", "''") + "'"
+
+
+def _render_server_block(name: str, block: dict) -> str:
+    """Render one ``mcp_servers`` entry (2-space server indent, 4-space keys)
+    matching the shape ``hermes mcp add`` writes."""
+    lines = [f"  {_yaml_scalar(name)}:"]
+    if "url" in block:
+        lines.append(f"    url: {_yaml_scalar(block['url'])}")
+    else:
+        lines.append(f"    command: {_yaml_scalar(block.get('command', ''))}")
+        args = block.get("args") or []
+        if args:
+            lines.append("    args:")
+            lines.extend(f"      - {_yaml_scalar(a)}" for a in args)
+        env = block.get("env") or {}
+        if env:
+            lines.append("    env:")
+            lines.extend(
+                f"      {_yaml_scalar(k)}: {_yaml_scalar(v)}" for k, v in sorted(env.items())
+            )
+    return "\n".join(lines)
+
+
+def _append_server_block(text: str, name: str, block: dict) -> str:
+    """Surgically append ``name`` under the top-level ``mcp_servers`` key,
+    preserving every other byte of the config (comments, key order, other
+    sections). Returns the new file text."""
+    eol = "\r\n" if "\r\n" in text else "\n"
+    if text and not text.endswith("\n"):
+        text += eol
+    block_text = _render_server_block(name, block)
+    lines = text.splitlines()
+    start = None
+    for i, line in enumerate(lines):
+        stripped = line.strip()
+        if stripped and not stripped.startswith("#") and not line[:1].isspace():
+            if stripped.split(":", 1)[0].strip() == "mcp_servers":
+                start = i
+                break
+    if start is None:
+        if text and not text.endswith(eol):
+            text += eol
+        return text + f"mcp_servers:{eol}" + block_text.replace("\n", eol) + eol
+    if re.search(r":\s*\{\}\s*(#.*)?$", lines[start]):
+        lines[start] = "mcp_servers:"
+        lines[start + 1 : start + 1] = block_text.splitlines()
+        return eol.join(lines) + eol
+    end = len(lines)
+    for i in range(start + 1, len(lines)):
+        line = lines[i]
+        stripped = line.strip()
+        if stripped and not stripped.startswith("#") and not line[:1].isspace():
+            end = i
+            break
+    lines[end:end] = block_text.splitlines()
+    return eol.join(lines) + eol
+
+
+def _server_registered(host_config_path: str, server_name: str) -> bool:
+    """True when ``server_name`` is already a key under ``mcp_servers`` in the
+    host config (line-level scan; a missing file yields False)."""
+    if not os.path.isfile(host_config_path):
+        return False
+    try:
+        with open(host_config_path, "r", encoding="utf-8") as f:
+            text = f.read()
+    except OSError:
+        return False
+    pattern = re.compile(r"^ {2}\"?%s\"?:" % re.escape(server_name))
+    return any(pattern.match(line) for line in text.splitlines())
+
+
+# ─── Install plan + write ────────────────────────────────────────────────────
+
+
+def install_plan(
+    server_name: str,
+    host_config_path: Optional[str] = None,
+    catalog: Optional[List[dict]] = None,
+) -> dict:
+    """Resolve a rich catalog entry into an install plan (no writes).
+
+    Returns ``{name, block, exists, path, launch, steps, entry}``. Raises
+    :class:`CatalogError` — loudly, naming the file and the fix — when the
+    server is unknown or has no auto-installable launcher. ``exists`` is True
+    when the name is already registered under ``mcp_servers`` (an install
+    would be a no-op)."""
+    catalog_path = None
+    if catalog is None:
+        catalog = load_rich_catalog()
+        catalog_path = default_rich_catalog_path()
+    entry = find_server(catalog, server_name)
+    if entry is None:
+        src = catalog_path or "<provided catalog>"
+        raise CatalogError(
+            f"server {server_name!r} not found in MCP catalog ({src}) — "
+            f"run /mcp list for known server names"
+        )
+    block = launch_config(entry)
+    if block is None:
+        steps = entry.get("connect_steps") or []
+        detail = "\n".join(f"  {s}" for s in steps) if steps else "  (see the catalog entry)"
+        raise CatalogError(
+            f"server {server_name!r} has no auto-installable launcher "
+            f"(install_command={entry.get('install_command')!r}). Manual steps:\n{detail}"
+        )
+    path = host_config_path or default_host_config_path()
+    if "command" in block:
+        launch = _command_line({"command": block["command"], "args": block.get("args") or []})
+    else:
+        launch = block.get("url", "")
+    return {
+        "name": server_name,
+        "block": block,
+        "exists": _server_registered(path, server_name),
+        "path": path,
+        "launch": launch,
+        "steps": entry.get("connect_steps") or [],
+        "entry": entry,
+    }
+
+
+def install_server(
+    server_name: str,
+    host_config_path: Optional[str] = None,
+    catalog: Optional[List[dict]] = None,
+) -> dict:
+    """Append a catalog server block to the host config ``mcp_servers``.
+
+    Idempotent: when ``server_name`` is already registered, nothing is
+    written and ``written`` is False. Returns ``{name, block, written, path}``.
+
+    Failures are loud — :class:`CatalogError` naming the file and the fix:
+    unknown server, no auto-installable launcher, config file missing, or
+    config file read-only/unwritable. Never silently cancels."""
+    plan = install_plan(server_name, host_config_path, catalog)
+    if plan["exists"]:
+        return {
+            "name": plan["name"],
+            "block": plan["block"],
+            "written": False,
+            "path": plan["path"],
+        }
+    path = plan["path"]
+    if not os.path.isfile(path):
+        raise CatalogError(
+            f"host config not found: {path} — create it (or point "
+            f"MCP_HOST_CONFIG / HERMES_CONFIG at an existing config.yaml) and re-run"
+        )
+    if not os.access(path, os.W_OK):
+        raise CatalogError(
+            f"host config is read-only: {path} — clear the read-only attribute "
+            f"(attrib -R \"{path}\" / chmod +w) and re-run"
+        )
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            text = f.read()
+    except OSError as exc:
+        raise CatalogError(f"cannot read host config {path}: {exc}") from exc
+    try:
+        new_text = _append_server_block(text, plan["name"], plan["block"])
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(new_text)
+    except OSError as exc:
+        raise CatalogError(
+            f"failed to write host config {path}: {exc} — check permissions "
+            f"(clear the read-only attribute, close editors holding the file) and re-run"
+        ) from exc
+    return {"name": plan["name"], "block": plan["block"], "written": True, "path": path}
+
+
+# ─── Marketplace badges (stars / keyless / security) ─────────────────────────
+
+
+def keyless(entry: dict) -> bool:
+    """True when the server needs no secret env var / auth to run (heuristic
+    over description + purpose + connect_steps)."""
+    hay = " ".join(
+        [
+            entry.get("description") or "",
+            entry.get("purpose") or "",
+            " ".join(entry.get("connect_steps") or []),
+        ]
+    ).lower()
+    return not any(hint in hay for hint in _KEY_HINTS)
+
+
+def security_verdict(entry: dict) -> str:
+    """Security posture from the catalog's ``verified``/``source`` fields:
+    VERIFIED (verified + primary source), REVIEW (verified, secondary source),
+    UNVERIFIED (not verified)."""
+    verified = bool(entry.get("verified"))
+    source = (entry.get("source") or "").lower()
+    if not verified:
+        return "UNVERIFIED"
+    if any(hint in source for hint in _TRUSTED_SOURCE_HINTS):
+        return "VERIFIED"
+    return "REVIEW"
+
+
+def format_badges(entry: dict) -> str:
+    """Render stars/keyless/security badges for one rich catalog entry."""
+    stars = entry.get("stars")
+    if isinstance(stars, (int, float)) and stars:
+        stars_badge = f"★{stars / 1000:.1f}k" if stars >= 1000 else f"★{int(stars)}"
+    else:
+        stars_badge = "★-"
+    return " ".join(
+        [stars_badge, "keyless" if keyless(entry) else "needs-key", security_verdict(entry)]
+    )
+
+
+def list_catalog_badged(entries: List[dict]) -> str:
+    """Marketplace listing with badges (for ``/mcp list``)."""
+    if not entries:
+        return "no MCP servers in catalog."
+    lines = [f"MCP catalog: {len(entries)} server(s)"]
+    for entry in entries:
+        name = entry.get("name", "?")
+        lines.append(f"  {name}  [{format_badges(entry)}]")
+        desc = entry.get("description") or entry.get("purpose") or ""
+        if desc:
+            lines.append(f"    {desc}")
+        install = entry.get("install_command") or "(manual steps)"
+        lines.append(f"    install: {install}")
+    return "\n".join(lines)

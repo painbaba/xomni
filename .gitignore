@@ -4,6 +4,7 @@ vendor/
 # scratch (benchmarks, subagent temp work — never committed)
 .bench/*
 !.bench/run_all_tests.sh
+!.bench/windows_checks.py
 .tmp/
 tmp/
 work/

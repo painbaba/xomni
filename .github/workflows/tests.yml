@@ -22,3 +22,26 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Run 386-test matrix
         run: bash .bench/run_all_tests.sh
+
+  test-windows:
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.11']
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      # run_all_tests.sh is bash-only -> drive it through git-bash (preinstalled
+      # on windows-latest runners). Windows-specific env checks run first so a
+      # broken npx shim / read-only config / path bug fails fast with a clear name.
+      - name: Windows environment checks
+        shell: bash
+        run: python .bench/windows_checks.py
+      - name: Run 386-test matrix (git-bash)
+        shell: bash
+        run: bash .bench/run_all_tests.sh

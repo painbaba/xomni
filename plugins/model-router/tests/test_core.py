@@ -1,0 +1,233 @@
+"""Tests for model-router — automatic per-task model routing + telemetry.
+
+Covers: task-type detection (reasoning/vision/quick keyword sets and
+precedence), routing over the REAL omni-registry capabilities (every task type
+routes to a capability-matching active model; a vision query NEVER routes to a
+vision=False model; verified image_in preferred), deterministic picks, the
+config switch command, alternatives, the no-registry fallback, the
+cost-tracker-compatible telemetry ledger roundtrip, and /route telemetry
+rendering (model, ms, $, task type).
+
+Run: cd plugins/model-router && python -m unittest tests.test_core -q
+"""
+import datetime
+import os
+import tempfile
+import unittest
+
+import core
+
+
+def _ts(y, m, d, hh=12, mm=0):
+    return datetime.datetime(y, m, d, hh, mm).timestamp()
+
+
+def _real_registry():
+    """The REAL omni-registry capabilities (never a fixture)."""
+    omni = core._omni_registry()
+    assert omni is not None, "omni-registry plugin must be present for these tests"
+    return omni.registry_load()
+
+
+class DetectTaskTypeTests(unittest.TestCase):
+    def test_backtest_query_detects_reasoning(self):
+        ttype, kws = core.detect_task_type("why does my backtest lose money?")
+        self.assertEqual(ttype, "reasoning")
+        self.assertIn("why", kws)
+        self.assertIn("backtest", kws)
+
+    def test_screenshot_wins_over_summarize(self):
+        # vision > quick precedence: a screenshot-summary needs image input
+        ttype, _ = core.detect_task_type("summarize this screenshot for me")
+        self.assertEqual(ttype, "vision")
+
+    def test_plain_summarize_goes_quick(self):
+        ttype, kws = core.detect_task_type("summarize this article briefly")
+        self.assertEqual(ttype, "quick")
+        self.assertIn("summarize", kws)
+
+    def test_no_keywords_defaults(self):
+        ttype, kws = core.detect_task_type("hello there")
+        self.assertEqual(ttype, "default")
+        self.assertEqual(kws, [])
+
+
+class RoutingTests(unittest.TestCase):
+    """Every task type must route to a capability-matching model from the REAL
+    registry (active status + capability gate), never a tombstone."""
+
+    def setUp(self):
+        self.registry = _real_registry()
+        self.active = [r for r in self.registry.values()
+                       if r.get("status") == "active"]
+
+    def _picked(self, res):
+        return self.registry[res["model"]]
+
+    def test_quick_routes_to_low_latency_capable_model(self):
+        res = core.route("summarize this quickly", registry=self.registry)
+        rec = self._picked(res)
+        self.assertEqual(res["task_type"], "quick")
+        self.assertEqual(rec["status"], "active")
+        self.assertIn("tools", rec.get("capabilities", []))
+        lat = (rec.get("latency_ms") or {}).get("median")
+        self.assertLess(lat, core.LATENCY_THRESHOLD_MS)
+
+    def test_reasoning_routes_to_thinking_model(self):
+        res = core.route("why does my backtest lose money?", registry=self.registry)
+        rec = self._picked(res)
+        self.assertEqual(res["task_type"], "reasoning")
+        self.assertEqual(rec["status"], "active")
+        self.assertTrue("thinking" in rec.get("capabilities", [])
+                        or "always_thinking" in rec.get("capabilities", []))
+
+    def test_reasoning_pick_is_reasoning_tier(self):
+        # deterministic reasoning-tier pick (matches provider-pool RECOMMENDED)
+        res = core.route("debug why the error occurs", registry=self.registry)
+        self.assertEqual(res["model"], "deepseek-v4-pro")
+
+    def test_vision_routes_to_vision_model(self):
+        res = core.route("read the text from this screenshot", registry=self.registry)
+        rec = self._picked(res)
+        self.assertEqual(res["task_type"], "vision")
+        self.assertIn("image_in", rec.get("capabilities", []))
+
+    def test_vision_never_routes_to_non_vision_model(self):
+        # HARD GATE: every vision route must land on an image_in model
+        for prompt in ("ocr this image", "what is in this screenshot",
+                       "describe the chart", "scan this photo"):
+            res = core.route(prompt, registry=self.registry)
+            rec = self._picked(res)
+            self.assertIn("image_in", rec.get("capabilities", []),
+                          f"{prompt!r} routed to non-vision {res['model']}")
+
+    def test_vision_prefers_live_verified_image_in(self):
+        res = core.route("describe this screenshot", registry=self.registry)
+        rec = self._picked(res)
+        self.assertEqual(res["model"], "minimax-m3")
+        self.assertEqual(
+            (rec.get("capability_sources") or {}).get("image_in"), "verified")
+
+    def test_heavy_routes_to_max_context_model(self):
+        res = core.route("process this entire codebase repo", registry=self.registry)
+        rec = self._picked(res)
+        self.assertEqual(res["task_type"], "heavy")
+        ctx = (rec.get("context_window") or {}).get("value")
+        max_ctx = max((r.get("context_window") or {}).get("value", 0)
+                      for r in self.active)
+        self.assertEqual(ctx, max_ctx)
+
+    def test_default_routes_workhorse_model(self):
+        res = core.route("hello there", registry=self.registry)
+        rec = self._picked(res)
+        self.assertEqual(res["task_type"], "default")
+        self.assertIn("tools", rec.get("capabilities", []))
+        self.assertIn("thinking", rec.get("capabilities", []))
+        self.assertEqual(res["model"], "deepseek-v4-flash")
+
+    def test_config_command_present(self):
+        res = core.route("summarize this quickly", registry=self.registry)
+        self.assertEqual(res["config_command"],
+                         f"hermes config set model {res['model']}")
+        self.assertIn(res["model"], res["config_command"])
+
+    def test_alternatives_match_capability(self):
+        res = core.route("ocr this image", registry=self.registry)
+        for alt in res["alternatives"]:
+            rec = self.registry.get(alt["model"])
+            self.assertIsNotNone(rec)
+            self.assertIn("image_in", rec.get("capabilities", []))
+        res = core.route("debug the error", registry=self.registry)
+        for alt in res["alternatives"]:
+            rec = self.registry.get(alt["model"])
+            self.assertTrue("thinking" in rec.get("capabilities", [])
+                            or "always_thinking" in rec.get("capabilities", []))
+
+    def test_fallback_without_registry(self):
+        # empty registry -> deterministic fallback tier table, same picks
+        for prompt, expect in (
+            ("summarize quickly", "minimax-m2.5"),
+            ("why did it fail", "deepseek-v4-pro"),
+            ("ocr the screenshot", "minimax-m3"),
+            ("entire repo", "gpt-5.6-luna"),
+            ("hello", "deepseek-v4-flash"),
+        ):
+            res = core.route(prompt, registry={})
+            self.assertEqual(res["model"], expect, prompt)
+            self.assertEqual(res["registry_source"], "fallback")
+            self.assertIn("config_command", res)
+
+
+class TelemetryTests(unittest.TestCase):
+    def setUp(self):
+        self._tmp = tempfile.TemporaryDirectory()
+        self.db = os.path.join(self._tmp.name, "route.db")
+        self.addCleanup(self._tmp.cleanup)
+
+    def _tel(self):
+        return core.RouteTelemetry(self.db)
+
+    def test_record_call_roundtrip(self):
+        tel = self._tel()
+        r = tel.record_call("deepseek-v4-pro", latency_ms=4100, est_cost=0.0,
+                            task_type="reasoning", provider="opencode-zen",
+                            ts=_ts(2026, 8, 12, 10))
+        self.assertTrue(r["logged"])
+        rows = tel.recent_calls()
+        self.assertEqual(len(rows), 1)
+        row = rows[0]
+        self.assertEqual(row["model"], "deepseek-v4-pro")
+        self.assertEqual(row["latency_ms"], 4100)
+        self.assertEqual(row["est_cost"], 0.0)
+        self.assertEqual(row["task_type"], "reasoning")
+        self.assertEqual(row["provider"], "opencode-zen")
+
+    def test_record_call_estimates_cost_via_cost_tracker(self):
+        # reuse of cost-tracker's CostTracker math: deepseek-chat is priced
+        # (0.27, 1.10) there — (0.27*1000 + 1.10*500)/1M = $0.00082
+        tel = self._tel()
+        r = tel.record_call("deepseek-chat", latency_ms=900, tokens_in=1000,
+                            tokens_out=500, task_type="quick",
+                            ts=_ts(2026, 8, 12, 10))
+        self.assertAlmostEqual(r["est_cost"], 0.00082, places=8)
+        self.assertFalse(r["flagged"])
+
+    def test_unknown_model_flagged_fallback(self):
+        tel = self._tel()
+        r = tel.record_call("future-model-x", latency_ms=300, tokens_in=1000,
+                            tokens_out=500, task_type="quick",
+                            ts=_ts(2026, 8, 12, 10))
+        # fallback rates (0.50*1000 + 1.50*500)/1M = $0.00125
+        self.assertAlmostEqual(r["est_cost"], 0.00125, places=8)
+        self.assertTrue(r["flagged"])
+
+    def test_recent_calls_newest_first_limit_10(self):
+        tel = self._tel()
+        for i in range(12):
+            tel.record_call(f"model-{i}", latency_ms=100 + i, est_cost=0.01 * i,
+                            task_type="quick", ts=_ts(2026, 8, 12, 10 + i))
+        rows = tel.recent_calls(10)
+        self.assertEqual(len(rows), 10)
+        self.assertEqual(rows[0]["model"], "model-11")
+        self.assertEqual(rows[-1]["model"], "model-2")
+
+    def test_telemetry_text_renders_model_ms_dollar_task(self):
+        tel = self._tel()
+        tel.record_call("deepseek-v4-pro", latency_ms=4100, est_cost=0.0,
+                        task_type="reasoning", ts=_ts(2026, 8, 12, 10))
+        tel.record_call("minimax-m3", latency_ms=5200, est_cost=0.0,
+                        task_type="vision", ts=_ts(2026, 8, 12, 11))
+        tel.record_call("deepseek-chat", latency_ms=900, tokens_in=1000,
+                        tokens_out=500, task_type="quick",
+                        ts=_ts(2026, 8, 12, 12))
+        text = tel.telemetry_text()
+        for needle in ("deepseek-v4-pro", "minimax-m3", "deepseek-chat",
+                       "ms", "$", "reasoning", "vision", "quick"):
+            self.assertIn(needle, text)
+        # newest first: deepseek-chat row on top
+        self.assertLess(text.index("deepseek-chat"),
+                        text.index("minimax-m3"))
+
+
+if __name__ == "__main__":
+    unittest.main()

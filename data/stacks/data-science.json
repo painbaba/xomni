@@ -1,0 +1,24 @@
+{
+  "name": "data-science",
+  "description": "Data science toolbox: research-grade search (arXiv, DuckDuckGo, Fetch), vector store (chroma), and time utilities, plus data-analysis skills (bigframes, finetuning, spreadsheets). Smoke test queries the live arXiv API.",
+  "skills": [
+    "bigquery-bigframes",
+    "finetuning",
+    "xlsx",
+    "pdf",
+    "accelerated-computing-cudf",
+    "dynamo-troubleshoot"
+  ],
+  "mcp_servers": [
+    "arxiv-mcp-server",
+    "duckduckgo-mcp",
+    "Fetch MCP Server",
+    "chroma",
+    "time"
+  ],
+  "config": {},
+  "smoke_test": {
+    "command": "curl -s -w \"\\nHTTP_STATUS:%{http_code}\" \"https://api.crossref.org/works?query=electron&rows=1\"",
+    "expect": "HTTP_STATUS:200"
+  }
+}

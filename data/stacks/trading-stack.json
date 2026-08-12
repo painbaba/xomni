@@ -1,0 +1,22 @@
+{
+  "name": "trading-stack",
+  "description": "Live market data + trading MCP servers (yfinance, TradingView, CoinGecko, AlphaVantage, Polymarket) with reporting/research skills. Smoke test fetches a live BTC price from the public CoinGecko API.",
+  "skills": [
+    "xlsx",
+    "pdf",
+    "wiki-qa",
+    "google-analytics-data-api-basics"
+  ],
+  "mcp_servers": [
+    "mcp-yfinance",
+    "tradingview-mcp",
+    "coingecko-mcp",
+    "alphavantage-mcp",
+    "PolymarketScan"
+  ],
+  "config": {},
+  "smoke_test": {
+    "command": "curl -s -w \"\\nHTTP_STATUS:%{http_code}\" \"https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd\"",
+    "expect": "HTTP_STATUS:200"
+  }
+}

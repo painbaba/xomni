@@ -1,0 +1,24 @@
+{
+  "name": "web-dev",
+  "description": "Web development stack: browser automation (Playwright, Chrome DevTools), deploy targets (Cloudflare, Supabase, Neon), and coding workflow skills (TDD, debugging, plans). Smoke test hits the live npm registry.",
+  "skills": [
+    "angular-developer",
+    "test-driven-development",
+    "systematic-debugging",
+    "writing-plans",
+    "firebase-basics",
+    "accessibility-skill"
+  ],
+  "mcp_servers": [
+    "playwright",
+    "Chrome DevTools MCP",
+    "cloudflare",
+    "supabase",
+    "neon"
+  ],
+  "config": {},
+  "smoke_test": {
+    "command": "curl -s -w \"\\nHTTP_STATUS:%{http_code}\" \"https://registry.npmjs.org/react\"",
+    "expect": "HTTP_STATUS:200"
+  }
+}

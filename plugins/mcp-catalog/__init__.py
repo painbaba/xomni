@@ -16,9 +16,10 @@ sessions.
 Commands::
 
     /mcp                       list catalog servers
-    /mcp list                  list catalog servers
+    /mcp list                  list catalog servers (marketplace badges: stars/keyless/security)
     /mcp tools [server]        tool surface; with <server>, live-discover its tools
     /mcp add <path>            import a catalog JSON file into the catalog dir
+    /mcp add <name> [--yes]    install a catalog server into host config.yaml mcp_servers
     /mcp status                catalog dir, servers, host registration state
     /mcp validate <path>       validate a catalog JSON file (all errors)
 
@@ -37,11 +38,59 @@ from . import core
 
 _CTX = None
 
+
+# ─── receipts-by-default (U7) ────────────────────────────────────────────────
+# /mcp add (catalog import + server install) issues a verifiable receipt into
+# the JSONL ledger (plugins/receipts: sha256 of the written file). The
+# receipts plugin is optional — if unavailable, behavior is unchanged.
+_RECEIPTS = None
+
+
+def _receipts_core():
+    """Lazily resolve receipts.core (installed package, else XOMNI checkout)."""
+    global _RECEIPTS
+    if _RECEIPTS is None:
+        mod = None
+        try:
+            from receipts import core as mod
+        except Exception:
+            mod = None
+        if mod is None:
+            try:
+                import importlib.util
+                import sys as _sys
+                home = os.environ.get("XOMNI_HOME", "")
+                if not home:
+                    home = os.path.abspath(os.path.join(
+                        os.path.dirname(os.path.abspath(__file__)), "..", ".."))
+                cand = os.path.join(home, "plugins", "receipts", "core.py")
+                if os.path.isfile(cand):
+                    fspec = importlib.util.spec_from_file_location("receipts_core", cand)
+                    mod = importlib.util.module_from_spec(fspec)
+                    _sys.modules["receipts_core"] = mod
+                    fspec.loader.exec_module(mod)
+            except Exception:
+                mod = None
+        _RECEIPTS = mod if mod is not None else False
+    return _RECEIPTS or None
+
+
+def _receipt_file(action: str, target: str, result: str, meta: dict | None = None):
+    """Issue a sha256-handled receipt; never raises, never breaks the caller."""
+    mod = _receipts_core()
+    if mod is None:
+        return None
+    try:
+        return mod.try_file_receipt(action, target, result, meta)
+    except Exception:
+        return None
+
 HELP = (
-    "/mcp                    list catalog servers\n"
-    "/mcp list               list catalog servers\n"
+    "/mcp                    list catalog servers (marketplace badges)\n"
+    "/mcp list               list catalog servers (marketplace badges)\n"
     "/mcp tools [server]     tool surface; with <server>, live-discover its tools\n"
     "/mcp add <path>         import a catalog JSON file into ~/.hermes-mcp/catalogs/\n"
+    "/mcp add <name> [--yes] install a catalog server into host config.yaml mcp_servers\n"
     "/mcp status             catalog dir, servers, host registration state\n"
     "/mcp validate <path>    validate a catalog JSON file (all errors)\n"
 )
@@ -59,6 +108,16 @@ def _host_config_servers() -> dict:
         return servers if isinstance(servers, dict) else {}
     except Exception:
         return {}
+
+
+def _host_config_path() -> str:
+    """The real host config.yaml path (hermes_cli.config when importable,
+    else the pure-stdlib fallback)."""
+    try:
+        from hermes_cli.config import get_config_path
+        return str(get_config_path())
+    except Exception:
+        return core.default_host_config_path()
 
 
 def _host_probe_tools(server_name: str, entry: dict) -> list:
@@ -79,6 +138,14 @@ def _host_probe_tools(server_name: str, entry: dict) -> list:
 # ─── /mcp command ────────────────────────────────────────────────────────────
 
 def _cmd_list(servers) -> str:
+    # Marketplace view first: the 311-entry rich catalog (data/mcp/catalog.json)
+    # with stars/keyless/security badges. Falls back to the plain catalog-dir
+    # view when the rich catalog is unavailable.
+    try:
+        rich = core.load_rich_catalog()
+        return core.list_catalog_badged(rich)
+    except core.CatalogError:
+        pass
     if not servers:
         return (
             f"no MCP servers in catalog ({core.default_catalog_dir()}). "
@@ -107,8 +174,13 @@ def _cmd_tools(server: str, servers) -> str:
 
 def _cmd_add(path: str, servers) -> str:
     path = os.path.expanduser((path or "").strip())
+    # --yes / -y (U3 — non-interactive): /mcp add never prompts; the flag is
+    # accepted and stripped so it can never be misread as a file path.
+    for flag in ("--yes", "-y"):
+        if path == flag or path.startswith(flag + " "):
+            path = path[len(flag):].strip()
     if not path:
-        return "usage: /mcp add <path-to-catalog-json>"
+        return "usage: /mcp add [--yes] <path-to-catalog-json>"
     if not os.path.isfile(path):
         return f"/mcp add: no such file: {path}"
     try:
@@ -126,9 +198,54 @@ def _cmd_add(path: str, servers) -> str:
     except OSError as exc:
         return f"/mcp add: failed to copy into catalog dir: {exc}"
     names = ", ".join(s["name"] for s in parsed)
+    _receipt_file("mcp.catalog.import", dest,
+                  "added %d server(s): %s" % (len(parsed), names),
+                  {"servers": [s["name"] for s in parsed]})
     return (
         f"added {len(parsed)} server(s) to catalog ({dest}): {names}\n"
         f"Catalog dir: {dest_dir} — validated OK (commands checked on PATH)."
+    )
+
+
+def _cmd_install(name: str, yes: bool) -> str:
+    """Marketplace install path: /mcp add <catalog-server-name> [--yes].
+
+    With --yes: installs directly (idempotent; a no-op when already
+    registered). Without: prints the plan and asks for confirmation — and on
+    ANY failure returns a loud FAILED line with the cause (never silently
+    cancels)."""
+    name = (name or "").strip()
+    if not name:
+        return (
+            "usage: /mcp add <catalog-server-name> [--yes] — install a catalog "
+            "server into host config.yaml mcp_servers\n"
+            "       /mcp add <path> — import a catalog JSON file"
+        )
+    host_path = _host_config_path()
+    try:
+        plan = core.install_plan(name, host_path)
+    except core.CatalogError as exc:
+        return f"/mcp add: FAILED — {exc}"
+    state = "already registered — install would be a no-op" if plan["exists"] else "not registered yet"
+    if not yes:
+        return (
+            f"plan: install {name!r} from MCP catalog into {plan['path']}\n"
+            f"  launch: {plan['launch']}\n"
+            f"  status: {state}\n"
+            f"confirm by re-running: /mcp add {name} --yes"
+        )
+    try:
+        result = core.install_server(name, host_path)
+    except core.CatalogError as exc:
+        return f"/mcp add: FAILED — {exc}"
+    if not result["written"]:
+        return f"{name!r} already registered in {result['path']} (mcp_servers) — nothing to do."
+    _receipt_file("mcp.server.install", result["path"],
+                  "%r -> %s (mcp_servers.%s)" % (name, result["path"], name),
+                  {"server": name})
+    return (
+        f"installed {name!r} → {result['path']} (mcp_servers.{name}: {plan['launch']})\n"
+        "Restart Hermes or run /reload-mcp to connect; then /mcp tools <name> to verify."
     )
 
 
@@ -188,7 +305,24 @@ def _handle_mcp(raw: str) -> str:
     if cmd == "tools":
         return _cmd_tools(rest.strip(), servers)
     if cmd == "add":
-        return _cmd_add(rest, servers)
+        rest = rest.strip()
+        if not rest:
+            return _cmd_add(rest, servers)
+        first = rest.split(None, 1)[0]
+        expanded = os.path.expanduser(first)
+        if first in ("--yes", "-y") or os.path.isfile(expanded):
+            # legacy file-import path (strips --yes/-y flags itself)
+            return _cmd_add(rest, servers)
+        # not a file → marketplace install: /mcp add <name> [--yes]
+        yes = False
+        name = rest
+        for flag in ("--yes", "-y"):
+            if name == flag:
+                name = ""
+            elif name.endswith(" " + flag):
+                name = name[: -(len(flag) + 1)].strip()
+                yes = True
+        return _cmd_install(name, yes)
     if cmd == "status":
         return _cmd_status(servers)
     if cmd == "validate":
@@ -242,10 +376,10 @@ def register(ctx) -> None:
         "mcp",
         handler=_handle_mcp,
         description=(
-            "MCP catalog: discover, validate and manage MCP servers as agent tools "
-            "(list | tools [server] | add <path> | status | validate <path>)"
+            "MCP catalog: discover, validate and install MCP servers as agent tools "
+            "(list | tools [server] | add <path> | add <name> [--yes] | status | validate <path>)"
         ),
-        args_hint="[list|tools [server]|add <path>|status|validate <path>]",
+        args_hint="[list|tools [server]|add <path>|add <name> [--yes]|status|validate <path>]",
     )
     ctx.register_tool(
         "mcp_call",

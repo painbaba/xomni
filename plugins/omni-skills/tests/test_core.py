@@ -29,6 +29,30 @@ rm -rf /tmp/x
 
 SKILL_NOSKILL = "no frontmatter here, just prose"
 
+SKILL_TAGGED = """---
+name: tagged-tool
+description: "Has tags for market categorization."
+tags: [devops, ci, pipelines]
+---
+Run pipelines.
+"""
+
+SKILL_PREAUTHORED = """---
+name: preauth-tool
+description: "Carries its original creator credit."
+author: "Original Creator"
+version: "1.0.0"
+---
+Original work.
+"""
+
+SKILL_PLAIN = """---
+name: plain-tool
+description: "No tags — lands in the general market category."
+---
+Plain skill body.
+"""
+
 
 class FrontmatterTests(unittest.TestCase):
     def test_parses_scalars_and_lists(self):
@@ -294,6 +318,140 @@ class SearchListStatusTests(unittest.TestCase):
         for key in ("xomni_home", "plugins_total", "skills_total", "data"):
             self.assertIn(key, st)
         self.assertGreaterEqual(st["plugins_total"], 1)
+
+
+class PublishTests(unittest.TestCase):
+    """U11 — cross-session skill market: publish_skill credit-stamps and
+    copies a skill into a repo's skills/ tree; REJECT skills are refused."""
+
+    NO_GIT = lambda self, key, cwd=None: None  # noqa: E731
+    FAKE_GIT = lambda self, key, cwd=None: (  # noqa: E731
+        "painbaba" if key == "user.name" else
+        "https://github.com/painbaba/xomni.git" if key == "remote.origin.url"
+        else None)
+
+    def _write(self, root, name, content):
+        d = os.path.join(root, name)
+        os.makedirs(d)
+        with open(os.path.join(d, "SKILL.md"), "w", encoding="utf-8") as f:
+            f.write(content)
+        return d
+
+    def _fm(self, skill_dir):
+        with open(os.path.join(skill_dir, "SKILL.md"), encoding="utf-8") as f:
+            return core.parse_frontmatter(f.read())
+
+    def setUp(self):
+        self.src = tempfile.mkdtemp(prefix="omni-skills-pub-src-")
+        self.repo = tempfile.mkdtemp(prefix="omni-skills-pub-repo-")
+        self.good = self._write(self.src, "good", SKILL_A)
+        self.plain = self._write(self.src, "plain", SKILL_PLAIN)
+        self.bad = self._write(self.src, "bad", SKILL_BAD)
+        with open(os.path.join(self.bad, "run.sh"), "w", encoding="utf-8") as f:
+            f.write("rm -rf /tmp/x\ncat ../secret\n")
+
+    def tearDown(self):
+        shutil.rmtree(self.src, ignore_errors=True)
+        shutil.rmtree(self.repo, ignore_errors=True)
+
+    def test_publish_stamps_credit(self):
+        r = core.publish_skill(self.plain, self.repo, author="publisher-a",
+                               git_config=self.NO_GIT)
+        self.assertTrue(r["ok"])
+        fm = self._fm(os.path.join(self.repo, "skills", "general", "plain-tool"))
+        self.assertEqual(fm["author"], "publisher-a")
+        self.assertEqual(fm["source"], "xomni")
+        self.assertRegex(fm["published_at"], r"^\d{4}-\d{2}-\d{2}$")
+
+    def test_publish_idempotent_no_double_stamp(self):
+        first = core.publish_skill(self.plain, self.repo, author="publisher-a",
+                                   git_config=self.NO_GIT)
+        second = core.publish_skill(self.plain, self.repo, author="publisher-a",
+                                    git_config=self.NO_GIT)
+        self.assertTrue(first["stamped"])
+        self.assertFalse(second["stamped"])  # already stamped, untouched
+        fm = self._fm(os.path.join(self.repo, "skills", "general", "plain-tool"))
+        self.assertEqual(fm["published_at"], first["published_at"])
+        self.assertEqual(fm["author"], "publisher-a")
+        self.assertEqual(fm["source"], "xomni")
+
+    def test_author_env_wins_over_git(self):
+        r = core.publish_skill(self.plain, self.repo,
+                               env={"XOMNI_USER": "env-publisher"},
+                               git_config=self.FAKE_GIT)
+        self.assertEqual(r["author"], "env-publisher")
+
+    def test_author_git_config_fallback(self):
+        r = core.publish_skill(self.plain, self.repo, env={},
+                               git_config=self.FAKE_GIT)
+        self.assertEqual(r["author"], "painbaba")  # git user.name
+
+    def test_author_default_xomni_user(self):
+        r = core.publish_skill(self.plain, self.repo, env={},
+                               git_config=self.NO_GIT)
+        self.assertEqual(r["author"], "xomni-user")
+
+    def test_refuses_reject_skill(self):
+        r = core.publish_skill(self.bad, self.repo, author="publisher-a",
+                               git_config=self.NO_GIT)
+        self.assertFalse(r["ok"])
+        self.assertEqual(r["reason"], "REJECT")
+        self.assertTrue(r["issues"])
+        # nothing copied into the repo tree
+        self.assertEqual(os.listdir(self.repo), [])
+
+    def test_copy_structure_category_from_tags(self):
+        tagged = self._write(self.src, "tagged", SKILL_TAGGED)
+        r = core.publish_skill(tagged, self.repo, author="publisher-a",
+                               git_config=self.NO_GIT)
+        self.assertTrue(r["ok"])
+        self.assertEqual(r["category"], "devops")  # first tag
+        self.assertTrue(os.path.isfile(
+            os.path.join(self.repo, "skills", "devops", "tagged-tool", "SKILL.md")))
+
+    def test_category_general_when_no_tags(self):
+        r = core.publish_skill(self.plain, self.repo, author="publisher-a",
+                               git_config=self.NO_GIT)
+        self.assertEqual(r["category"], "general")
+        self.assertTrue(os.path.isfile(
+            os.path.join(self.repo, "skills", "general", "plain-tool", "SKILL.md")))
+
+    def test_receipt_shape(self):
+        r = core.publish_skill(self.plain, self.repo, author="publisher-a",
+                               git_config=self.NO_GIT)
+        for key in ("ok", "name", "sha256", "path", "author", "published_at",
+                    "source", "stamped", "git"):
+            self.assertIn(key, r)
+        self.assertEqual(r["name"], "plain-tool")
+        self.assertRegex(r["sha256"], r"^[0-9a-f]{64}$")  # full sha256
+        self.assertTrue(os.path.isfile(os.path.join(r["path"], "SKILL.md")))
+        self.assertEqual(r["author"], "publisher-a")
+        self.assertEqual(r["git"]["add"], "skills/general/plain-tool")
+
+    def test_missing_dir_loud_error(self):
+        missing = os.path.join(self.src, "does-not-exist")
+        r = core.publish_skill(missing, self.repo, author="publisher-a")
+        self.assertFalse(r["ok"])
+        self.assertIn("not found", r["reason"])
+        self.assertEqual(os.listdir(self.repo), [])  # nothing written
+
+    def test_origin_detected_from_git_remote(self):
+        r = core.publish_skill(self.plain, self.repo, author="publisher-a",
+                               git_config=self.FAKE_GIT)
+        self.assertEqual(r["origin"], "painbaba/xomni")
+        fm = self._fm(os.path.join(self.repo, "skills", "general", "plain-tool"))
+        self.assertEqual(fm["origin"], "painbaba/xomni")
+
+    def test_preexisting_author_credit_preserved(self):
+        pre = self._write(self.src, "pre", SKILL_PREAUTHORED)
+        r = core.publish_skill(pre, self.repo, author="publisher-a",
+                               git_config=self.NO_GIT)
+        self.assertTrue(r["ok"])
+        self.assertEqual(r["author"], "publisher-a")        # publisher stamps
+        self.assertEqual(r["original_author"], "Original Creator")  # kept
+        fm = self._fm(os.path.join(self.repo, "skills", "general", "preauth-tool"))
+        self.assertEqual(fm["original_author"], "Original Creator")
+        self.assertEqual(fm["author"], "publisher-a")
 
 
 if __name__ == "__main__":

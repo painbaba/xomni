@@ -1,0 +1,15 @@
+{"role": "user", "content": "Set up a Python package and prove it installs"}
+{"role": "assistant", "content": "I'll scaffold the package first.", "tool_calls": [{"name": "terminal", "arguments": {"command": "mkdir -p src/demo_pkg && printf '__version__ = \"0.1.0\"\\n' > src/demo_pkg/__init__.py"}}]}
+{"role": "tool", "name": "terminal", "content": "exit_code: 0", "is_error": false}
+{"role": "assistant", "content": "Init git.", "tool_calls": [{"name": "terminal", "arguments": {"command": "git init -b main"}}]}
+{"role": "tool", "name": "terminal", "content": "exit_code: 0\nInitialized empty Git repository", "is_error": false}
+{"role": "assistant", "content": "Write pyproject.toml", "tool_calls": [{"name": "write_file", "arguments": {"path": "pyproject.toml", "content": "[build-system]\nrequires = [\"setuptools\"]\nbuild-backend = \"setuptools.build_meta\""}}]}
+{"role": "tool", "name": "write_file", "content": "written pyproject.toml", "is_error": false}
+{"role": "assistant", "content": "Install editable — first attempt fails (no pyproject yet).", "tool_calls": [{"name": "terminal", "arguments": {"command": "python -m pip install -e ."}}]}
+{"role": "tool", "name": "terminal", "content": "Traceback: pyproject.toml not found", "is_error": true}
+{"role": "assistant", "content": "Retry install now that pyproject exists.", "tool_calls": [{"name": "terminal", "arguments": {"command": "python -m pip install -e . --quiet"}}]}
+{"role": "tool", "name": "terminal", "content": "exit_code: 0", "is_error": false}
+{"role": "assistant", "content": "Verify import works.", "tool_calls": [{"name": "terminal", "arguments": {"command": "python -c \"import demo_pkg; print(demo_pkg.__version__)\""}}]}
+{"role": "tool", "name": "terminal", "content": "0.1.0\nexit_code: 0", "is_error": false}
+{"role": "assistant", "content": "Commit.", "tool_calls": [{"name": "terminal", "arguments": {"command": "git add -A && git commit -m \"feat: initial package\""}}]}
+{"role": "tool", "name": "terminal", "content": "exit_code: 0\n[main 1a2b3c4] feat: initial package", "is_error": false}
