@@ -28,14 +28,30 @@ file current — it is the workforce's queue.
 
 - [x] U11. Cross-session skill market: publish XOMNI-created skills to the shared skills.sh registry (verified: git-repo content model, 9615 skills) with automatic credit (author/source/published_at stamping), /skills publish + receipt, docs/SKILLS-MARKET.md. done 2026-08-12 (omni-skills publish_skill + SKILLS-MARKET.md, 35 tests).
 
+# UNIVERSAL XOMNI CORE (owner-approved build program — deleg_55c4383a)
+
+All 11 items dispatched in parallel 2026-08-12. Universal = provider/model/surface-agnostic; no hardcoded tables.
+
+- [ ] U-CORE-1. capability-probe: live probe any provider's /models into the registry (OpenAI/Anthropic shapes, loud failures, key never printed), /probe <id> + /probe all. BUILDING.
+- [ ] U-CORE-2. universal-router: model-router routes over the LIVE registry (live-probe > verified > spec), any pool, empty-registry loud fallback, /route shows pool size + source. BUILDING.
+- [ ] U-CORE-3. universal-telemetry: spend caps (5h/1d/7d/30d; warn@80%/park@100%, parked_models heavy tier), /cost caps + rollups (today/week/model/top). BUILDING.
+- [ ] U-SURF-1. MCP self-cataloging: installed/imported MCPs auto-index into the catalog (badges, source=user-added, idempotent), /mcp add <name> <url-or-command>. BUILDING.
+- [ ] U-SURF-2. universal skills lifecycle: draft->validate->save->receipt->publish in one pipeline (/skill from-session <id>), cross-profile sync (/skill sync, no-clobber). BUILDING.
+- [ ] U-SURF-3. pluggable voice backends: STT (whisper/gemini/sarvam) + TTS (edge/sarvam/bhashini) registry, auto-pick + /voice set, payload builders fail loud without keys. BUILDING.
+- [ ] U-SURF-4. universal-notify: telegram/whatsapp/local fan-out, jsonl queue, digests, /notify send|digest|status|channels, never sends by default. BUILDING.
+- [ ] U-ASSURE-1. receipts everywhere: audit all mutating paths, wire issue() into gaps, /receipts audit coverage table. BUILDING.
+- [ ] U-ASSURE-2. multi-profile heal: self-healing scans base + all profiles, /heal profiles|scan|fix, per-profile audit. BUILDING.
+- [ ] U-ASSURE-3. universal guardrails: policy engine extends to MCP tools (decide_tool) + skill installs (decide_skill), /guardrails check-tool + check-skill. BUILDING.
+- [ ] U-ASSURE-4. universal CI: ci_gate advisory stages — capability freshness (<30d) + receipts coverage, warn-only, gate stays exit 0. BUILDING.
+
 ## MOONSHOTS (proposals — pick or add yours)
 
-- [ ] M1. XOMNI as a service: OpenAI-compatible gateway mode — any app (VS Code, Excel, WhatsApp, custom) talks to XOMNI as a localhost API.
-- [ ] M2. Self-hosted XOMNI Marketplace live: skills/MCPs/plugins with 15% rails + UPI payouts — the ecosystem bet (design exists in MONETIZATION-V2.md).
-- [ ] M3. Voice-native Bharat agent: full-duplex Hindi/regional TTS+STT via Sarvam/Bhashini — talk to XOMNI like a phone call.
-- [ ] M4. Agent-to-agent economy: XOMNI instances trading services + verification receipts (autonomous-agent-economy).
-- [ ] M5. Offline-first XOMNI: full local stack (Ollama + local embeddings + local search) — works on a no-internet laptop.
-- [ ] M6. Self-improving operator: XOMNI runs its own improvement + task-execution loop 24/7 with human-on-top approvals (the cron is the seed).
+- [~] M1. XOMNI as a service: OpenAI-compatible gateway mode — any app (VS Code, Excel, WhatsApp, custom) talks to XOMNI as a localhost API. in progress 2026-08-13
+- [~] M2. Self-hosted XOMNI Marketplace live: skills/MCPs/plugins with 15% rails + UPI payouts — the ecosystem bet (design exists in MONETIZATION-V2.md). in progress 2026-08-13
+- [~] M3. Voice-native Bharat agent: full-duplex Hindi/regional TTS+STT via Sarvam/Bhashini — talk to XOMNI like a phone call. in progress 2026-08-13
+- [~] M4. Agent-to-agent economy: XOMNI instances trading services + verification receipts (autonomous-agent-economy). in progress 2026-08-13
+- [~] M5. Offline-first XOMNI: full local stack (Ollama + local embeddings + local search) — works on a no-internet laptop. in progress 2026-08-13
+- [~] M6. Self-improving operator: XOMNI runs its own improvement + task-execution loop 24/7 with human-on-top approvals (the cron is the seed). in progress 2026-08-13
 
 ## P0 — next wave (highest value, build now)
 
