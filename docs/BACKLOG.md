@@ -1,4 +1,19 @@
 # XOMNI BACKLOG — continuous improvement program
+# USER-DRIVEN v1.1 (from the owner's hands-on session — highest priority)
+
+## Quick wins (days)
+
+- [ ] U1. One-command vertical stacks: `xomni add trading-stack|data-science|web-dev|home-automation` — installs skills + MCPs + config, runs smoke tests, shows live-data proof. Stack defs in data/stacks/*.json (skills from curated DB, MCPs from catalog.json).
+- [ ] U2. Make the MCP catalog REAL: host `hermes mcp list` shows 2 (disabled) vs 311 in the catalog — gap verified 2026-08-12. Full marketplace path: search/stars/keyless badges/security scores in /mcp, one-command install that WRITES the host mcp config (not the host's interactive flow).
+- [ ] U3. Non-interactive everything: every install command takes --yes; NO silent cancels — failed installs exit non-zero with a loud error naming the cause.
+- [ ] U4. Windows CI pass: GitHub Actions windows-latest job running the full matrix + windows-specific checks (npx .cmd shim resolution, config.yaml write-protection handling, /tmp vs Windows paths).
+
+## Big wins (design-then-build)
+
+- [ ] U5. Automatic model routing: pick per task (fast/reasoning/vision) from the 25 free models + per-task cost/latency telemetry after every answer.
+- [ ] U6. Auto-skill creation: after any 5+ tool-call success, auto-draft a skill and show "saved: <name>" for approval.
+- [ ] U7. Receipts by default: every external side-effect returns a verifiable handle (URL/hash/status) — proof, not claims.
+
 
 Owned by the improvement workforce (cron: xomni-improvement-workforce, every 3h)
 + coordinator waves. Rule: one item = one leaf = self-contained brief. Mark
