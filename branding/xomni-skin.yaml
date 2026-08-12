@@ -1,0 +1,62 @@
+# XOMNI skin — void black + Signal Emerald (#00E5A0), the flagship palette.
+name: xomni
+description: XOMNI — one agent. every feature. every free model. Void + emerald.
+
+branding:
+  agent_name: "XOMNI"
+  welcome: "XOMNI — one agent, every feature, every free model. Type a message or /help."
+  goodbye: "Goodbye! ◉"
+  response_label: "◉ XOMNI"
+  prompt_symbol: "❯"
+  help_header: "XOMNI Commands"
+
+colors:
+  background: "#050607"
+  banner_border: "#00E5A0"
+  banner_title: "#00E5A0"
+  banner_accent: "#00FF9D"
+  banner_dim: "#4A5560"
+  banner_text: "#E6F2EC"
+  ui_accent: "#00E5A0"
+  ui_label: "#8FDBFF"
+  ui_ok: "#00E5A0"
+  ui_error: "#FF5C5C"
+  ui_warn: "#FFC14D"
+  ui_tool: "#00E5A0"
+  ui_thinking: "#7FB89B"
+  diff_added: "#0F2A1F"
+  diff_removed: "#2A1215"
+  diff_added_word: "#00E5A0"
+  diff_removed_word: "#FF5C5C"
+  syntax_string: "#00FF9D"
+  syntax_number: "#E6F2EC"
+  syntax_keyword: "#00E5A0"
+  syntax_comment: "#7FB89B"
+  prompt: "#00E5A0"
+  input_rule: "#00E5A0"
+  response_border: "#00E5A0"
+  status_bar_bg: "#0A0F0D"
+  status_bar_text: "#C8D6CF"
+  status_bar_strong: "#00E5A0"
+  status_bar_dim: "#5A6B63"
+  status_bar_good: "#00E5A0"
+  status_bar_warn: "#FFC14D"
+  status_bar_bad: "#FF5C5C"
+  status_bar_critical: "#FF3B3B"
+  session_label: "#8FDBFF"
+  session_border: "#5A6B63"
+  voice_status_bg: "#0A0F0D"
+  selection_bg: "#0F2A1F"
+  completion_menu_bg: "#0A0F0D"
+  completion_menu_current_bg: "#0F2A1F"
+  completion_menu_meta_bg: "#070A09"
+  completion_menu_meta_current_bg: "#123524"
+
+spinner:
+  waiting_faces:
+    - "(⌁)"
+    - "(◉)"
+    - "(◎)"
+  thinking_faces:
+    - "(⚙)"
+    - "(◈)"

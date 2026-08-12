@@ -282,7 +282,9 @@ def main(argv=None) -> int:
     if cmd == "doctor":
         return cmd_doctor()
     if cmd == "launch":
-        return subprocess.call(["hermes", *args])
+        home = os.path.expanduser("~/AppData/Local/hermes")
+        env = dict(os.environ, HERMES_HOME=os.path.join(home, "profiles", "xomni"))
+        return subprocess.call(["hermes", *args], env=env)
     print(f"unknown command: {cmd}\n{__doc__}")
     return 1
 
