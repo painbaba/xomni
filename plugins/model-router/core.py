@@ -21,6 +21,18 @@ Task type is auto-detected from the prompt text (keywords), precedence:
 vision > reasoning > heavy > quick > default (a screenshot-summary is vision,
 not quick).
 
+The pool is the LIVE registry state — capabilities.json exactly as it exists
+NOW (including models merged in by live /models probes) — never a hardcoded
+list. Candidates are records whose status is active/verified/live-probe, and
+every pick carries a source tier with tie-break priority live-probe > verified
+> spec (a live-probed model beats a spot-checked one beats a spec claim when
+capability ranking ties). When the registry is empty or stale, route() falls
+back to the configured provider's own /models via the probe module
+(capability-probe when installed — live-probe ANY provider pool — else
+provider-pool's wired-gateway health check): if the probe returns live models
+the pick comes from THAT list (source live-probe); if nothing is available the
+fallback is LOUD (reason names the empty state, pool_size=0).
+
 Telemetry: record_call() appends to the SAME ledger format as plugins/cost-tracker
 (calls table: ts/day/week/model/provider/tokens_in/tokens_out/est_cost/flagged)
 extended with latency_ms + task_type. When cost-tracker's CostTracker class is
@@ -46,6 +58,23 @@ TASK_TYPES = ("quick", "reasoning", "vision", "heavy", "default")
 # quick tier: a model is "fast" when latency_ms.median < this OR it is
 # fast-tagged in provider-pool's GATEWAY_MODELS.
 LATENCY_THRESHOLD_MS = 5000
+
+# Candidate pool = the LIVE registry's usable records. Accepts the statuses
+# U-CORE-2 defines (active + the future-proof verified/live-probe statuses) so
+# a registry that tags records with its own probe status still routes; today
+# omni-registry uses 'active' (records merged in by live /models probes keep
+# status='unverified' until call-verified and are correctly excluded — they
+# carry no capability data to rank on).
+CANDIDATE_STATUSES = ("active", "verified", "live-probe")
+
+# Pick-source tiers, tie-break priority live-probe > verified > spec.
+SOURCE_TIERS = ("live-probe", "verified", "spec")
+_TIER_RANK = {"live-probe": 0, "verified": 1, "spec": 2}
+
+# Empty/stale-registry fallback: live GET {provider}/models via the probe
+# module (capability-probe when installed, else provider-pool gateway_health).
+PROBE_TIMEOUT_SECONDS = 8
+PROBE_TTL_SECONDS = 300
 
 TELEMETRY_DB_DIR = os.path.expanduser("~/.xomni-cost")
 TELEMETRY_DB_PATH = os.path.join(TELEMETRY_DB_DIR, "route.db")
@@ -166,6 +195,17 @@ def _provider_pool():
         os.path.join("provider-pool", "core.py"), "provider_pool_core")
 
 
+def _probe_module():
+    """capability-probe.core module or None (live /models probe, ANY provider).
+
+    Imported when available (U-CORE-1 delivers it as a sibling plugin); when
+    the plugin is absent the router falls back to provider-pool's wired
+    gateway_health() — both speak provider /models.
+    """
+    return _load_sibling(
+        os.path.join("capability-probe", "core.py"), "capability_probe_core")
+
+
 def _cost_tracker():
     """cost-tracker.core module or None (source of the CostTracker class)."""
     return _load_sibling(
@@ -209,8 +249,14 @@ def detect_task_type(prompt: str) -> tuple[str, list[str]]:
 # registry helpers
 # ---------------------------------------------------------------------------
 
-def _active(registry: dict) -> list[dict]:
-    return [r for r in registry.values() if r.get("status") == "active"]
+def _candidates(registry: dict) -> list[dict]:
+    """LIVE candidate pool: records with status active/verified/live-probe.
+
+    Tombstones ('removed') and never-call-verified live-probe listings
+    ('unverified') are excluded — they carry no usable capability data.
+    """
+    return [r for r in registry.values()
+            if r.get("status") in CANDIDATE_STATUSES]
 
 
 def _latency_ms(rec: dict) -> int | None:
@@ -245,32 +291,190 @@ def _load_registry() -> dict:
 
 
 # ---------------------------------------------------------------------------
+# pick-source tiers + live probe (empty/stale-registry fallback)
+# ---------------------------------------------------------------------------
+
+def _source_tier(rec: dict, live_ids: frozenset = frozenset()) -> str:
+    """Best confirmation a record carries: 'live-probe' | 'verified' | 'spec'.
+
+    live-probe — id present in a live provider /models probe result (fresh
+                 probe passed to route(), or the registry's own record: the
+                 `source='live-probe'` marker capability-probe stamps, or a
+                 verified.method containing 'http200' = live spot-check).
+    verified   — verified.ok true and/or a capability verified in
+                 capability_sources (spot-checked or cross-checked, not live).
+    spec       — nothing but spec/estimated declarations.
+    """
+    mid = rec.get("id")
+    if mid in live_ids:
+        return "live-probe"
+    ver = rec.get("verified") or {}
+    if rec.get("source") == "live-probe" or \
+            "http200" in str(ver.get("method", "")).lower():
+        return "live-probe"
+    if ver.get("ok") or \
+            any(s == "verified" for s in (rec.get("capability_sources") or {}).values()):
+        return "verified"
+    return "spec"
+
+
+def _pool_breakdown(cands: list, live_ids: frozenset) -> dict:
+    out = {t: 0 for t in SOURCE_TIERS}
+    for r in cands:
+        out[_source_tier(r, live_ids)] += 1
+    return out
+
+
+def _normalize_probe(probe) -> dict | None:
+    """route(probe=...) -> {'ids': [..], 'provider': str} or None.
+
+    Accepts a set/list of ids, a capability-probe-style result
+    ({'models': [{'id': ...}, ...]}), {'ids': [...]}, or a callable that
+    returns any of those (called once).
+    """
+    if probe is None:
+        return None
+    if callable(probe):
+        return _normalize_probe(probe())
+    if isinstance(probe, dict):
+        ids = probe.get("ids")
+        if ids is None and isinstance(probe.get("models"), list):
+            ids = [m.get("id") for m in probe["models"] if isinstance(m, dict)]
+        if ids is None and isinstance(probe.get("models"), set):
+            ids = list(probe["models"])
+        provider = probe.get("provider", "provider /models probe")
+    elif isinstance(probe, (set, list, tuple, frozenset)):
+        ids, provider = probe, "provider /models probe"
+    else:
+        return None
+    ids = [str(i) for i in ids if i]
+    return {"ids": ids, "provider": provider} if ids else None
+
+
+# module-level probe cache — auto_probe_live() is patchable in tests
+_PROBE_CACHE: dict = {"ts": 0.0, "result": None}
+
+
+def auto_probe_live(force: bool = False) -> dict | None:
+    """Live-probe the configured provider's /models (empty-registry fallback).
+
+    Tries capability-probe (ANY provider pool — table read live from
+    xomni_cli/provider-pool) when installed, else provider-pool's wired
+    gateway_health() (/models on the opencode-zen channel). Probes only
+    providers that have a key; first success wins. Returns
+    {'ids': [..], 'provider': str, 'probed_at': str} or None when nothing
+    could be probed (no module, no key, or every probe failed). Cached
+    PROBE_TTL_SECONDS; command path only — never called from the hook.
+    """
+    now = time.time()
+    cached = _PROBE_CACHE.get("result")
+    if not force and cached is not None and now - _PROBE_CACHE["ts"] < PROBE_TTL_SECONDS:
+        return cached
+    result = None
+    cp = _probe_module()
+    if cp is not None:
+        try:
+            table = cp.providers_table()
+        except Exception:
+            table = []
+        load_key = getattr(cp, "load_key", None)
+        probe = getattr(cp, "probe", None)
+        for prov in table:
+            if not isinstance(prov, dict) or not prov.get("base_url"):
+                continue
+            key_env = prov.get("key_env") or ""
+            if load_key is not None and key_env and not load_key(key_env):
+                continue  # provider not configured — next pool
+            if probe is None:
+                continue
+            try:
+                res = probe(prov.get("name", "provider"), prov["base_url"],
+                            key_env, prov.get("api_type", "openai"),
+                            timeout=PROBE_TIMEOUT_SECONDS)
+            except Exception:
+                continue  # per-provider probe failure — try the next pool
+            if res and res.get("models"):
+                result = {
+                    "ids": [m.get("id") for m in res["models"] if m.get("id")],
+                    "provider": prov.get("name", "provider"),
+                    "probed_at": res.get("probed_at", ""),
+                }
+                break
+    if result is None:
+        pp = _provider_pool()
+        gh = getattr(pp, "gateway_health", None) if pp is not None else None
+        if gh is not None:
+            try:
+                health = gh(timeout=PROBE_TIMEOUT_SECONDS)
+            except Exception:
+                health = None
+            if health and health.get("ok") and health.get("models"):
+                result = {
+                    "ids": list(health["models"]),
+                    "provider": "opencode-zen",
+                    "probed_at": "",
+                }
+    _PROBE_CACHE.update(ts=time.time(), result=result)
+    return result
+
+
+# ---------------------------------------------------------------------------
 # routing
 # ---------------------------------------------------------------------------
 
-def route(task_hint: str, registry: dict | None = None) -> dict:
-    """Route a task prompt to the best free model over real registry capabilities.
+def route(task_hint: str, registry: dict | None = None,
+          probe=None) -> dict:
+    """Route a task prompt to the best model over the LIVE registry.
+
+    The candidate pool is the registry exactly as it exists NOW: records with
+    status active/verified/live-probe, ranked per task type by capability
+    (context_window for heavy, image_in for vision, low-latency/reasoning
+    tags for quick/reasoning/default), tie-broken by pick-source priority
+    live-probe > verified > spec.
+
+    probe=... optionally injects a live /models probe result (set/list of
+    ids, {'models': [...]} or {'ids': [...]} — or a callable) so records in
+    it rank as live-probe; None leaves tiers to the registry's own evidence.
+
+    Empty/stale registry (or no capability match): falls back to the
+    configured provider's own /models via auto_probe_live() (capability-probe
+    when installed, else provider-pool gateway_health — import when
+    available). A successful probe picks from the live ids (source
+    live-probe); otherwise the fallback is LOUD: reason names the empty state
+    and pool_size=0 — never a silent pick, never a crash.
 
     Returns {model, task_type, keywords, reason, alternatives,
-    config_command, provider, provider_hint, registry_source}. With
-    registry=None the real omni-registry is loaded (and provider-pool tags
-    enrich quick/reasoning/default tiers); with an empty dict or an
-    unavailable registry the FALLBACK_MODELS tier table is used.
+    config_command, provider, provider_hint, registry_source, pool_size,
+    pool_breakdown, pick_source}.
     """
     task_type, keywords = detect_task_type(task_hint)
 
     if registry is None:
         registry = _load_registry()
 
-    active = _active(registry)
-    if not active:
-        return _fallback_route(task_type, keywords)
+    pool = _candidates(registry)
+    if not pool:
+        # empty/stale registry -> provider /models probe, then loud fallback
+        live = _normalize_probe(probe) if probe is not None else auto_probe_live()
+        if live:
+            return _probe_route(task_type, keywords, live)
+        return _fallback_route(
+            task_type, keywords, loud=True, pool_size=0,
+            note="omni-registry empty/stale and provider /models probe "
+                 "unavailable — no live models to pick from")
+
+    live_ids = frozenset()
+    if probe is not None:
+        live = _normalize_probe(probe)
+        if live:
+            live_ids = frozenset(live["ids"])
 
     tags = _pool_tags()
+    tier = lambda r: _TIER_RANK[_source_tier(r, live_ids)]
 
     if task_type == "quick":
         cands = [
-            r for r in active
+            r for r in pool
             if _has(r, "tools")
             and ("fast" in tags.get(r["id"], set())
                  or (_latency_ms(r) is not None
@@ -278,50 +482,54 @@ def route(task_hint: str, registry: dict | None = None) -> dict:
         ]
         cands.sort(key=lambda r: (
             0 if "fast" in tags.get(r["id"], set()) else 1,
-            _latency_ms(r) or 0, _ctx(r), r["id"]))
+            _latency_ms(r) or 0, _ctx(r), tier(r), r["id"]))
         why = ("fast-tier: fast-tagged or latency < %dms, lightest context "
                "(fastest first token)" % LATENCY_THRESHOLD_MS)
 
     elif task_type == "reasoning":
         cands = [
-            r for r in active
+            r for r in pool
             if _has(r, "thinking") or _has(r, "always_thinking")
         ]
         cands.sort(key=lambda r: (
             0 if "reasoning" in tags.get(r["id"], set()) else 1,
             0 if _cap_src(r, "thinking") == "verified" else 1,
             0 if _has(r, "always_thinking") else 1,
-            -_ctx(r), r["id"]))
+            -_ctx(r), tier(r), r["id"]))
         why = ("reasoning-tier: thinking/always_thinking capability, "
                "prefers reasoning-tagged + verified thinking, biggest context")
 
     elif task_type == "vision":
-        cands = [r for r in active if _has(r, "image_in")]
+        cands = [r for r in pool if _has(r, "image_in")]
         cands.sort(key=lambda r: (
             0 if _cap_src(r, "image_in") == "verified" else 1,
-            -_ctx(r), r["id"]))
+            -_ctx(r), tier(r), r["id"]))
         why = ("vision-tier: image_in capability required; prefers the "
                "live-verified image_in source (spot-checked, not spec)")
 
     elif task_type == "heavy":
-        cands = sorted(active, key=lambda r: (-_ctx(r), r["id"]))
-        why = "heavy-tier: largest context_window among active models"
+        cands = sorted(pool, key=lambda r: (-_ctx(r), tier(r), r["id"]))
+        why = "heavy-tier: largest context_window among live models"
 
     else:  # default
-        cands = [r for r in active if _has(r, "tools") and _has(r, "thinking")]
+        cands = [r for r in pool if _has(r, "tools") and _has(r, "thinking")]
         cands.sort(key=lambda r: (
             0 if "default" in tags.get(r["id"], set()) else 1,
             0 if _cap_src(r, "tools") == "verified" else 1,
-            _latency_ms(r) or 0, _ctx(r), r["id"]))
+            _latency_ms(r) or 0, _ctx(r), tier(r), r["id"]))
         why = ("default-tier: tools+thinking general workhorse, prefers the "
                "default-tagged gateway model")
 
     if not cands:
-        return _fallback_route(task_type, keywords)
+        return _fallback_route(
+            task_type, keywords, loud=True, pool_size=len(pool),
+            note=f"none of the {len(pool)} pool models matched the "
+                 f"'{task_type}' capability gate")
 
     pick = cands[0]
     model = pick["id"]
     provider = _provider_of(pick)
+    pick_source = _source_tier(pick, live_ids)
     alternatives = [
         {"model": r["id"], "provider": _provider_of(r)}
         for r in cands[1:4]
@@ -330,7 +538,8 @@ def route(task_hint: str, registry: dict | None = None) -> dict:
         f"task '{task_type}'"
         + (f" (keywords: {', '.join(keywords)})" if keywords else " (no keywords)")
         + f" -> {model}: {why}; ctx={_ctx(pick):,}, "
-        f"latency={_latency_ms(pick) or '?'}ms, provider={provider}"
+        f"latency={_latency_ms(pick) or '?'}ms, provider={provider}, "
+        f"source={pick_source}"
     )
     return {
         "model": model,
@@ -343,17 +552,71 @@ def route(task_hint: str, registry: dict | None = None) -> dict:
         "provider_hint": (
             f"{provider} (free gateway channel — verified free 2026-08-10)"),
         "registry_source": "omni-registry + provider-pool tags",
+        "pool_size": len(pool),
+        "pool_breakdown": _pool_breakdown(pool, live_ids),
+        "pick_source": pick_source,
     }
 
 
-def _fallback_route(task_type: str, keywords: list[str]) -> dict:
-    model = FALLBACK_MODELS.get(task_type, FALLBACK_MODELS["default"])
+def _probe_route(task_type: str, keywords: list[str], live: dict) -> dict:
+    """Empty-registry fallback that SUCCEEDED: pick from live provider ids.
+
+    The provider's own /models returned N models (source=live-probe). No
+    capability data is exposed by /models, so the pick prefers the task's
+    deterministic default when it is among the live ids, else the first id
+    (stable order) — always something real and live, never a phantom.
+    """
+    ids = live["ids"]
+    provider = live.get("provider", "provider /models probe")
+    pref = FALLBACK_MODELS.get(task_type, FALLBACK_MODELS["default"])
+    pick = pref if pref in ids else sorted(ids)[0]
+    model = pick
+    keywords_s = (f" (keywords: {', '.join(keywords)})" if keywords else "")
     reason = (
-        f"task '{task_type}'"
-        + (f" (keywords: {', '.join(keywords)})" if keywords else "")
-        + f" -> {model}: omni-registry unavailable — deterministic fallback "
-          "tier table (same picks as the real registry)"
+        f"task '{task_type}'{keywords_s} -> {model}: registry empty/stale — "
+        f"live probe of {provider} /models found {len(ids)} models "
+        f"(source=live-probe); /models exposes no capability data, picked the "
+        f"task default among the live ids"
     )
+    return {
+        "model": model,
+        "task_type": task_type,
+        "keywords": keywords,
+        "reason": reason,
+        "alternatives": [
+            {"model": m, "provider": provider}
+            for m in ids if m != model
+        ][:3],
+        "config_command": f"hermes config set model {model}",
+        "provider": provider,
+        "provider_hint": (
+            f"{provider} (live /models probe — {len(ids)} models, "
+            f"source=live-probe)"),
+        "registry_source": f"probe:{provider}",
+        "pool_size": len(ids),
+        "pool_breakdown": {"live-probe": len(ids), "verified": 0, "spec": 0},
+        "pick_source": "live-probe",
+    }
+
+
+def _fallback_route(task_type: str, keywords: list[str], loud: bool = True,
+                    pool_size: int = 0, note: str = "") -> dict:
+    model = FALLBACK_MODELS.get(task_type, FALLBACK_MODELS["default"])
+    if loud:
+        reason = (
+            f"task '{task_type}'"
+            + (f" (keywords: {', '.join(keywords)})" if keywords else "")
+            + f" -> {model}: ⚠ NO LIVE MODELS AVAILABLE — {note or 'no pool'}; "
+              "deterministic fallback tier table used (nothing live to pick "
+              "from; pick_source=fallback)"
+        )
+    else:
+        reason = (
+            f"task '{task_type}'"
+            + (f" (keywords: {', '.join(keywords)})" if keywords else "")
+            + f" -> {model}: omni-registry unavailable — deterministic fallback "
+              "tier table (same picks as the real registry)"
+        )
     return {
         "model": model,
         "task_type": task_type,
@@ -367,20 +630,32 @@ def _fallback_route(task_type: str, keywords: list[str]) -> dict:
         "provider": "opencode-zen",
         "provider_hint": "opencode-zen (free gateway channel — fallback table)",
         "registry_source": "fallback",
+        "pool_size": int(pool_size),
+        "pool_breakdown": {"live-probe": 0, "verified": 0, "spec": 0},
+        "pick_source": "fallback",
+        "loud": True,
     }
 
 
 def route_text(res: dict) -> str:
-    """Render a route() result for /route <prompt> (model + reason + switch cmd)."""
+    """Render a route() result for /route <prompt> — model, reason, pool size,
+    pick source, switch cmd."""
     alts = ", ".join(
         f"{a['model']} ({a['provider']})" for a in res.get("alternatives", [])
     ) or "(none)"
+    bd = res.get("pool_breakdown") or {}
+    bd_s = ", ".join(f"{t}={bd.get(t, 0)}" for t in SOURCE_TIERS)
+    pool_line = (f"  pool:         {res.get('pool_size', 0)} live models"
+                 + (f" ({bd_s})" if bd_s else ""))
     return "\n".join([
         f"/route → task: {res['task_type']}"
-        + (f"  (keywords: {', '.join(res['keywords'])})" if res.get("keywords") else ""),
+        + (f"  (keywords: {', '.join(res['keywords'])})"
+           if res.get("keywords") else ""),
         f"  model:        {res['model']}",
         f"  provider:     {res['provider_hint']}",
         f"  why:          {res['reason'].split(' -> ', 1)[-1]}",
+        pool_line,
+        f"  pick source:  {res.get('pick_source', '?')}",
         f"  switch:       {res['config_command']}",
         f"  alternatives: {alts}",
         f"  source:       {res['registry_source']}",

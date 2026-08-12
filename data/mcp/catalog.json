@@ -5760,5 +5760,15 @@
   "verified": false,
   "source": "blog:The 8 best MCP servers in 2026; https://zapier.com/blog/best-mcp-servers/",
   "source_url": ""
+ },
+ {
+  "name": "mcp-server-time",
+  "install_command": "uvx mcp-server-time",
+  "badges": {
+   "keyless": true
+  },
+  "security": "REVIEW",
+  "source": "user-added",
+  "added_at": "2026-08-12T19:20:19.353397+00:00"
  }
 ]

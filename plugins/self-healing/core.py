@@ -71,16 +71,16 @@ def hermes_home() -> str:
             or os.path.expanduser("~/AppData/Local/hermes"))
 
 
-def hermes_plugins_dir() -> str:
-    return os.path.join(hermes_home(), "plugins")
+def hermes_plugins_dir(home: str | None = None) -> str:
+    return os.path.join(home or hermes_home(), "plugins")
 
 
-def hermes_config_path() -> str:
-    return os.path.join(hermes_home(), "config.yaml")
+def hermes_config_path(home: str | None = None) -> str:
+    return os.path.join(home or hermes_home(), "config.yaml")
 
 
-def hermes_env_path() -> str:
-    return os.path.join(hermes_home(), ".env")
+def hermes_env_path(home: str | None = None) -> str:
+    return os.path.join(home or hermes_home(), ".env")
 
 
 def _plugin_dir() -> str:
@@ -108,8 +108,14 @@ def checks_path() -> str:
 # audit trail
 # --------------------------------------------------------------------------
 
-def audit(detector: str, subject: str, action: str, before, after) -> dict:
-    """Append one {ts, detector, subject, action, before, after} line."""
+def audit(detector: str, subject: str, action: str, before, after,
+          profile: str | None = None) -> dict:
+    """Append one {ts, detector, subject, action, before, after} line.
+
+    ``profile`` stamps the audit entry with the profile name so multi-profile
+    runs keep a per-profile trail; legacy single-profile calls leave the key
+    out (exact legacy shape preserved).
+    """
     entry = {
         "ts": round(time.time(), 3),
         "detector": detector,
@@ -118,6 +124,8 @@ def audit(detector: str, subject: str, action: str, before, after) -> dict:
         "before": before,
         "after": after,
     }
+    if profile is not None:
+        entry["profile"] = profile
     path = audit_log_path()
     os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, "a", encoding="utf-8") as f:
@@ -374,9 +382,11 @@ def default_expected_state() -> dict:
     }
 
 
-def drift_scan(expected_state: dict | None = None) -> list[dict]:
+def drift_scan(expected_state: dict | None = None,
+               home: str | None = None) -> list[dict]:
     """Compare expected vs actual config; return a list of drifts.
 
+    ``home``: the profile home to scan (default: the base hermes home).
     Each drift: {key, kind, expected, actual}. Never reads .env values — only
     KEY presence.
     """
@@ -385,16 +395,16 @@ def drift_scan(expected_state: dict | None = None) -> list[dict]:
 
     # --- plugins roster -------------------------------------------------
     actual_plugins = set()
-    if os.path.isdir(hermes_plugins_dir()):
-        actual_plugins = {n for n in os.listdir(hermes_plugins_dir())
-                          if os.path.isdir(os.path.join(hermes_plugins_dir(), n))}
+    if os.path.isdir(hermes_plugins_dir(home)):
+        actual_plugins = {n for n in os.listdir(hermes_plugins_dir(home))
+                          if os.path.isdir(os.path.join(hermes_plugins_dir(home), n))}
     for name in state.get("plugins", []):
         if name not in actual_plugins:
             drifts.append({"key": f"plugins.{name}", "kind": "plugins",
                            "expected": "present", "actual": "missing"})
 
     # --- provider block -------------------------------------------------
-    cfg_path = hermes_config_path()
+    cfg_path = hermes_config_path(home)
     flat = _yaml_flat(open(cfg_path, "r", encoding="utf-8").read()) \
         if os.path.isfile(cfg_path) else {}
     prov = state.get("provider", {})
@@ -410,7 +420,7 @@ def drift_scan(expected_state: dict | None = None) -> list[dict]:
                        "actual": "missing"})
 
     # --- .env KEY presence (values NEVER read) -------------------------
-    present = set(_read_env_keys(hermes_env_path()))
+    present = set(_read_env_keys(hermes_env_path(home)))
     for key in state.get("env_keys", []):
         if key not in present:
             drifts.append({"key": f"env.{key}", "kind": "env",
@@ -419,19 +429,20 @@ def drift_scan(expected_state: dict | None = None) -> list[dict]:
     return drifts
 
 
-def _fix_plugins(drift: dict) -> tuple[bool, dict, str | None]:
+def _fix_plugins(drift: dict, home: str | None = None) -> tuple[bool, dict, str | None]:
     name = drift["key"].split(".", 1)[1]
     src = os.path.join(xomni_root(), "plugins", name)
-    dst = os.path.join(hermes_plugins_dir(), name)
+    dst = os.path.join(hermes_plugins_dir(home), name)
     if not os.path.isdir(src):
         return False, {"present": False}, f"source missing: {src}"
-    os.makedirs(hermes_plugins_dir(), exist_ok=True)
+    os.makedirs(hermes_plugins_dir(home), exist_ok=True)
     shutil.copytree(src, dst, dirs_exist_ok=True)
     return True, {"present": True}, None
 
 
-def _fix_provider(drift: dict, state: dict) -> tuple[bool, dict, str | None]:
-    cfg_path = hermes_config_path()
+def _fix_provider(drift: dict, state: dict,
+                  home: str | None = None) -> tuple[bool, dict, str | None]:
+    cfg_path = hermes_config_path(home)
     if not os.path.isfile(cfg_path):
         return False, {"present": False}, f"config missing: {cfg_path}"
     prov = state.get("provider", DEFAULT_PROVIDER)
@@ -476,9 +487,9 @@ def _fix_provider(drift: dict, state: dict) -> tuple[bool, dict, str | None]:
     return True, after, None
 
 
-def _fix_env(drift: dict) -> tuple[bool, dict, str | None]:
+def _fix_env(drift: dict, home: str | None = None) -> tuple[bool, dict, str | None]:
     key = drift["key"].split(".", 1)[1]
-    path = hermes_env_path()
+    path = hermes_env_path(home)
     before = {"key": key, "state": "absent"}
     with open(path, "a", encoding="utf-8") as f:
         if os.path.getsize(path) > 0:
@@ -491,17 +502,23 @@ def _fix_env(drift: dict) -> tuple[bool, dict, str | None]:
     return True, {"key": key, "state": "placeholder_added"}, None
 
 
-def fix_drift(drift: dict, expected_state: dict | None = None) -> dict:
-    """Apply the fix for one drift; every fix is audited (secrets never)."""
+def fix_drift(drift: dict, expected_state: dict | None = None,
+              home: str | None = None, profile: str | None = None) -> dict:
+    """Apply the fix for one drift; every fix is audited (secrets never).
+
+    ``home`` targets a specific profile home (default: base hermes home);
+    ``profile`` stamps the audit entry so multi-profile runs keep a
+    per-profile trail.
+    """
     state = expected_state or default_expected_state()
     kind = drift.get("kind") or drift["key"].split(".", 1)[0]
     error = None
     if kind == "plugins":
-        fixed, after, error = _fix_plugins(drift)
+        fixed, after, error = _fix_plugins(drift, home)
     elif kind == "provider":
-        fixed, after, error = _fix_provider(drift, state)
+        fixed, after, error = _fix_provider(drift, state, home)
     elif kind == "env":
-        fixed, after, error = _fix_env(drift)
+        fixed, after, error = _fix_env(drift, home)
     else:
         fixed, after, error = False, {}, f"unknown drift kind: {kind}"
     entry = audit(
@@ -511,6 +528,7 @@ def fix_drift(drift: dict, expected_state: dict | None = None) -> dict:
         before={"expected": drift.get("expected"),
                 "actual": drift.get("actual")},
         after={**(after or {}), "fixed": fixed, "error": error},
+        profile=profile,
     )
     return {"fixed": fixed, "audit": entry, "error": error}
 
@@ -583,44 +601,206 @@ def run_checks(checks: dict | None = None) -> list[dict]:
 
 
 # --------------------------------------------------------------------------
+# multi-profile: discover / scan / fix ALL hermes profiles (U-ASSURE-2)
+# --------------------------------------------------------------------------
+
+def profiles_dir() -> str:
+    """Directory holding named hermes profiles (siblings of the base home)."""
+    return os.path.join(hermes_home(), "profiles")
+
+
+def discover_profiles() -> list[dict]:
+    """Discover every hermes profile: the base home + profiles/* children.
+
+    Returns [{name, home}] — base first, then profiles/* alphabetically. A
+    profile counts only if its home holds a config.yaml; the BASE home is
+    included when it exists (it always does in a real install).
+    """
+    found: list[dict] = []
+    base = hermes_home()
+    if os.path.isfile(os.path.join(base, "config.yaml")):
+        found.append({"name": "base", "home": base})
+    pdir = profiles_dir()
+    if os.path.isdir(pdir):
+        for name in sorted(os.listdir(pdir)):
+            home = os.path.join(pdir, name)
+            if (os.path.isdir(home)
+                    and os.path.isfile(os.path.join(home, "config.yaml"))):
+                found.append({"name": name, "home": home})
+    return found
+
+
+def scan_profile(profile: dict, expected_state: dict | None = None) -> dict:
+    """Drift-scan one profile (plugins roster + config + .env KEY presence).
+
+    Never reads .env VALUES — KEY presence only. Returns
+    {profile, home, ok, drifts, error}; unreadable / missing homes come back
+    as a loud error entry, never a crash.
+    """
+    name = profile.get("name", "?")
+    home = profile.get("home", "")
+    if not home or not os.path.isdir(home):
+        return {"profile": name, "home": home, "ok": False, "drifts": [],
+                "error": f"unreadable profile home: {home or '(none)'}"}
+    if not os.path.isfile(os.path.join(home, "config.yaml")):
+        return {"profile": name, "home": home, "ok": False, "drifts": [],
+                "error": f"unreadable profile: config.yaml missing in {home}"}
+    try:
+        drifts = drift_scan(expected_state, home=home)
+    except OSError as exc:
+        return {"profile": name, "home": home, "ok": False, "drifts": [],
+                "error": f"unreadable profile: {exc}"}
+    return {"profile": name, "home": home, "ok": True, "drifts": drifts,
+            "error": None}
+
+
+def scan_profiles(names: list[str] | None = None) -> dict[str, dict]:
+    """Scan all discovered profiles (or only ``names``).
+
+    Returns {profile_name: scan_profile_result}; unknown names come back as
+    loud error entries.
+    """
+    profs = discover_profiles()
+    by_name = {p["name"]: p for p in profs}
+    out: dict[str, dict] = {}
+    if names is not None:
+        for n in names:
+            if n not in by_name:
+                out[n] = {"profile": n, "home": None, "ok": False,
+                          "drifts": [], "error": f"unknown profile: {n}"}
+        profs = [by_name[n] for n in names if n in by_name]
+    for p in profs:
+        out[p["name"]] = scan_profile(p)
+    return out
+
+
+def fix_profile(profile: dict, expected_state: dict | None = None,
+                apply: bool = True) -> dict:
+    """Fix every drift of one profile; placeholders only, per-profile audit.
+
+    ``apply=False`` returns the plan ({would_fix}) without touching files.
+    Every applied fix is audited with the profile name stamped on the entry.
+    """
+    name = profile.get("name", "?")
+    home = profile.get("home", "")
+    res = scan_profile(profile, expected_state)
+    if res["error"]:
+        return {"profile": name, "home": home, "fixed": 0, "failed": 0,
+                "results": [], "error": res["error"]}
+    if not apply:
+        return {"profile": name, "home": home, "fixed": 0, "failed": 0,
+                "would_fix": len(res["drifts"]),
+                "results": [{"key": d["key"], "status": "would_fix"}
+                            for d in res["drifts"]],
+                "error": None}
+    results = []
+    for d in res["drifts"]:
+        r = fix_drift(d, expected_state, home=home, profile=name)
+        results.append({"key": d["key"], "fixed": r["fixed"],
+                        "error": r["error"]})
+    return {"profile": name, "home": home,
+            "fixed": sum(1 for r in results if r["fixed"]),
+            "failed": sum(1 for r in results if not r["fixed"]),
+            "results": results, "error": None}
+
+
+def fix_profiles(names: list[str] | None = None,
+                 apply: bool = True) -> dict[str, dict]:
+    """Fix drifts across all discovered profiles (or only ``names``)."""
+    profs = discover_profiles()
+    by_name = {p["name"]: p for p in profs}
+    out: dict[str, dict] = {}
+    if names is not None:
+        for n in names:
+            if n not in by_name:
+                out[n] = {"profile": n, "home": None, "fixed": 0, "failed": 0,
+                          "results": [], "error": f"unknown profile: {n}"}
+        profs = [by_name[n] for n in names if n in by_name]
+    for p in profs:
+        out[p["name"]] = fix_profile(p, apply=apply)
+    return out
+
+
+# --------------------------------------------------------------------------
 # /heal command logic
 # --------------------------------------------------------------------------
 
-def cmd_scan() -> str:
-    checks = load_checks()
+def cmd_profiles() -> str:
+    results = scan_profiles()
+    out = ["-- /heal profiles --"]
+    for name in sorted(results):
+        res = results[name]
+        if res["error"]:
+            status = f"ERROR: {res['error']}"
+        elif res["drifts"]:
+            status = f"{len(res['drifts'])} drift(s)"
+        else:
+            status = "OK"
+        out.append(f"  {name:<12} {res['home'] or '?'}  [{status}]")
+    return "\n".join(out)
+
+
+def cmd_scan(arg: str = "") -> str:
+    arg = (arg or "").strip().lower()
     out = ["-- /heal scan --"]
-    for r in run_checks(checks):
+    for r in run_checks(load_checks()):
         flag = "PASS" if r["ok"] else "FAIL"
         out.append(f"  [{r['kind']:>12}] {r['name']}: {flag} — {r['detail']}")
-    drifts = drift_scan()
-    if drifts:
-        out.append(f"  [      drift] {len(drifts)} drift(s) found:")
-        for d in drifts:
-            out.append(f"      {d['key']}: expected={d['expected']} actual={d['actual']}")
-    else:
-        out.append("  [      drift] none — config in sync")
+    # drift scan: one profile or all (default all)
+    names = None if arg in ("", "all") else [arg]
+    results = scan_profiles(names)
+    for name in sorted(results):
+        res = results[name]
+        if res["error"]:
+            out.append(f"  [   profile] {name}: ERROR — {res['error']}")
+        elif res["drifts"]:
+            out.append(f"  [   profile] {name}: {len(res['drifts'])} drift(s) found:")
+            for d in res["drifts"]:
+                out.append(f"      {d['key']}: expected={d['expected']} actual={d['actual']}")
+        else:
+            out.append(f"  [   profile] {name}: none — config in sync")
     return "\n".join(out)
 
 
 def cmd_fix(arg: str) -> str:
     arg = (arg or "").strip()
     if not arg:
-        return "/heal fix <id> — e.g. /heal fix plugins.omni-registry, /heal fix all"
-    drifts = drift_scan()
-    if arg == "all":
-        if not drifts:
-            return "/heal fix all: nothing to fix"
-        lines = ["-- /heal fix all --"]
-        for d in drifts:
-            r = fix_drift(d)
-            lines.append(f"  {d['key']}: {'FIXED' if r['fixed'] else 'FAILED'} "
-                         f"({r['error'] or 'ok'}) → audit id line appended")
+        return ("/heal fix <profile|all> [--yes]  fix every drift of a profile\n"
+                "                                 ('all' = every profile; --yes applies,\n"
+                "                                 without it: dry-run plan only)\n"
+                "/heal fix <id>                    legacy: fix one drift of the base\n"
+                "                                 profile, e.g. plugins.omni-registry,\n"
+                "                                 env.ANTHROPIC_API_KEY")
+    tokens = arg.split()
+    want_yes = "--yes" in [t.lower() for t in tokens]
+    target = " ".join(t for t in tokens if t.lower() != "--yes").strip()
+    if not target:
+        return cmd_fix("")
+    names = {p["name"] for p in discover_profiles()}
+    if target in names or target == "all":
+        sel = None if target == "all" else [target]
+        results = fix_profiles(sel, apply=want_yes)
+        lines = [f"-- /heal fix {target} {'--yes' if want_yes else '(dry run)'} --"]
+        for name in sorted(results):
+            r = results[name]
+            if r["error"]:
+                lines.append(f"  {name}: ERROR — {r['error']}")
+            elif not want_yes:
+                lines.append(f"  {name}: would fix {r['would_fix']} drift(s) — "
+                             "re-run with --yes to apply")
+            else:
+                lines.append(f"  {name}: {r['fixed']} fixed, {r['failed']} failed")
+        if not want_yes:
+            total = sum(r.get("would_fix", 0) for r in results.values())
+            lines.append(f"  (no changes made; {total} drift(s) pending --yes)")
         return "\n".join(lines)
-    match = [d for d in drifts if d["key"] == arg]
+    # legacy single-drift fix against the base profile (no --yes needed)
+    match = [d for d in drift_scan() if d["key"] == target]
     if not match:
-        return f"/heal fix {arg}: no such drift (run /heal scan to list current drifts)"
+        return (f"/heal fix {target}: no such drift or profile "
+                "(run /heal scan to list current drifts)")
     r = fix_drift(match[0])
-    return (f"/heal fix {arg}: {'FIXED' if r['fixed'] else 'FAILED'} "
+    return (f"/heal fix {target}: {'FIXED' if r['fixed'] else 'FAILED'} "
             f"({r['error'] or 'ok'}) — audited to heal.jsonl")
 
 

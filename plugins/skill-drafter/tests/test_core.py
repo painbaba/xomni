@@ -307,5 +307,311 @@ class HandlerTests(unittest.TestCase):
             shutil.rmtree(tmp, ignore_errors=True)
 
 
+class LifecycleTests(unittest.TestCase):
+    """U-SURF-2 — lifecycle() one-call pipeline."""
+
+    class FakeReceipts:
+        def try_file_receipt(self, action, target, result, meta=None, path=None):
+            return {"id": "Rtest0001", "action": action, "target": target,
+                    "result": result, "meta": meta or {},
+                    "handle": "sha256:" + "0" * 64}
+
+    class FakeOmni:
+        @staticmethod
+        def build_publish_command(skill_dir, target="github"):
+            return ["hermes", "skills", "publish", "--to", target, skill_dir]
+
+    def test_12_lifecycle_happy_path_full_pipeline(self):
+        tmp = tempfile.mkdtemp(prefix="skill-drafter-lifecycle-")
+        try:
+            with mock.patch.object(core, "DEFAULT_SKILLS_ROOT", tmp), \
+                 mock.patch.object(core, "receipts_core",
+                                   return_value=self.FakeReceipts()), \
+                 mock.patch.object(core, "omni_skills_core",
+                                   return_value=self.FakeOmni()):
+                result = core.lifecycle(transcript(calls=6))
+            self.assertTrue(result["ok"])
+            self.assertEqual(result["name"], "set-up-python-package")
+            names = [s["step"] for s in result["steps"]]
+            self.assertEqual(names, ["draft", "validate", "save", "receipt",
+                                     "publish"])
+            self.assertEqual(result["steps"][0]["status"], "ok")
+            self.assertEqual(result["steps"][1]["status"], "PASS")
+            self.assertEqual(result["steps"][2]["status"], "ok")
+            self.assertEqual(result["steps"][3]["status"], "ok")
+            self.assertTrue(result["saved"]["ok"])
+            saved_md = os.path.join(result["saved"]["dest"], "SKILL.md")
+            self.assertTrue(os.path.isfile(saved_md))
+            # flat host-skills-dir layout, no category dir
+            self.assertEqual(result["saved"]["dest"], os.path.join(
+                tmp, "set-up-python-package"))
+            self.assertEqual(result["receipt"]["id"], "Rtest0001")
+            self.assertEqual(result["receipt"]["action"], "skill.save")
+            # publish offer carries the omni-skills delegated command
+            self.assertEqual(result["publish_offer"]["command"][:4],
+                             ["hermes", "skills", "publish", "--to"])
+            self.assertIn("/skills publish", result["publish_offer"]["hint"])
+            self.assertEqual(result["steps"][4]["step"], "publish")
+            self.assertEqual(result["steps"][4]["status"], "offer")
+        finally:
+            shutil.rmtree(tmp, ignore_errors=True)
+
+    def test_13_lifecycle_validate_blocks_reject(self):
+        tmp = tempfile.mkdtemp(prefix="skill-drafter-lifecycle-")
+        try:
+            # a transcript whose successful calls carry destructive commands —
+            # the DRAFT passes the gate but validate_draft must REJECT it
+            evil_entries = [{"role": "user", "content": "Clean temp dirs"}]
+            for i in range(6):
+                evil_entries.append({"role": "assistant", "content": f"step {i}",
+                                     "tool_calls": [{"name": "terminal",
+                                                     "arguments": {"command": f"rm -rf /tmp/x{i}"}}]})
+                evil_entries.append({"role": "tool", "name": "terminal",
+                                     "content": "exit_code: 0", "is_error": False})
+            with mock.patch.object(core, "DEFAULT_SKILLS_ROOT", tmp), \
+                 mock.patch.object(core, "receipts_core",
+                                   return_value=self.FakeReceipts()):
+                result = core.lifecycle(evil_entries)
+            # REJECT must stop before save/receipt/publish
+            self.assertFalse(result["ok"])
+            self.assertEqual(result["verdict"], "REJECT")
+            step_names = [s["step"] for s in result["steps"]]
+            self.assertIn("validate", step_names)
+            self.assertNotIn("save", step_names)
+            self.assertNotIn("receipt", step_names)
+            self.assertNotIn("publish", step_names)
+            self.assertIsNone(result.get("saved"))
+            self.assertEqual(os.listdir(tmp), [])  # nothing written at all
+        finally:
+            shutil.rmtree(tmp, ignore_errors=True)
+
+    def test_14_lifecycle_receipt_emitted_and_skipped_gracefully(self):
+        tmp = tempfile.mkdtemp(prefix="skill-drafter-lifecycle-")
+        try:
+            with mock.patch.object(core, "DEFAULT_SKILLS_ROOT", tmp), \
+                 mock.patch.object(core, "receipts_core",
+                                   return_value=self.FakeReceipts()):
+                emitted = core.lifecycle(transcript(calls=6))
+            self.assertTrue(emitted["ok"])
+            self.assertIsNotNone(emitted["receipt"])
+            self.assertEqual(emitted["steps"][3]["status"], "ok")
+            # receipts unavailable -> skipped gracefully, pipeline still OK
+            with mock.patch.object(core, "DEFAULT_SKILLS_ROOT", tmp), \
+                 mock.patch.object(core, "receipts_core", return_value=None):
+                skipped = core.lifecycle(transcript(calls=6))
+            self.assertTrue(skipped["ok"])
+            self.assertIsNone(skipped["receipt"])
+            self.assertEqual(skipped["steps"][3]["status"], "skipped")
+            self.assertIn("skipped gracefully", skipped["steps"][3]["detail"])
+        finally:
+            shutil.rmtree(tmp, ignore_errors=True)
+
+    def test_15_from_session_wiring(self):
+        mod = load_plugin_module()
+        tmp = tempfile.mkdtemp(prefix="skill-drafter-fromsession-")
+        try:
+            with mock.patch.object(core, "DEFAULT_SKILLS_ROOT", tmp), \
+                 mock.patch.object(core, "export_session",
+                                   return_value={"ok": True,
+                                                 "transcript": transcript(calls=6),
+                                                 "session_id": "20260813_000000_abc123"}), \
+                 mock.patch.object(core, "receipts_core",
+                                   return_value=self.FakeReceipts()), \
+                 mock.patch.object(core, "omni_skills_core",
+                                   return_value=self.FakeOmni()):
+                out = mod._handle_from_session("20260813_000000_abc123")
+            self.assertIn("DRAFT set-up-python-package", out)
+            self.assertIn("--- SKILL.md ---", out)
+            self.assertIn("name: set-up-python-package", out)
+            self.assertIn("SAVED ->", out)
+            self.assertIn(tmp, out)
+            self.assertIn("RECEIPT Rtest0001", out)
+            self.assertIn("PUBLISH OFFER: hermes skills publish --to github",
+                          out)
+            self.assertTrue(os.path.isfile(os.path.join(
+                tmp, "set-up-python-package", "SKILL.md")))
+        finally:
+            shutil.rmtree(tmp, ignore_errors=True)
+
+
+class SyncTests(unittest.TestCase):
+    """U-SURF-2 — cross-profile sync: diff math + no-clobber."""
+
+    @staticmethod
+    def _skill_md(name, version="1.0.0", extra=""):
+        return (f"---\nname: {name}\ndescription: \"Test skill {name}.\"\n"
+                f"version: \"{version}\"\n---\n# {name}\n"
+                f"1. do a\n2. do b\n3. do c\n{extra}\n")
+
+    def _roots(self):
+        src = tempfile.mkdtemp(prefix="skill-drafter-sync-src-")
+        dst = tempfile.mkdtemp(prefix="skill-drafter-sync-dst-")
+        # alpha: only in src -> added
+        os.makedirs(os.path.join(src, "alpha"))
+        with open(os.path.join(src, "alpha", "SKILL.md"), "w",
+                  encoding="utf-8") as f:
+            f.write(self._skill_md("alpha"))
+        # shared: identical on both sides -> skipped
+        for root in (src, dst):
+            os.makedirs(os.path.join(root, "shared"))
+            with open(os.path.join(root, "shared", "SKILL.md"), "w",
+                      encoding="utf-8") as f:
+                f.write(self._skill_md("shared"))
+        # conflict: differs -> updated, never clobbered
+        for root, ver in ((src, "1.0.0"), (dst, "2.0.0")):
+            os.makedirs(os.path.join(root, "conflict"))
+            with open(os.path.join(root, "conflict", "SKILL.md"), "w",
+                      encoding="utf-8") as f:
+                f.write(self._skill_md("conflict", version=ver))
+        # only-dst: untouched by the sync
+        os.makedirs(os.path.join(dst, "only-dst"))
+        with open(os.path.join(dst, "only-dst", "SKILL.md"), "w",
+                  encoding="utf-8") as f:
+            f.write(self._skill_md("only-dst"))
+        return src, dst
+
+    def test_16_sync_diff_math_and_no_clobber(self):
+        src, dst = self._roots()
+        try:
+            result = core.sync_skills(src, dst)
+            self.assertTrue(result["ok"])
+            self.assertEqual([r for r, _ in result["added"]], ["alpha"])
+            self.assertEqual([r for r, _ in result["updated"]], ["conflict"])
+            self.assertEqual(result["skipped"], ["shared"])
+            # alpha copied
+            self.assertTrue(os.path.isfile(os.path.join(
+                dst, "alpha", "SKILL.md")))
+            # conflict NOT clobbered — dst keeps v2.0.0
+            with open(os.path.join(dst, "conflict", "SKILL.md"),
+                      encoding="utf-8") as f:
+                self.assertIn('version: "2.0.0"', f.read())
+            # only-dst untouched
+            self.assertTrue(os.path.isfile(os.path.join(
+                dst, "only-dst", "SKILL.md")))
+            # second run is idempotent: alpha now identical -> skipped
+            again = core.sync_skills(src, dst)
+            self.assertEqual(again["added"], [])
+            self.assertEqual([r for r, _ in again["updated"]], ["conflict"])
+            self.assertEqual(sorted(again["skipped"]), ["alpha", "shared"])
+        finally:
+            shutil.rmtree(src, ignore_errors=True)
+            shutil.rmtree(dst, ignore_errors=True)
+
+    def test_16b_sync_dry_run_writes_nothing(self):
+        src, dst = self._roots()
+        try:
+            result = core.sync_skills(src, dst, dry_run=True)
+            self.assertTrue(result["dry_run"])
+            self.assertEqual([r for r, _ in result["added"]], ["alpha"])
+            self.assertFalse(os.path.exists(os.path.join(dst, "alpha")))
+            with open(os.path.join(dst, "conflict", "SKILL.md"),
+                      encoding="utf-8") as f:
+                self.assertIn('version: "2.0.0"', f.read())
+        finally:
+            shutil.rmtree(src, ignore_errors=True)
+            shutil.rmtree(dst, ignore_errors=True)
+
+    def test_16c_sync_cross_profile_bidirectional(self):
+        src, dst = self._roots()
+        try:
+            # both directions: alpha goes src->dst, only-dst comes dst->src
+            result = core.sync_cross_profile(host_root=src,
+                                             profile_root=dst,
+                                             direction="both")
+            self.assertTrue(result["ok"])
+            self.assertEqual(len(result["passes"]), 2)
+            h2x, x2h = result["passes"]
+            self.assertEqual(h2x[0], "host->xomni")
+            self.assertEqual([r for r, _ in h2x[1]["added"]], ["alpha"])
+            self.assertEqual(x2h[0], "xomni->host")
+            self.assertEqual([r for r, _ in x2h[1]["added"]], ["only-dst"])
+            # conflict stays v2.0.0 in dst and v1.0.0 in src — no clobber
+            with open(os.path.join(dst, "conflict", "SKILL.md"),
+                      encoding="utf-8") as f:
+                self.assertIn('version: "2.0.0"', f.read())
+            with open(os.path.join(src, "conflict", "SKILL.md"),
+                      encoding="utf-8") as f:
+                self.assertIn('version: "1.0.0"', f.read())
+            # bad direction -> loud failure
+            bad = core.sync_cross_profile(host_root=src, profile_root=dst,
+                                          direction="sideways")
+            self.assertFalse(bad["ok"])
+            self.assertIn("unknown direction", bad["reason"])
+        finally:
+            shutil.rmtree(src, ignore_errors=True)
+            shutil.rmtree(dst, ignore_errors=True)
+
+
+class LifecycleFlagsTests(unittest.TestCase):
+    """U-SURF-2 — step flags: --no-save preview, --no-publish, zero hooks."""
+
+    class FakeReceipts:
+        issued = []
+
+        def try_file_receipt(self, action, target, result, meta=None, path=None):
+            self.issued.append(target)
+            return {"id": "Rflag0001", "action": action, "target": target,
+                    "result": result, "meta": meta or {},
+                    "handle": "sha256:" + "1" * 64}
+
+    def test_17_no_save_preview_writes_nothing(self):
+        tmp = tempfile.mkdtemp(prefix="skill-drafter-preview-")
+        try:
+            fake = self.FakeReceipts()
+            with mock.patch.object(core, "DEFAULT_SKILLS_ROOT", tmp), \
+                 mock.patch.object(core, "receipts_core", return_value=fake), \
+                 mock.patch.object(core, "omni_skills_core",
+                                   return_value=LifecycleTests.FakeOmni()):
+                result = core.lifecycle(transcript(calls=6), save=False)
+            self.assertTrue(result["ok"])
+            self.assertIsNone(result["saved"])
+            self.assertIsNone(result["receipt"])
+            statuses = {s["step"]: s["status"] for s in result["steps"]}
+            self.assertEqual(statuses["save"], "skipped")
+            self.assertEqual(statuses["receipt"], "skipped")
+            self.assertEqual(statuses["publish"], "offer")
+            self.assertEqual(fake.issued, [])  # no receipt for a preview
+            self.assertEqual(os.listdir(tmp), [])  # literally nothing written
+            # --no-publish: offer suppressed
+            with mock.patch.object(core, "DEFAULT_SKILLS_ROOT", tmp), \
+                 mock.patch.object(core, "receipts_core", return_value=fake):
+                result2 = core.lifecycle(transcript(calls=6), publish=False)
+            self.assertTrue(result2["ok"])
+            self.assertIsNone(result2["publish_offer"])
+            self.assertEqual(
+                {s["step"]: s["status"] for s in result2["steps"]}["publish"],
+                "skipped")
+        finally:
+            shutil.rmtree(tmp, ignore_errors=True)
+
+    def test_18_zero_hooks(self):
+        # the plugin registers commands only — no register_hook anywhere
+        with open(os.path.join(PLUGIN_DIR, "__init__.py"), encoding="utf-8") as f:
+            src = f.read()
+        self.assertNotIn("register_hook", src)
+        # register() with a ctx that fails loudly on any hook registration
+        mod = load_plugin_module()
+
+        class Ctx:
+            def __init__(self):
+                self.commands = []
+
+            def register_command(self, name, handler=None, description="",
+                                 args_hint=""):
+                self.commands.append(name)
+
+            def register_hook(self, *a, **k):
+                raise AssertionError("register_hook must never be called")
+
+            def register_tool(self, *a, **k):
+                raise AssertionError("register_tool must never be called")
+
+        ctx = Ctx()
+        mod.register(ctx)
+        self.assertIn("skill", ctx.commands)
+        self.assertIn("skill-from-session", ctx.commands)
+        self.assertIn("skill-sync", ctx.commands)
+
+
 if __name__ == "__main__":
     unittest.main()

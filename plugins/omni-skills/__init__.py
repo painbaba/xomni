@@ -94,6 +94,35 @@ def _receipt_for_install(r: dict, action: str, base: str) -> int:
     return n
 
 
+def _receipt_for_publish(r: dict, skill_dir: str) -> int:
+    """Issue a sha256-handled receipt for a published skill (never raises).
+
+    Host-delegated publish: the side-effect is the credit stamp written into
+    the source SKILL.md. Repo-copy fallback: the copied SKILL.md under
+    ``r['path']``. Dry runs and failures issue nothing.
+    """
+    if not r or not r.get("ok") or r.get("dry_run"):
+        return 0
+    mod = _receipts_core()
+    if mod is None:
+        return 0
+    target, result = None, ""
+    if r.get("delegated"):
+        target = os.path.join(skill_dir, "SKILL.md")
+        result = "delegated to %s (--to %s)" % (r.get("host", "hermes"),
+                                                r.get("target", "github"))
+    elif r.get("path"):
+        target = os.path.join(r["path"], "SKILL.md")
+        result = "repo-copy fallback publish (host publish preferred)"
+    if not target or not os.path.isfile(target):
+        return 0
+    if mod.try_file_receipt("skill.publish", target, result,
+                            {"skill": r.get("name", ""),
+                             "delegated": bool(r.get("delegated"))}):
+        return 1
+    return 0
+
+
 def _parse_args(raw: str) -> tuple:
     """Parse shared flags. Returns (path, target, dry_run, yes).
 
@@ -264,6 +293,7 @@ def _handle_publish(raw: str) -> str:
         if r.get("issues"):
             detail = " (" + "; ".join(f for f, _ in r["issues"][:3]) + ")"
         return f"/skills publish: FAILED — {r.get('reason', 'see details')}{detail}"
+    _receipt_for_publish(r, path)
     mode = "DRY-RUN " if dry else ""
     credit_lines = [f"  author       : {r['author']}",
                     f"  source       : {r['source']}",

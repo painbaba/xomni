@@ -26,6 +26,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import re
 import shlex
 import subprocess
 import time
@@ -326,3 +327,160 @@ def verify_text(result: dict) -> str:
     verdict = "VERIFY OK" if result.get("ok") else "VERIFY FAILED"
     return "%s — %s: %s" % (verdict, result.get("receipt_id"),
                             json.dumps(result.get("evidence", {}), ensure_ascii=False))
+
+
+# ─── /receipts audit — mutating-path coverage report (grep-based) ────────────
+# Every mutating command across the CLI + plugins is listed with the receipt
+# action it MUST emit. Coverage is decided by grepping the command's own
+# function body for a receipt-issuing call (`issue(`, try_*_receipt,
+# _receipt_*). A second, write-primitive scan flags any *unlisted* handler
+# that writes files/config without a receipt marker — so new mutating paths
+# surface loudly instead of silently shipping receipt-less.
+
+#: (command, source file relative to repo root, function, expected receipt action)
+MUTATING_PATHS = [
+    ("xomni plugins install",       "xomni_cli/__init__.py",             "cmd_plugins_install", "plugin.install"),
+    ("xomni skill install",         "xomni_cli/__init__.py",             "cmd_skill_install",   "skill.install"),
+    ("xomni providers add",         "xomni_cli/__init__.py",             "cmd_providers_add",   "provider.add"),
+    ("xomni add <stack>",           "xomni_cli/__init__.py",             "cmd_add",             "stack.add"),
+    ("/mcp add <path> (import)",    "plugins/mcp-catalog/__init__.py",   "_cmd_add",            "mcp.catalog.import"),
+    ("/mcp add <name> (install)",   "plugins/mcp-catalog/__init__.py",   "_cmd_install",        "mcp.server.install"),
+    ("/skills-install",             "plugins/omni-skills/__init__.py",   "_handle_install",     "skill.install"),
+    ("/skills-marketplace",         "plugins/omni-skills/__init__.py",   "_handle_marketplace", "skill.marketplace"),
+    ("/skills publish",             "plugins/omni-skills/__init__.py",   "_handle_publish",     "skill.publish"),
+    ("skills_import (tool)",        "plugins/omni-skills/__init__.py",   "_tool_skills_import", "skill.install"),
+    ("/skill save",                 "plugins/skill-drafter/__init__.py", "_handle_save",        "skill.draft.save"),
+    ("/skill from-session",         "plugins/skill-drafter/core.py",      "lifecycle",           "skill.save"),
+    ("/skill sync",                 "plugins/skill-drafter/__init__.py",  "_handle_sync",        "skill.sync"),
+    ("/statusline on|off",          "plugins/title-statusline/__init__.py", "_handle_title",    "statusline.state"),
+]
+
+_RECEIPT_MARKER = re.compile(
+    r"(issue\(|try_file_receipt|try_url_receipt|try_exit_receipt|try_issue|_receipt_)")
+_WRITE_MARKER = re.compile(
+    r"(open\([^)]*[\"'](?:w|a)[\"']|copyfile|copytree|\.write\(|os\.write|"
+    r"shutil\.(?:move|rmtree)|json\.dump\()")
+_HANDLER_NAME = re.compile(r"^(cmd_|_handle_|_cmd_|_tool_)")
+
+
+def _repo_root() -> str:
+    """Repo root = three dirs up from plugins/receipts/core.py."""
+    return os.path.dirname(os.path.dirname(os.path.dirname(
+        os.path.abspath(__file__))))
+
+
+def _func_body(path: str, func: str) -> list[str]:
+    """Body lines of a top-level function ([] when the file/function is missing)."""
+    try:
+        with open(path, encoding="utf-8", errors="replace") as f:
+            lines = f.read().splitlines()
+    except OSError:
+        return []
+    start = None
+    for i, line in enumerate(lines):
+        if re.match(r"^def %s\b" % re.escape(func), line):
+            start = i + 1
+            break
+    if start is None:
+        return []
+    body = []
+    for line in lines[start:]:
+        if re.match(r"^(def |class |@)", line):
+            break
+        body.append(line)
+    return body
+
+
+def _has_receipt(path: str, func: str) -> tuple[bool, str]:
+    """(covered, marker) — does the function body issue a receipt?"""
+    for line in _func_body(path, func):
+        m = _RECEIPT_MARKER.search(line)
+        if m:
+            return True, m.group(0).rstrip("(")
+    return False, ""
+
+
+def _scan_unlisted_writes(repo_root: str) -> list[dict]:
+    """Handler-shaped functions (cmd_/_handle_/_cmd_/_tool_) that write files
+    but contain no receipt-issuing call — new mutating paths that escaped the
+    inventory. Reported loudly by the audit."""
+    files = ["xomni_cli/__init__.py"]
+    plugins_dir = os.path.join(repo_root, "plugins")
+    if os.path.isdir(plugins_dir):
+        files += [os.path.join("plugins", d, "__init__.py")
+                  for d in sorted(os.listdir(plugins_dir))
+                  if os.path.isfile(os.path.join(plugins_dir, d, "__init__.py"))]
+    flagged = []
+    for rel in files:
+        path = os.path.join(repo_root, rel.replace("/", os.sep))
+        if not os.path.isfile(path):
+            continue
+        try:
+            lines = open(path, encoding="utf-8", errors="replace").read().splitlines()
+        except OSError:
+            continue
+        funcs: dict[str, list[str]] = {}
+        cur: str | None = None
+        for line in lines:
+            m = re.match(r"^def (\w+)\(", line)
+            if m:
+                cur = m.group(1)
+                funcs[cur] = []
+            elif cur is not None:
+                if re.match(r"^(def |class |@)", line):
+                    cur = None
+                else:
+                    funcs[cur].append(line)
+        for name, body in funcs.items():
+            if not _HANDLER_NAME.match(name):
+                continue
+            writes = [ln for ln in body if _WRITE_MARKER.search(ln)]
+            if writes and not any(_RECEIPT_MARKER.search(ln) for ln in body):
+                flagged.append({"func": name, "file": rel,
+                                "write": writes[0].strip()[:80]})
+    return flagged
+
+
+def audit_coverage(repo_root: str | None = None,
+                   inventory: list | None = None) -> dict:
+    """Grep-based coverage audit of every mutating command.
+
+    Returns ``{rows, covered, total, unlisted, repo_root}`` where each row is
+    ``{command, file, func, action, covered, marker}`` and *unlisted* lists
+    handler functions that write files/config WITHOUT any receipt marker
+    (missing-path detection — loud by design).
+    """
+    root = repo_root or _repo_root()
+    rows = []
+    for command, rel, func, action in (inventory if inventory is not None
+                                       else MUTATING_PATHS):
+        path = os.path.join(root, rel.replace("/", os.sep))
+        covered, marker = _has_receipt(path, func)
+        rows.append({"command": command, "file": rel, "func": func,
+                     "action": action, "covered": covered, "marker": marker})
+    covered = sum(1 for r in rows if r["covered"])
+    return {"rows": rows, "covered": covered, "total": len(rows),
+            "unlisted": _scan_unlisted_writes(root), "repo_root": root}
+
+
+def audit_text(result: dict) -> str:
+    """Render the audit report as a coverage table; gaps are loud."""
+    rows = result.get("rows", [])
+    lines = ["RECEIPTS AUDIT — mutating-path coverage: %d/%d commands emit a receipt"
+             % (result.get("covered", 0), result.get("total", 0)),
+             "  repo: %s" % result.get("repo_root", "")]
+    lines.append("  %-28s %-7s %-20s %s" % ("command", "receipt", "action", "evidence"))
+    for r in rows:
+        flag = "OK " if r["covered"] else "GAP"
+        lines.append("  %-28s %-7s %-20s %s" % (r["command"][:28], flag,
+                                                r["action"],
+                                                r["marker"] or "— no issue( call"))
+    unlisted = result.get("unlisted", [])
+    if unlisted:
+        lines.append("  ! UNLISTED WRITE PATHS — handlers that write without a receipt:")
+        for f in unlisted:
+            lines.append("    ! %s — %s (%s)" % (f["func"], f["write"], f["file"]))
+    else:
+        lines.append("  unlisted write paths: none")
+    lines.append("verify per receipt: /receipts verify <id>")
+    return "\n".join(lines)

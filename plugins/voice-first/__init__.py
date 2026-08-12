@@ -7,6 +7,8 @@ Commands:
     /voice test                 capture 3s from the mic, transcribe, print what was heard
     /voice ask <text>           one spoken turn: send <text> to the host, speak the reply (TTS)
     /voice on [turns]           hands-free session loop: listen -> host -> speak, until 'stop' or turns
+    /voice backends             show the pluggable STT/TTS backend registry: available + selected
+    /voice set stt|tts <name>   persist a backend choice (whisper-local|gemini|sarvam | edge|sarvam|bhashini)
     /voice                      show help
 
 No hooks are registered (spec: zero hooks). Every step is fail-loud: capture,
@@ -26,6 +28,8 @@ HELP = (
     "/voice test                 capture 3s from the mic, transcribe, print what was heard\n"
     "/voice ask <text>           one spoken turn: send <text> to the host, speak the reply (TTS)\n"
     "/voice on [turns]           hands-free session loop: listen -> host -> speak, until 'stop' or turns\n"
+    "/voice backends             show the pluggable STT/TTS backend registry: available + selected\n"
+    "/voice set stt|tts <name>   persist a backend choice (whisper-local|gemini|sarvam | edge|sarvam|bhashini)\n"
     "/voice                      show this help"
 )
 
@@ -54,6 +58,17 @@ def _handle_voice(args: str | None) -> str:
             turns = int(rest) if rest.isdigit() else 5
             events = core.voice_session(turns=turns)
             return core.render_session(events)
+        if sub == "backends":
+            return core.render_backends_table()
+        if sub == "set":
+            rest = parts[1].strip() if len(parts) > 1 else ""
+            bits = rest.split(None, 1)
+            if len(bits) != 2:
+                return HELP
+            kind, name = bits[0].lower(), bits[1].strip()
+            core.set_backend(kind, name)  # unknown kind/backend -> loud VoiceError
+            return (f"[voice] {kind} backend set to {name!r} (persisted in "
+                    f"{core.backend_config_path()})")
     except core.VoiceError as exc:
         # Fail-loud: the user sees exactly what broke and how to fix it.
         return f"[voice] ERROR: {exc}"
@@ -68,8 +83,9 @@ def register(ctx) -> None:
         handler=_handle_voice,
         description=(
             "voice-first: optional hands-free mode — mic capture (ffmpeg/arecord), "
-            "STT (faster-whisper or Gemini), TTS (edge-tts), /voice session loop. "
+            "pluggable STT (whisper-local|gemini|sarvam), pluggable TTS "
+            "(edge|sarvam|bhashini), /voice backends + /voice set, session loop. "
             "Zero hooks."
         ),
-        args_hint="[test|ask <text>|on [turns]]",
+        args_hint="[test|ask <text>|on [turns]|backends|set stt|tts <name>]",
     )

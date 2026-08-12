@@ -91,7 +91,7 @@ PLUGIN_TESTS = {  # from docs/TEST-MATRIX.md
     "omni-parallel": 20, "omni-skills": 17, "perkline": 27, "provider-pool": 36,
     "repomap": 42, "sandbox-gate": 67, "title-statusline": 32, "verify-runner": 38,
     "waitperk": 34, "omni-registry": 15, "codebase-index": 18, "omni-tools": 18,
-    "bharat-pack": 12, "cost-tracker": 14, "receipts": 16,
+    "bharat-pack": 12, "cost-tracker": 14, "receipts": 20,
 }
 
 
@@ -534,6 +534,17 @@ def cmd_providers_add(args: list[str]) -> int:
         return 1
     print(f"  wrote providers.{name} block -> {config_path} (YAML validated)")
     print(f"  .env: {env_note}")
+    # receipts-by-default: the config.yaml write is the side-effect — prove it
+    # with a sha256 handle; the .env placeholder append (when it happened) gets
+    # its own receipt. Guarded — never breaks the command if the ledger fails.
+    _receipt_file("provider.add", config_path,
+                  f"added providers.{name} (base_url={base_url})",
+                  {"provider": name, "base_url": base_url,
+                   "env_key": key_env, "api_type": api_type})
+    if env_note.startswith("appended"):
+        _receipt_file("provider.env", _env_path(),
+                      f"appended {key_env}= placeholder",
+                      {"provider": name, "env_key": key_env})
     print("NEXT: paste the key value into .env, then `xomni doctor` or /models to verify.")
     return 0
 

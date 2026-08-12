@@ -21,8 +21,17 @@ Commands::
     /mcp tools [server]        tool surface; with <server>, live-discover its tools
     /mcp add <path>            import a catalog JSON file into the catalog dir
     /mcp add <name> [--yes]    install a catalog server into host config.yaml mcp_servers
+    /mcp add <name> <url-or-command> [--yes]
+                               self-catalog a brand-new MCP: host config mcp_servers + catalog json
+    /mcp catalog-add <name> <install-command>
+                               catalog-only: index a brand-new MCP into the catalog json
     /mcp status                catalog dir, servers, host registration state
     /mcp validate <path>       validate a catalog JSON file (all errors)
+
+Self-cataloging: any server installed via /mcp add <name> [--yes] (or added
+via the self-catalog / catalog-add paths) is auto-indexed into the catalog
+json as a source='user-added' entry (badges + security=REVIEW), idempotently,
+preserving the rest of the catalog byte-for-byte.
 
 Model tool: ``mcp_call(server, tool, args)`` — invokes a tool on a
 registered MCP server through the host's public registry dispatch
@@ -228,13 +237,31 @@ def _cmd_add(path: str, servers) -> str:
     except OSError as exc:
         return f"/mcp add: failed to copy into catalog dir: {exc}"
     names = ", ".join(s["name"] for s in parsed)
+    # Self-cataloging (U-SURF-1): every imported server is auto-indexed into
+    # the catalog json as a user-added entry (idempotent; loud per-server
+    # failures never silently drop an import).
+    indexed = 0
+    index_failures = []
+    for s in parsed:
+        try:
+            res = core.catalog_add(s["name"], s)
+            if res["written"]:
+                indexed += 1
+        except core.CatalogError as exc:
+            index_failures.append(f"  {s['name']}: {exc}")
     _receipt_file("mcp.catalog.import", dest,
                   "added %d server(s): %s" % (len(parsed), names),
                   {"servers": [s["name"] for s in parsed]})
-    return (
-        f"added {len(parsed)} server(s) to catalog ({dest}): {names}\n"
-        f"Catalog dir: {dest_dir} — validated OK (commands checked on PATH)."
-    )
+    lines = [
+        f"added {len(parsed)} server(s) to catalog ({dest}): {names}",
+        f"Catalog dir: {dest_dir} — validated OK (commands checked on PATH).",
+        f"Self-cataloged {indexed} new server(s) into the catalog json; "
+        f"{len(parsed) - indexed - len(index_failures)} already present.",
+    ]
+    if index_failures:
+        lines.append("FAILED to self-catalog:")
+        lines.extend(index_failures)
+    return "\n".join(lines)
 
 
 def _cmd_install(name: str, yes: bool) -> str:
@@ -276,6 +303,78 @@ def _cmd_install(name: str, yes: bool) -> str:
     return (
         f"installed {name!r} → {result['path']} (mcp_servers.{name}: {plan['launch']})\n"
         "Restart Hermes or run /reload-mcp to connect; then /mcp tools <name> to verify."
+    )
+
+
+def _cmd_add_self(name: str, spec: str, yes: bool) -> str:
+    """Self-catalog path (U-SURF-1): /mcp add <name> <url-or-command> [--yes].
+
+    One command to add a brand-new MCP server nobody has cataloged yet: the
+    server is written into host config ``mcp_servers`` AND auto-indexed into
+    the catalog json (source='user-added'). ``spec`` is a hosted ``http(s)``
+    URL (→ ``url:`` block) or a stdio launch line (``command args...`` → stdio
+    block). --yes is accepted (never prompts); failures are loud FAILED lines.
+    """
+    name = (name or "").strip()
+    spec = (spec or "").strip()
+    if not name or not spec:
+        return (
+            "usage: /mcp add <name> <url-or-command> [--yes] — add a brand-new "
+            "MCP server to host config + catalog json\n"
+            "       /mcp add <name> [--yes] — install a server from the marketplace catalog\n"
+            "       /mcp catalog-add <name> <install-command> — catalog-only index"
+        )
+    if spec.lower().startswith(("http://", "https://")):
+        block = {"url": spec}
+    else:
+        tokens = spec.split()
+        block = {"command": tokens[0], "args": tokens[1:]}
+    host_path = _host_config_path()
+    try:
+        result = core.register_server(name, block, host_path)
+    except core.CatalogError as exc:
+        return f"/mcp add {name}: FAILED — {exc}"
+    if not result["written"]:
+        idx = "catalog already has it" if not result["indexed"] else "catalog indexed"
+        return (
+            f"{name!r} already registered in {result['path']} (mcp_servers) — "
+            f"nothing to write ({idx})."
+        )
+    idx = "indexed into catalog" if result["indexed"] else "already in catalog"
+    _receipt_file("mcp.server.self.add", result["path"],
+                  "%r -> %s + catalog %s" % (name, result["path"], result["catalog_path"]),
+                  {"server": name})
+    return (
+        f"added {name!r} → {result['path']} (mcp_servers.{name}) and {idx} "
+        f"({result['catalog_path']})\n"
+        "Restart Hermes or run /reload-mcp to connect; then /mcp tools <name> to verify."
+    )
+
+
+def _cmd_catalog_add(name: str, install_command: str) -> str:
+    """Catalog-only self-index (U-SURF-1): /mcp catalog-add <name> <install-command>.
+
+    Indexes a brand-new MCP server into the catalog json (source='user-added')
+    WITHOUT touching the host config. Failures are loud FAILED lines.
+    """
+    name = (name or "").strip()
+    install_command = (install_command or "").strip()
+    if not name or not install_command:
+        return (
+            "usage: /mcp catalog-add <name> <install-command> — index a brand-new "
+            "MCP server into the catalog json (catalog-only; host config untouched)"
+        )
+    try:
+        result = core.catalog_add(name, {"install_command": install_command})
+    except core.CatalogError as exc:
+        return f"/mcp catalog-add {name}: FAILED — {exc}"
+    if not result["written"]:
+        return f"{name!r} already in catalog ({result['path']}) — nothing to add."
+    _receipt_file("mcp.catalog.add", result["path"],
+                  "%r -> %s" % (name, result["path"]), {"server": name})
+    return (
+        f"indexed {name!r} into catalog ({result['path']}) as user-added entry "
+        f"(badges: {core.format_badges(result['entry'])}, source=user-added)."
     )
 
 
@@ -349,7 +448,18 @@ def _handle_mcp(raw: str) -> str:
         if first in ("--yes", "-y") or os.path.isfile(expanded):
             # legacy file-import path (strips --yes/-y flags itself)
             return _cmd_add(rest, servers)
-        # not a file → marketplace install: /mcp add <name> [--yes]
+        # self-catalog path: /mcp add <name> <url-or-command> [--yes]
+        parts2 = rest.split(None, 1)
+        if len(parts2) == 2 and parts2[1].strip() not in ("--yes", "-y"):
+            name, spec = parts2
+            yes = False
+            spec_tokens = spec.split()
+            if spec_tokens and spec_tokens[-1] in ("--yes", "-y"):
+                yes = True
+                spec = " ".join(spec_tokens[:-1])
+            if spec:
+                return _cmd_add_self(name, spec, yes)
+        # marketplace install: /mcp add <name> [--yes]
         yes = False
         name = rest
         for flag in ("--yes", "-y"):
@@ -359,6 +469,11 @@ def _handle_mcp(raw: str) -> str:
                 name = name[: -(len(flag) + 1)].strip()
                 yes = True
         return _cmd_install(name, yes)
+    if cmd == "catalog-add":
+        parts2 = rest.split(None, 1)
+        name = parts2[0] if parts2 else ""
+        install_command = parts2[1] if len(parts2) > 1 else ""
+        return _cmd_catalog_add(name, install_command)
     if cmd == "status":
         return _cmd_status(servers)
     if cmd == "validate":
@@ -413,9 +528,15 @@ def register(ctx) -> None:
         handler=_handle_mcp,
         description=(
             "MCP catalog: discover, validate and install MCP servers as agent tools "
-            "(list | search <query> | tools [server] | add <path> | add <name> [--yes] | status | validate <path>)"
+            "(list | search <query> | tools [server] | add <path> | add <name> [--yes] | "
+            "add <name> <url-or-command> [--yes] | catalog-add <name> <install-command> | "
+            "status | validate <path>)"
         ),
-        args_hint="[list|search <query>|tools [server]|add <path>|add <name> [--yes]|status|validate <path>]",
+        args_hint=(
+            "[list|search <query>|tools [server]|add <path>|add <name> [--yes]|"
+            "add <name> <url-or-command> [--yes]|catalog-add <name> <install-command>|"
+            "status|validate <path>]"
+        ),
     )
     ctx.register_tool(
         "mcp_call",

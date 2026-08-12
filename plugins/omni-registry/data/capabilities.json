@@ -21,6 +21,30 @@
       "url": "https://opencode.ai/zen/go/v1/models",
       "fetched_at": "2026-08-10T00:00:00Z",
       "note": "25 ids verified live HTTP 200 (provider-pool GATEWAY_MODELS); /models exposes no capability fields (research F1)"
+    },
+    {
+      "name": "capability-probe:Zen gateway (opencode.ai)",
+      "url": "https://opencode.ai/zen/go/v1/models",
+      "fetched_at": "2026-08-12T19:18:41Z",
+      "note": "live /models probe via capability-probe — 25 ids, source=live-probe"
+    },
+    {
+      "name": "capability-probe:Zen gateway (opencode.ai)",
+      "url": "https://opencode.ai/zen/go/v1/models",
+      "fetched_at": "2026-08-12T19:21:58Z",
+      "note": "live /models probe via capability-probe — 25 ids, source=live-probe"
+    },
+    {
+      "name": "capability-probe:Zen gateway (opencode.ai)",
+      "url": "https://opencode.ai/zen/go/v1/models",
+      "fetched_at": "2026-08-12T19:25:52Z",
+      "note": "live /models probe via capability-probe — 25 ids, source=live-probe"
+    },
+    {
+      "name": "capability-probe:Zen gateway (opencode.ai)",
+      "url": "https://opencode.ai/zen/go/v1/models",
+      "fetched_at": "2026-08-12T19:26:17Z",
+      "note": "live /models probe via capability-probe — 25 ids, source=live-probe"
     }
   ],
   "models": [
@@ -69,7 +93,16 @@
       },
       "provenance": {
         "primary": "curated",
-        "updated_at": "2026-08-12T08:49:14Z"
+        "updated_at": "2026-08-12T19:26:17Z"
+      },
+      "source": "live-probe",
+      "live_probe": {
+        "probed_at": "2026-08-12T19:26:17Z",
+        "provider": "Zen gateway (opencode.ai)",
+        "base_url": "https://opencode.ai/zen/go/v1",
+        "context_window": null,
+        "vision": null,
+        "reasoning": null
       }
     },
     {
@@ -117,7 +150,16 @@
       },
       "provenance": {
         "primary": "curated",
-        "updated_at": "2026-08-12T08:49:14Z"
+        "updated_at": "2026-08-12T19:26:17Z"
+      },
+      "source": "live-probe",
+      "live_probe": {
+        "probed_at": "2026-08-12T19:26:17Z",
+        "provider": "Zen gateway (opencode.ai)",
+        "base_url": "https://opencode.ai/zen/go/v1",
+        "context_window": null,
+        "vision": null,
+        "reasoning": null
       }
     },
     {
@@ -169,7 +211,16 @@
       },
       "provenance": {
         "primary": "curated",
-        "updated_at": "2026-08-12T08:49:14Z"
+        "updated_at": "2026-08-12T19:26:17Z"
+      },
+      "source": "live-probe",
+      "live_probe": {
+        "probed_at": "2026-08-12T19:26:17Z",
+        "provider": "Zen gateway (opencode.ai)",
+        "base_url": "https://opencode.ai/zen/go/v1",
+        "context_window": null,
+        "vision": null,
+        "reasoning": null
       }
     },
     {
@@ -221,7 +272,16 @@
       },
       "provenance": {
         "primary": "curated",
-        "updated_at": "2026-08-12T08:49:14Z"
+        "updated_at": "2026-08-12T19:26:17Z"
+      },
+      "source": "live-probe",
+      "live_probe": {
+        "probed_at": "2026-08-12T19:26:17Z",
+        "provider": "Zen gateway (opencode.ai)",
+        "base_url": "https://opencode.ai/zen/go/v1",
+        "context_window": null,
+        "vision": null,
+        "reasoning": null
       }
     },
     {
@@ -273,7 +333,16 @@
       },
       "provenance": {
         "primary": "curated",
-        "updated_at": "2026-08-12T08:49:14Z"
+        "updated_at": "2026-08-12T19:26:17Z"
+      },
+      "source": "live-probe",
+      "live_probe": {
+        "probed_at": "2026-08-12T19:26:17Z",
+        "provider": "Zen gateway (opencode.ai)",
+        "base_url": "https://opencode.ai/zen/go/v1",
+        "context_window": null,
+        "vision": null,
+        "reasoning": null
       }
     },
     {
@@ -325,7 +394,16 @@
       },
       "provenance": {
         "primary": "curated",
-        "updated_at": "2026-08-12T08:49:14Z"
+        "updated_at": "2026-08-12T19:26:17Z"
+      },
+      "source": "live-probe",
+      "live_probe": {
+        "probed_at": "2026-08-12T19:26:17Z",
+        "provider": "Zen gateway (opencode.ai)",
+        "base_url": "https://opencode.ai/zen/go/v1",
+        "context_window": null,
+        "vision": null,
+        "reasoning": null
       }
     },
     {
@@ -375,7 +453,16 @@
       },
       "provenance": {
         "primary": "curated",
-        "updated_at": "2026-08-12T08:49:14Z"
+        "updated_at": "2026-08-12T19:26:17Z"
+      },
+      "source": "live-probe",
+      "live_probe": {
+        "probed_at": "2026-08-12T19:26:17Z",
+        "provider": "Zen gateway (opencode.ai)",
+        "base_url": "https://opencode.ai/zen/go/v1",
+        "context_window": null,
+        "vision": null,
+        "reasoning": null
       }
     },
     {
@@ -425,7 +512,16 @@
       },
       "provenance": {
         "primary": "curated",
-        "updated_at": "2026-08-12T08:49:14Z"
+        "updated_at": "2026-08-12T19:26:17Z"
+      },
+      "source": "live-probe",
+      "live_probe": {
+        "probed_at": "2026-08-12T19:26:17Z",
+        "provider": "Zen gateway (opencode.ai)",
+        "base_url": "https://opencode.ai/zen/go/v1",
+        "context_window": null,
+        "vision": null,
+        "reasoning": null
       }
     },
     {
@@ -475,7 +571,16 @@
       },
       "provenance": {
         "primary": "curated",
-        "updated_at": "2026-08-12T08:49:14Z"
+        "updated_at": "2026-08-12T19:26:17Z"
+      },
+      "source": "live-probe",
+      "live_probe": {
+        "probed_at": "2026-08-12T19:26:17Z",
+        "provider": "Zen gateway (opencode.ai)",
+        "base_url": "https://opencode.ai/zen/go/v1",
+        "context_window": null,
+        "vision": null,
+        "reasoning": null
       }
     },
     {
@@ -529,7 +634,16 @@
       },
       "provenance": {
         "primary": "curated",
-        "updated_at": "2026-08-12T08:49:14Z"
+        "updated_at": "2026-08-12T19:26:17Z"
+      },
+      "source": "live-probe",
+      "live_probe": {
+        "probed_at": "2026-08-12T19:26:17Z",
+        "provider": "Zen gateway (opencode.ai)",
+        "base_url": "https://opencode.ai/zen/go/v1",
+        "context_window": null,
+        "vision": null,
+        "reasoning": null
       }
     },
     {
@@ -579,7 +693,16 @@
       },
       "provenance": {
         "primary": "curated",
-        "updated_at": "2026-08-12T08:49:14Z"
+        "updated_at": "2026-08-12T19:26:17Z"
+      },
+      "source": "live-probe",
+      "live_probe": {
+        "probed_at": "2026-08-12T19:26:17Z",
+        "provider": "Zen gateway (opencode.ai)",
+        "base_url": "https://opencode.ai/zen/go/v1",
+        "context_window": null,
+        "vision": null,
+        "reasoning": null
       }
     },
     {
@@ -633,7 +756,16 @@
       },
       "provenance": {
         "primary": "curated",
-        "updated_at": "2026-08-12T08:49:14Z"
+        "updated_at": "2026-08-12T19:26:17Z"
+      },
+      "source": "live-probe",
+      "live_probe": {
+        "probed_at": "2026-08-12T19:26:17Z",
+        "provider": "Zen gateway (opencode.ai)",
+        "base_url": "https://opencode.ai/zen/go/v1",
+        "context_window": null,
+        "vision": null,
+        "reasoning": null
       }
     },
     {
@@ -687,7 +819,16 @@
       },
       "provenance": {
         "primary": "curated",
-        "updated_at": "2026-08-12T08:49:14Z"
+        "updated_at": "2026-08-12T19:26:17Z"
+      },
+      "source": "live-probe",
+      "live_probe": {
+        "probed_at": "2026-08-12T19:26:17Z",
+        "provider": "Zen gateway (opencode.ai)",
+        "base_url": "https://opencode.ai/zen/go/v1",
+        "context_window": null,
+        "vision": null,
+        "reasoning": null
       }
     },
     {
@@ -737,7 +878,16 @@
       },
       "provenance": {
         "primary": "curated",
-        "updated_at": "2026-08-12T08:49:14Z"
+        "updated_at": "2026-08-12T19:26:17Z"
+      },
+      "source": "live-probe",
+      "live_probe": {
+        "probed_at": "2026-08-12T19:26:17Z",
+        "provider": "Zen gateway (opencode.ai)",
+        "base_url": "https://opencode.ai/zen/go/v1",
+        "context_window": null,
+        "vision": null,
+        "reasoning": null
       }
     },
     {
@@ -789,7 +939,16 @@
       },
       "provenance": {
         "primary": "curated",
-        "updated_at": "2026-08-12T08:49:14Z"
+        "updated_at": "2026-08-12T19:26:17Z"
+      },
+      "source": "live-probe",
+      "live_probe": {
+        "probed_at": "2026-08-12T19:26:17Z",
+        "provider": "Zen gateway (opencode.ai)",
+        "base_url": "https://opencode.ai/zen/go/v1",
+        "context_window": null,
+        "vision": null,
+        "reasoning": null
       }
     },
     {
@@ -839,7 +998,16 @@
       },
       "provenance": {
         "primary": "curated",
-        "updated_at": "2026-08-12T08:49:14Z"
+        "updated_at": "2026-08-12T19:26:17Z"
+      },
+      "source": "live-probe",
+      "live_probe": {
+        "probed_at": "2026-08-12T19:26:17Z",
+        "provider": "Zen gateway (opencode.ai)",
+        "base_url": "https://opencode.ai/zen/go/v1",
+        "context_window": null,
+        "vision": null,
+        "reasoning": null
       }
     },
     {
@@ -889,7 +1057,16 @@
       },
       "provenance": {
         "primary": "curated",
-        "updated_at": "2026-08-12T08:49:14Z"
+        "updated_at": "2026-08-12T19:26:17Z"
+      },
+      "source": "live-probe",
+      "live_probe": {
+        "probed_at": "2026-08-12T19:26:17Z",
+        "provider": "Zen gateway (opencode.ai)",
+        "base_url": "https://opencode.ai/zen/go/v1",
+        "context_window": null,
+        "vision": null,
+        "reasoning": null
       }
     },
     {
@@ -937,7 +1114,16 @@
       },
       "provenance": {
         "primary": "curated",
-        "updated_at": "2026-08-12T08:49:14Z"
+        "updated_at": "2026-08-12T19:26:17Z"
+      },
+      "source": "live-probe",
+      "live_probe": {
+        "probed_at": "2026-08-12T19:26:17Z",
+        "provider": "Zen gateway (opencode.ai)",
+        "base_url": "https://opencode.ai/zen/go/v1",
+        "context_window": null,
+        "vision": null,
+        "reasoning": null
       }
     },
     {
@@ -989,7 +1175,16 @@
       },
       "provenance": {
         "primary": "curated",
-        "updated_at": "2026-08-12T08:49:14Z"
+        "updated_at": "2026-08-12T19:26:17Z"
+      },
+      "source": "live-probe",
+      "live_probe": {
+        "probed_at": "2026-08-12T19:26:17Z",
+        "provider": "Zen gateway (opencode.ai)",
+        "base_url": "https://opencode.ai/zen/go/v1",
+        "context_window": null,
+        "vision": null,
+        "reasoning": null
       }
     },
     {
@@ -1037,7 +1232,16 @@
       },
       "provenance": {
         "primary": "curated",
-        "updated_at": "2026-08-12T08:49:14Z"
+        "updated_at": "2026-08-12T19:26:17Z"
+      },
+      "source": "live-probe",
+      "live_probe": {
+        "probed_at": "2026-08-12T19:26:17Z",
+        "provider": "Zen gateway (opencode.ai)",
+        "base_url": "https://opencode.ai/zen/go/v1",
+        "context_window": null,
+        "vision": null,
+        "reasoning": null
       }
     },
     {
@@ -1089,7 +1293,16 @@
       },
       "provenance": {
         "primary": "curated",
-        "updated_at": "2026-08-12T08:49:14Z"
+        "updated_at": "2026-08-12T19:26:17Z"
+      },
+      "source": "live-probe",
+      "live_probe": {
+        "probed_at": "2026-08-12T19:26:17Z",
+        "provider": "Zen gateway (opencode.ai)",
+        "base_url": "https://opencode.ai/zen/go/v1",
+        "context_window": null,
+        "vision": null,
+        "reasoning": null
       }
     },
     {
@@ -1137,7 +1350,16 @@
       },
       "provenance": {
         "primary": "curated",
-        "updated_at": "2026-08-12T08:49:14Z"
+        "updated_at": "2026-08-12T19:26:17Z"
+      },
+      "source": "live-probe",
+      "live_probe": {
+        "probed_at": "2026-08-12T19:26:17Z",
+        "provider": "Zen gateway (opencode.ai)",
+        "base_url": "https://opencode.ai/zen/go/v1",
+        "context_window": null,
+        "vision": null,
+        "reasoning": null
       }
     },
     {
@@ -1187,7 +1409,16 @@
       },
       "provenance": {
         "primary": "curated",
-        "updated_at": "2026-08-12T08:49:14Z"
+        "updated_at": "2026-08-12T19:26:17Z"
+      },
+      "source": "live-probe",
+      "live_probe": {
+        "probed_at": "2026-08-12T19:26:17Z",
+        "provider": "Zen gateway (opencode.ai)",
+        "base_url": "https://opencode.ai/zen/go/v1",
+        "context_window": null,
+        "vision": null,
+        "reasoning": null
       }
     },
     {
@@ -1239,7 +1470,16 @@
       },
       "provenance": {
         "primary": "curated",
-        "updated_at": "2026-08-12T08:49:14Z"
+        "updated_at": "2026-08-12T19:26:17Z"
+      },
+      "source": "live-probe",
+      "live_probe": {
+        "probed_at": "2026-08-12T19:26:17Z",
+        "provider": "Zen gateway (opencode.ai)",
+        "base_url": "https://opencode.ai/zen/go/v1",
+        "context_window": null,
+        "vision": null,
+        "reasoning": null
       }
     },
     {
@@ -1291,7 +1531,16 @@
       },
       "provenance": {
         "primary": "curated",
-        "updated_at": "2026-08-12T08:49:14Z"
+        "updated_at": "2026-08-12T19:26:17Z"
+      },
+      "source": "live-probe",
+      "live_probe": {
+        "probed_at": "2026-08-12T19:26:17Z",
+        "provider": "Zen gateway (opencode.ai)",
+        "base_url": "https://opencode.ai/zen/go/v1",
+        "context_window": null,
+        "vision": null,
+        "reasoning": null
       }
     }
   ],

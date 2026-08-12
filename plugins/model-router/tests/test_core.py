@@ -1,10 +1,11 @@
 """Tests for model-router — automatic per-task model routing + telemetry.
 
 Covers: task-type detection (reasoning/vision/quick keyword sets and
-precedence), routing over the REAL omni-registry capabilities (every task type
-routes to a capability-matching active model; a vision query NEVER routes to a
-vision=False model; verified image_in preferred), deterministic picks, the
-config switch command, alternatives, the no-registry fallback, the
+precedence), routing over a FAKE 20-model registry with MIXED pick sources
+(live-probe > verified > spec tie-breaks: live-probe picks win, vision NEVER
+routes to a vision=False model, heavy picks the biggest context, empty
+registry -> LOUD fallback + live provider /models probe fallback), the config
+switch command, alternatives, pool size + pick source reporting, the
 cost-tracker-compatible telemetry ledger roundtrip, and /route telemetry
 rendering (model, ms, $, task type).
 
@@ -19,6 +20,7 @@ import sys
 import tempfile
 import time
 import unittest
+from unittest import mock
 
 import core
 
@@ -27,11 +29,83 @@ def _ts(y, m, d, hh=12, mm=0):
     return datetime.datetime(y, m, d, hh, mm).timestamp()
 
 
-def _real_registry():
-    """The REAL omni-registry capabilities (never a fixture)."""
-    omni = core._omni_registry()
-    assert omni is not None, "omni-registry plugin must be present for these tests"
-    return omni.registry_load()
+def _rec(mid, ctx, caps, tier, latency=4100, cap_src=None, provider="opencode-zen"):
+    """One registry record in the LIVE capabilities.json schema.
+
+    tier='live-probe'  -> source='live-probe' marker + verified.method http200
+                          (the registry's own live spot-check evidence)
+    tier='verified'    -> verified.ok with a non-live method
+    tier='spec'        -> verified.ok=False, nothing but spec declarations
+    """
+    cap_src = cap_src or {}
+    return {
+        "id": mid,
+        "name": mid,
+        "provider": provider,
+        "status": "active",
+        "context_window": {"value": ctx, "source": "spec", "origin": "fixture"},
+        "max_output": {"value": 8192, "source": "spec", "origin": "fixture"},
+        "capabilities": list(caps),
+        "capability_sources": {c: cap_src.get(c, "spec") for c in caps},
+        "cost_per_1m": {"input": 0.0, "output": 0.0, "currency": "USD",
+                        "source": "verified", "origin": "fixture"},
+        "latency_ms": {"median": latency, "samples": 30, "source": "estimated",
+                       "origin": "fixture"},
+        "verified": {
+            "ok": tier != "spec",
+            "method": ("http200 spot-check" if tier == "live-probe"
+                       else "vendor cross-check" if tier == "verified" else "spec"),
+            "date": "2026-08-10", "last_seen": "2026-08-12T00:00:00Z"},
+        "provenance": {"primary": "curated", "updated_at": "2026-08-12T00:00:00Z"},
+        "source": "live-probe" if tier == "live-probe" else None,
+    }
+
+
+def _fake_registry():
+    """Deterministic 20-model fixture with MIXED pick sources (never the live
+    file — tests must be immune to parallel registry refreshes).
+
+    7 live-probe (http200 spot-checked), 7 verified (ok but not live),
+    6 spec-only. Ids come from the real gateway model set so provider-pool
+    tags (fast/reasoning/default/vision) still apply.
+    """
+    reg = {}
+    for mid, ctx, caps in (
+        # live-probe tier (7)
+        ("deepseek-v4-pro", 1048576, ("thinking", "tools")),
+        ("minimax-m3", 1048576, ("thinking", "tools", "structured_output", "image_in")),
+        ("gpt-5.6-luna", 1050000, ("thinking", "tools", "structured_output", "image_in")),
+        ("kimi-k3", 1048576, ("thinking", "tools", "structured_output", "image_in")),
+        ("qwen3.7-plus", 1000000, ("thinking", "tools", "structured_output", "image_in", "video_in")),
+        ("kimi-k2.7-code", 262144, ("thinking", "tools", "structured_output", "image_in")),
+        ("hy3", 256000, ("thinking", "tools")),
+    ):
+        reg[mid] = _rec(mid, ctx, caps, "live-probe")
+    for mid, ctx, caps in (
+        # verified tier (7)
+        ("deepseek-v4-flash", 1000000, ("thinking", "tools")),
+        ("glm-5.2", 1048576, ("thinking", "tools", "structured_output")),
+        ("minimax-m2.7", 196608, ("thinking", "tools", "structured_output")),
+        ("mimo-v2-pro", 1048576, ("thinking", "tools")),
+        ("qwen3.8-max", 1000000, ("thinking", "tools", "structured_output", "image_in", "video_in")),
+        ("kimi-k2.6", 262144, ("thinking", "tools", "structured_output", "image_in")),
+        ("grok-4.5", 500000, ("thinking", "tools", "structured_output", "image_in")),
+    ):
+        reg[mid] = _rec(mid, ctx, caps, "verified")
+    for mid, ctx, caps in (
+        # spec tier (6)
+        ("glm-5.1", 202752, ("thinking", "tools", "structured_output")),
+        ("glm-5", 202752, ("thinking", "tools", "structured_output")),
+        ("qwen3.7-max", 1000000, ("thinking", "tools", "structured_output")),
+        ("qwen3.6-plus", 1000000, ("thinking", "tools", "structured_output", "image_in", "video_in")),
+        ("minimax-m2.5", 196680, ("thinking", "tools", "structured_output")),
+        ("hy3-preview", 256000, ("thinking", "tools", "structured_output")),
+    ):
+        reg[mid] = _rec(mid, ctx, caps, "spec")
+    # minimax-m3 is the ONLY image_in capability spot-checked live (as real)
+    reg["minimax-m3"]["capability_sources"]["image_in"] = "verified"
+    assert len(reg) == 20
+    return reg
 
 
 class DetectTaskTypeTests(unittest.TestCase):
@@ -58,13 +132,14 @@ class DetectTaskTypeTests(unittest.TestCase):
 
 
 class RoutingTests(unittest.TestCase):
-    """Every task type must route to a capability-matching model from the REAL
-    registry (active status + capability gate), never a tombstone."""
+    """Every task type must route to a capability-matching model from the
+    FAKE 20-model registry (active status + capability gate), never a
+    tombstone, with live-probe > verified > spec tie-breaks."""
 
     def setUp(self):
-        self.registry = _real_registry()
-        self.active = [r for r in self.registry.values()
-                       if r.get("status") == "active"]
+        self.registry = _fake_registry()
+        self.pool = [r for r in self.registry.values()
+                     if r.get("status") in core.CANDIDATE_STATUSES]
 
     def _picked(self, res):
         return self.registry[res["model"]]
@@ -119,7 +194,7 @@ class RoutingTests(unittest.TestCase):
         self.assertEqual(res["task_type"], "heavy")
         ctx = (rec.get("context_window") or {}).get("value")
         max_ctx = max((r.get("context_window") or {}).get("value", 0)
-                      for r in self.active)
+                      for r in self.pool)
         self.assertEqual(ctx, max_ctx)
 
     def test_default_routes_workhorse_model(self):
@@ -149,18 +224,91 @@ class RoutingTests(unittest.TestCase):
                             or "always_thinking" in rec.get("capabilities", []))
 
     def test_fallback_without_registry(self):
-        # empty registry -> deterministic fallback tier table, same picks
-        for prompt, expect in (
-            ("summarize quickly", "minimax-m2.5"),
-            ("why did it fail", "deepseek-v4-pro"),
-            ("ocr the screenshot", "minimax-m3"),
-            ("entire repo", "gpt-5.6-luna"),
-            ("hello", "deepseek-v4-flash"),
-        ):
-            res = core.route(prompt, registry={})
-            self.assertEqual(res["model"], expect, prompt)
+        # empty registry -> LOUD deterministic fallback tier table, same picks;
+        # the provider /models probe is unavailable, so no network is touched
+        with mock.patch.object(core, "auto_probe_live", return_value=None):
+            for prompt, expect in (
+                ("summarize quickly", "minimax-m2.5"),
+                ("why did it fail", "deepseek-v4-pro"),
+                ("ocr the screenshot", "minimax-m3"),
+                ("entire repo", "gpt-5.6-luna"),
+                ("hello", "deepseek-v4-flash"),
+            ):
+                res = core.route(prompt, registry={})
+                self.assertEqual(res["model"], expect, prompt)
+                self.assertEqual(res["registry_source"], "fallback")
+                self.assertEqual(res["pool_size"], 0)
+                self.assertEqual(res["pick_source"], "fallback")
+                self.assertIn("config_command", res)
+
+    # ---- U-CORE-2: live registry pool, source tie-breaks, probe fallback ----
+
+    def test_live_probe_pick_wins(self):
+        # three capability-identical models (heavy: ctx 1M each) differing only
+        # in source tier — the live-probed one must win the tie
+        reg = {
+            "aaa-probed": _rec("aaa-probed", 1000000, ("thinking", "tools"), "spec"),
+            "bbb-verified": _rec("bbb-verified", 1000000, ("thinking", "tools"), "verified"),
+            "ccc-live": _rec("ccc-live", 1000000, ("thinking", "tools"), "live-probe"),
+        }
+        res = core.route("entire repo", registry=reg)
+        self.assertEqual(res["model"], "ccc-live")  # live-probe beats verified+spec
+        self.assertEqual(res["pick_source"], "live-probe")
+        # a FRESH live probe elevates the spec model into the live-probe tier
+        # and it then wins the tie (id tie-break among live-probe candidates)
+        res2 = core.route("entire repo", registry=reg,
+                          probe={"ids": ["aaa-probed"], "provider": "opencode-zen"})
+        self.assertEqual(res2["model"], "aaa-probed")
+        self.assertEqual(res2["pick_source"], "live-probe")
+        # verified never beats a live-probed model on a capability tie
+        self.assertNotEqual(res["model"], "bbb-verified")
+
+    def test_pool_size_and_pick_source_reported(self):
+        res = core.route("hello there", registry=self.registry)
+        self.assertEqual(res["pool_size"], 20)
+        bd = res["pool_breakdown"]
+        self.assertEqual(bd, {"live-probe": 7, "verified": 7, "spec": 6})
+        self.assertEqual(sum(bd.values()), res["pool_size"])
+        self.assertIn(res["pick_source"], core.SOURCE_TIERS)
+        self.assertEqual(res["pick_source"], "verified")  # default -> deepseek-v4-flash (verified tier)
+        text = core.route_text(res)
+        self.assertIn("pool:", text)
+        self.assertIn("20 live models", text)
+        self.assertIn("live-probe=7", text)
+        self.assertIn("pick source:", text)
+        self.assertIn("verified", text)
+
+    def test_empty_registry_loud_fallback(self):
+        # registry empty AND probe unavailable -> LOUD, never silent
+        with mock.patch.object(core, "auto_probe_live", return_value=None):
+            res = core.route("why did it fail", registry={})
             self.assertEqual(res["registry_source"], "fallback")
-            self.assertIn("config_command", res)
+            self.assertEqual(res["pool_size"], 0)
+            self.assertEqual(res["pick_source"], "fallback")
+            self.assertTrue(res.get("loud"))
+            self.assertIn("NO LIVE MODELS AVAILABLE", res["reason"])
+            text = core.route_text(res)
+            self.assertIn("0 live models", text)
+            self.assertIn("pick source:  fallback", text)
+
+    def test_empty_registry_probe_fallback_picks_live(self):
+        # registry empty but the provider /models probe SUCCEEDS: the pick
+        # comes from the LIVE ids (source=live-probe), never the tier table
+        live = {"ids": ["deepseek-v4-pro", "minimax-m3", "kimi-k3"],
+                "provider": "opencode-zen", "probed_at": "2026-08-13T00:00:00Z"}
+        with mock.patch.object(core, "auto_probe_live", return_value=live):
+            res = core.route("why did it fail", registry={})
+            self.assertEqual(res["model"], "deepseek-v4-pro")  # task default IS live
+            self.assertEqual(res["registry_source"], "probe:opencode-zen")
+            self.assertEqual(res["pool_size"], 3)
+            self.assertEqual(res["pick_source"], "live-probe")
+            # default not among the live ids -> first live id (stable order)
+            live2 = {"ids": ["minimax-m3", "kimi-k3"], "provider": "opencode-zen"}
+            with mock.patch.object(core, "auto_probe_live", return_value=live2):
+                res2 = core.route("entire repo", registry={})
+                self.assertEqual(res2["model"], "kimi-k3")
+                self.assertEqual(res2["pick_source"], "live-probe")
+                self.assertEqual(res2["pool_size"], 2)
 
 
 class TelemetryTests(unittest.TestCase):

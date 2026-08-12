@@ -80,6 +80,38 @@ COST_TABLE: dict[str, tuple[float, float]] = {
 # Conservative estimate for unknown models (USD/1M tokens); flagged per row.
 FALLBACK_RATES: tuple[float, float] = (0.50, 1.50)
 
+# --- spend caps (U-CORE-3: universal telemetry) ---------------------------
+# Rolling-window spend caps. Each cap lives in the ledger config table as
+# cap_<period> = JSON {"limit_usd": ..., "action": "warn"|"park"}.
+#   action warn -> warn text at >=80% of the limit (never blocks).
+#   action park -> warn at >=80%; at >=100% the HEAVY TIER is parked (see
+#   parked_models()): cost consumers should stop routing to heavy models.
+# Windows are ROLLING (ts - window .. ts), summed from the ledger on demand;
+# checking a cap NEVER writes to the ledger (pure read).
+CAP_PERIODS: dict[str, float] = {
+    "5h": 5 * 3600.0,
+    "1d": 24 * 3600.0,
+    "7d": 7 * 24 * 3600.0,
+    "30d": 30 * 24 * 3600.0,
+}
+WARN_PCT = 80.0    # >= 80% of a cap limit -> warn text
+PARK_PCT = 100.0   # >= 100% of a park cap -> heavy tier parked
+
+# Heavy tier = paid models priced >= this (USD per 1M input tokens), derived
+# from COST_TABLE at call time so /cost sync re-pricing stays authoritative.
+# Free gateway models are never heavy. Parking the heavy tier on an exhausted
+# period cap is the cost-control semantic: cut the expensive models first.
+HEAVY_TIER_INPUT_RATE_USD = 1.0
+
+
+def heavy_tier(rates: dict | None = None) -> list[str]:
+    """Sorted model ids in the heavy tier (input list price >= $1/1M tokens)."""
+    table = rates if rates is not None else COST_TABLE
+    return sorted(
+        slug for slug, (inp, _out) in table.items()
+        if inp >= HEAVY_TIER_INPUT_RATE_USD
+    )
+
 # Pinned models.dev snapshot (single source of truth for model costs) — the
 # omni-registry plugin fetches and pins it at plugins/omni-registry/data/
 # models.snapshot.json. Override per-run with $XOMNI_MODELS_SNAPSHOT.
@@ -244,6 +276,12 @@ class CostTracker:
         for key, value in rows:
             if key == "hard_stop":
                 out[key] = str(value).strip().lower() in ("1", "true", "yes", "on")
+            elif key.startswith("cap_") or key.startswith("mcap_"):
+                # spend-cap rows are JSON blobs (U-CORE-3)
+                try:
+                    out[key] = json.loads(value)
+                except ValueError:
+                    out[key] = value
             else:
                 try:
                     out[key] = float(value)
@@ -371,6 +409,228 @@ class CostTracker:
     def check_budget(self, ts: float | None = None) -> dict:
         """Pre-call gate used by cost_track: cheap, read-only."""
         return self.budget_status(ts=ts)
+
+    # ---- spend caps (U-CORE-3) ----
+
+    def get_spend_caps(self) -> dict:
+        """Period spend caps from the ledger config table (pure read).
+
+        Returns {period: {"limit_usd": float, "action": "warn"|"park"}} for
+        every cap currently stored (periods without a cap are absent).
+        """
+        cfg = self._get_config()
+        caps: dict[str, dict] = {}
+        for key, val in cfg.items():
+            if key.startswith("cap_") and isinstance(val, dict):
+                period = key[len("cap_"):]
+                try:
+                    limit = float(val.get("limit_usd", 0.0))
+                except (TypeError, ValueError):
+                    limit = 0.0
+                caps[period] = {
+                    "limit_usd": limit,
+                    "action": str(val.get("action", "warn")).lower(),
+                }
+        return caps
+
+    def set_spend_cap(self, period: str, limit_usd: float, action: str = "warn") -> dict:
+        """Set/replace a rolling spend cap. period in CAP_PERIODS (5h|1d|7d|30d),
+        action 'warn' (never blocks) or 'park' (heavy tier parked at 100%)."""
+        period = str(period).strip().lower()
+        if period not in CAP_PERIODS:
+            raise ValueError("period must be one of: %s" % ", ".join(CAP_PERIODS))
+        limit = float(limit_usd)
+        if limit <= 0:
+            raise ValueError("limit_usd must be > 0 (use clear to remove a cap)")
+        action = str(action).strip().lower()
+        if action not in ("warn", "park"):
+            raise ValueError("action must be 'warn' or 'park'")
+        self._execute("INSERT OR REPLACE INTO config (key, value) VALUES (?, ?)",
+                      ("cap_%s" % period, json.dumps({"limit_usd": limit, "action": action})))
+        return {"period": period, "limit_usd": limit, "action": action}
+
+    def clear_spend_cap(self, period: str) -> dict:
+        """Remove a rolling spend cap. period in CAP_PERIODS."""
+        period = str(period).strip().lower()
+        if period not in CAP_PERIODS:
+            raise ValueError("period must be one of: %s" % ", ".join(CAP_PERIODS))
+        self._execute("DELETE FROM config WHERE key = ?", ("cap_%s" % period,))
+        return {"cleared": period}
+
+    def get_model_caps(self) -> dict:
+        """Per-model spend caps {model: {"limit_usd": float}} (pure read).
+
+        A model whose CUMULATIVE spend reaches its cap is parked (its id lands
+        in parked_models()) regardless of period caps.
+        """
+        cfg = self._get_config()
+        caps: dict[str, dict] = {}
+        for key, val in cfg.items():
+            if key.startswith("mcap_") and isinstance(val, dict):
+                try:
+                    limit = float(val.get("limit_usd", 0.0))
+                except (TypeError, ValueError):
+                    limit = 0.0
+                caps[key[len("mcap_"):]] = {"limit_usd": limit}
+        return caps
+
+    def set_model_cap(self, model: str, limit_usd: float) -> dict:
+        """Per-model cap: when cumulative spend reaches it the model is parked."""
+        model = str(model).strip()
+        if not model:
+            raise ValueError("model required")
+        limit = float(limit_usd)
+        if limit <= 0:
+            raise ValueError("limit_usd must be > 0 (use clear_model_cap to remove)")
+        self._execute("INSERT OR REPLACE INTO config (key, value) VALUES (?, ?)",
+                      ("mcap_%s" % model, json.dumps({"limit_usd": limit})))
+        return {"model": model, "limit_usd": limit}
+
+    def clear_model_cap(self, model: str) -> dict:
+        """Remove a per-model cap."""
+        model = str(model).strip()
+        self._execute("DELETE FROM config WHERE key = ?", ("mcap_%s" % model,))
+        return {"cleared": model}
+
+    def _window_spend(self, since: float, ts: float) -> float:
+        row = self._query(
+            "SELECT COALESCE(SUM(est_cost),0) FROM calls WHERE ts >= ? AND ts <= ?",
+            (since, ts))
+        return float(row[0][0])
+
+    def _model_cumulative_spend(self, model: str) -> float:
+        row = self._query(
+            "SELECT COALESCE(SUM(est_cost),0) FROM calls WHERE lower(model) = lower(?)",
+            (model,))
+        return float(row[0][0])
+
+    def _spend_state(self, ts: float | None = None) -> dict:
+        """Pure-read spend-cap state: period statuses + parked model ids.
+
+        NEVER writes to the ledger — only SELECTs (the contract for /cost caps
+        and cost consumers). Status per period: ok | warn (>=80%) | parked
+        (>=100% + park action) | over (>=100% + warn action).
+        """
+        now = ts if ts is not None else time.time()
+        caps = self.get_spend_caps()
+        periods: dict[str, dict] = {}
+        warn_periods: list[str] = []
+        parked_periods: list[str] = []
+        heavy_parked = False
+        for period, window in CAP_PERIODS.items():
+            cap = caps.get(period)
+            if not cap or cap["limit_usd"] <= 0:
+                continue
+            spend = self._window_spend(now - window, now)
+            limit = cap["limit_usd"]
+            pct = spend / limit * 100.0
+            action = cap["action"]
+            if pct >= PARK_PCT:
+                status = "parked" if action == "park" else "over"
+            elif pct >= WARN_PCT:
+                status = "warn"
+            else:
+                status = "ok"
+            if status in ("warn", "over"):
+                warn_periods.append(period)
+            if status == "parked":
+                parked_periods.append(period)
+                heavy_parked = True
+            periods[period] = {
+                "spend": spend, "limit": limit, "pct": pct,
+                "action": action, "status": status,
+            }
+        # models over their own cumulative cap
+        over_model_caps: list[str] = []
+        for model, mcap in self.get_model_caps().items():
+            limit = mcap.get("limit_usd", 0.0)
+            if limit > 0 and self._model_cumulative_spend(model) >= limit:
+                over_model_caps.append(model)
+        return {
+            "periods": periods,
+            "warn_periods": sorted(warn_periods),
+            "parked_periods": sorted(parked_periods),
+            "over_model_caps": sorted(over_model_caps),
+            "heavy_parked": heavy_parked,
+            "heavy_tier": heavy_tier(),
+        }
+
+    def check_spend(self, ts: float | None = None) -> dict:
+        """Rolling spend vs caps, per period: {spend, limit, pct, action, status}.
+
+        Pure read — the ledger is never mutated (``read_only`` is part of the
+        contract). ``warn`` lists periods at >=80%; ``parked`` carries the
+        exhausted periods and the model ids to stop routing to.
+        """
+        state = self._spend_state(ts)
+        parked = list(state["over_model_caps"])
+        if state["heavy_parked"]:
+            parked += state["heavy_tier"]
+        return {
+            "periods": state["periods"],
+            "warn": state["warn_periods"],
+            "parked": {
+                "periods": state["parked_periods"],
+                "models": sorted(set(parked)),
+            },
+            "heavy_tier_parked": state["heavy_parked"],
+            "over_model_caps": state["over_model_caps"],
+            "read_only": True,
+        }
+
+    def parked_models(self, ts: float | None = None) -> list[str]:
+        """Model ids cost consumers must stop routing to.
+
+        = models over their per-model cap, PLUS the whole heavy tier when a
+        park-action period cap is exhausted. Pure read.
+        """
+        state = self._spend_state(ts)
+        parked = list(state["over_model_caps"])
+        if state["heavy_parked"]:
+            parked += state["heavy_tier"]
+        return sorted(set(parked))
+
+    # ---- rollups (U-CORE-3) ----
+
+    def rollup_today(self, ts: float | None = None) -> dict:
+        """Calendar-day rollup: calls, tokens in/out, est cost."""
+        now = ts if ts is not None else time.time()
+        row = self._query(
+            "SELECT COUNT(*), COALESCE(SUM(tokens_in),0), COALESCE(SUM(tokens_out),0), "
+            "COALESCE(SUM(est_cost),0) FROM calls WHERE day = ?", (_day_of(now),))[0]
+        return {"period": "today %s" % _day_of(now), "calls": int(row[0]),
+                "tokens_in": int(row[1]), "tokens_out": int(row[2]),
+                "est_cost": float(row[3])}
+
+    def rollup_week(self, ts: float | None = None) -> dict:
+        """ISO-week rollup: calls, tokens in/out, est cost."""
+        now = ts if ts is not None else time.time()
+        week = _week_of(now)
+        row = self._query(
+            "SELECT COUNT(*), COALESCE(SUM(tokens_in),0), COALESCE(SUM(tokens_out),0), "
+            "COALESCE(SUM(est_cost),0) FROM calls WHERE week = ?", (week,))[0]
+        return {"period": "week %s" % week, "week": week, "calls": int(row[0]),
+                "tokens_in": int(row[1]), "tokens_out": int(row[2]),
+                "est_cost": float(row[3])}
+
+    def model_spend(self, model: str, ts: float | None = None) -> dict:
+        """Per-model spend: all-time + current calendar day + current ISO week."""
+        now = ts if ts is not None else time.time()
+        model = str(model).strip()
+        base = ("SELECT COUNT(*), COALESCE(SUM(tokens_in),0), COALESCE(SUM(tokens_out),0), "
+                "COALESCE(SUM(est_cost),0) FROM calls WHERE lower(model) = lower(?)")
+
+        def _sum(extra: str, params: tuple) -> dict:
+            row = self._query(base + extra, (model,) + tuple(params))[0]
+            return {"calls": int(row[0]), "tokens_in": int(row[1]),
+                    "tokens_out": int(row[2]), "est_cost": float(row[3])}
+
+        return {
+            "model": model,
+            "all_time": _sum("", ()),
+            "today": _sum(" AND day = ?", (_day_of(now),)),
+            "week": _sum(" AND week = ?", (_week_of(now),)),
+        }
 
     def top_models(self, limit: int = 5, ts: float | None = None,
                    week: bool = False) -> list[dict]:
@@ -552,6 +812,120 @@ class CostTracker:
         s = self.set_budget(daily_cap=daily, weekly_cap=weekly)
         return "budget set: daily $%.4f, weekly $%.4f, hard-stop %s" % (
             s["daily_cap"], s["weekly_cap"], "ON" if s["hard_stop"] else "off")
+
+    def cmd_caps(self, raw: str = "", ts: float | None = None) -> str:
+        """/cost caps | set <period> <limit_usd> <warn|park> | clear <period>
+        | model <id> <limit_usd> | model <id> clear — spend caps + status."""
+        parts = (raw or "").strip().split()
+        if not parts:
+            check = self.check_spend(ts=ts)
+            caps = self.get_spend_caps()
+            lines = ["cost-tracker — spend caps (rolling windows, pure read)"]
+            if not caps and not self.get_model_caps():
+                lines.append("  no caps set — usage: /cost caps set <5h|1d|7d|30d> <limit_usd> <warn|park>")
+            for period in CAP_PERIODS:
+                cap = caps.get(period)
+                if not cap:
+                    continue
+                st = check["periods"].get(period, {})
+                mark = {"warn": "WARN >=80%", "parked": "PARKED >=100%",
+                        "over": "OVER >=100%"}.get(st.get("status"), "ok")
+                lines.append("  %-4s limit $%-9.4f  %-11s spent $%.6f (%.1f%%)" % (
+                    period, cap["limit_usd"], mark, st.get("spend", 0.0), st.get("pct", 0.0)))
+            mcap = self.get_model_caps()
+            if mcap:
+                lines.append("  per-model caps:")
+                for model, mc in sorted(mcap.items()):
+                    spent = self._model_cumulative_spend(model)
+                    lines.append("    %-20s limit $%-9.4f  spent $%.6f %s" % (
+                        model[:20], mc["limit_usd"], spent,
+                        "PARKED" if spent >= mc["limit_usd"] else ""))
+            parked = check["parked"]["models"]
+            if parked:
+                lines.append("  parked models: %s" % ", ".join(parked))
+            if check["warn"]:
+                lines.append("  warn: %s at >=80%% of cap" % ", ".join(check["warn"]))
+            return "\n".join(lines)
+        sub = parts[0].lower()
+        if sub == "set":
+            if len(parts) < 3:
+                return "usage: /cost caps set <5h|1d|7d|30d> <limit_usd> <warn|park>"
+            period = parts[1].lower()
+            try:
+                limit = float(parts[2])
+            except ValueError:
+                return "usage: /cost caps set <5h|1d|7d|30d> <limit_usd> <warn|park>"
+            action = parts[3].lower() if len(parts) > 3 else "warn"
+            try:
+                r = self.set_spend_cap(period, limit, action)
+            except ValueError as exc:
+                return "error: %s" % exc
+            return ("spend cap set: %s $%.4f action=%s — warn at 80%%, %s" % (
+                r["period"], r["limit_usd"], r["action"],
+                "heavy tier parked at 100%" if r["action"] == "park"
+                else "overage warning at 100%"))
+        if sub == "clear":
+            if len(parts) < 2:
+                return "usage: /cost caps clear <5h|1d|7d|30d>"
+            try:
+                r = self.clear_spend_cap(parts[1])
+            except ValueError as exc:
+                return "error: %s" % exc
+            return "spend cap cleared: %s" % r["cleared"]
+        if sub == "model":
+            if len(parts) < 3:
+                return "usage: /cost caps model <model_id> <limit_usd> | /cost caps model <model_id> clear"
+            model = parts[1]
+            if parts[2].lower() == "clear":
+                return "model cap cleared: %s" % self.clear_model_cap(model)["cleared"]
+            try:
+                r = self.set_model_cap(model, float(parts[2]))
+            except ValueError as exc:
+                return "error: %s" % exc
+            return ("model cap set: %s $%.4f — parked when cumulative spend "
+                    "reaches it" % (r["model"], r["limit_usd"]))
+        return "usage: /cost caps | set <period> <limit_usd> <warn|park> | clear <period> | model <id> <limit>"
+
+    def cmd_today(self, ts: float | None = None) -> str:
+        """/cost today — calendar-day rollup."""
+        r = self.rollup_today(ts=ts)
+        return ("cost-tracker — %s\n  calls: %d   tokens in: %d / out: %d   "
+                "est cost: $%.6f" % (r["period"], r["calls"], r["tokens_in"],
+                                     r["tokens_out"], r["est_cost"]))
+
+    def cmd_week(self, ts: float | None = None) -> str:
+        """/cost week — ISO-week rollup."""
+        r = self.rollup_week(ts=ts)
+        return ("cost-tracker — %s\n  calls: %d   tokens in: %d / out: %d   "
+                "est cost: $%.6f" % (r["period"], r["calls"], r["tokens_in"],
+                                     r["tokens_out"], r["est_cost"]))
+
+    def cmd_model(self, raw: str = "", ts: float | None = None) -> str:
+        """/cost model <id> — per-model spend (all-time + today + week)."""
+        model = (raw or "").strip()
+        if not model:
+            return "usage: /cost model <model_id> — per-model spend (all-time + today + week)"
+        r = self.model_spend(model, ts=ts)
+        a, t, w = r["all_time"], r["today"], r["week"]
+        return ("cost-tracker — model %r\n"
+                "  all-time: %d calls, %d in / %d out tokens, $%.6f\n"
+                "  today   : %d calls, %d in / %d out tokens, $%.6f\n"
+                "  week    : %d calls, %d in / %d out tokens, $%.6f" % (
+                    r["model"], a["calls"], a["tokens_in"], a["tokens_out"], a["est_cost"],
+                    t["calls"], t["tokens_in"], t["tokens_out"], t["est_cost"],
+                    w["calls"], w["tokens_in"], w["tokens_out"], w["est_cost"]))
+
+    def cmd_top(self, ts: float | None = None) -> str:
+        """/cost top — top-5 models by est. spend (all-time)."""
+        top = self.top_models(limit=5, ts=None)
+        lines = ["cost-tracker — top 5 models by est. spend (all-time)"]
+        if not top:
+            lines.append("  (no calls logged yet — the ledger is empty)")
+        for i, m in enumerate(top, 1):
+            lines.append("  #%d %-20s %5d calls  %8d in / %-8d out  $%.6f" % (
+                i, m["model"][:20], m["calls"], m["tokens_in"],
+                m["tokens_out"], m["est_cost"]))
+        return "\n".join(lines)
 
     def cmd_sync(self, raw: str = "") -> str:
         """/cost sync [path] — re-sync the cost table from the omni-registry

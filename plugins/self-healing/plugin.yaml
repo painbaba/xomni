@@ -1,3 +1,3 @@
 name: self-healing
-version: "0.1.0"
-description: "Self-healing agent (U9): watchdog kills silent hangs, postcondition checks catch exit-0-nothing-happened, config-drift scan + auto-fix, audit trail heal.jsonl, /heal commands — zero hooks"
+version: "0.2.0"
+description: "Self-healing agent (U9/U-ASSURE-2): watchdog kills silent hangs, postcondition checks catch exit-0-nothing-happened, multi-profile config-drift scan + auto-fix (base + all profiles/*), per-profile audit trail heal.jsonl, /heal profiles|scan|fix commands — zero hooks"

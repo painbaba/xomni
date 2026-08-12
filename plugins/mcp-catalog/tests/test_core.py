@@ -32,6 +32,25 @@ SAMPLE = [
 
 NOPE = "mcp-catalog-definitely-not-installed-xyz"
 
+# A small marketplace-style catalog document (CRLF, 1-space entry indent) used
+# to exercise byte-for-byte preservation when user-added entries are appended.
+SAMPLE_CATALOG_TEXT = (
+    "[\r\n"
+    " {\r\n"
+    "  \"name\": \"filesystem\",\r\n"
+    "  \"install_command\": \"npx -y @modelcontextprotocol/server-filesystem C:/data\",\r\n"
+    "  \"verified\": true,\r\n"
+    "  \"source\": \"github\"\r\n"
+    " },\r\n"
+    " {\r\n"
+    "  \"name\": \"fetch\",\r\n"
+    "  \"install_command\": \"uvx mcp-server-fetch\",\r\n"
+    "  \"verified\": true,\r\n"
+    "  \"source\": \"pypi\"\r\n"
+    " }\r\n"
+    "]"
+)
+
 
 class ParseCatalogTests(unittest.TestCase):
     def test_happy_path_parses_and_canonicalizes(self):
@@ -264,11 +283,18 @@ class StateRoundTripTests(unittest.TestCase):
 
 class InstallServerTests(unittest.TestCase):
     """U2 marketplace install path: launch derivation, host config append
-    (idempotent + loud failures), badge rendering."""
+    (idempotent + loud failures), badge rendering, and U-SURF-1
+    self-cataloging (auto-index into the catalog json)."""
 
     def setUp(self):
         self.tmp = tempfile.mkdtemp()
         self.cfg = os.path.join(self.tmp, "config.yaml")
+        # U-SURF-1: isolate the auto-index catalog target from the real
+        # data/mcp/catalog.json so install tests never touch the repo file.
+        self.catalog_file = os.path.join(self.tmp, "catalog.json")
+        with open(self.catalog_file, "w", encoding="utf-8", newline="") as f:
+            f.write(SAMPLE_CATALOG_TEXT)
+        os.environ["HERMES_MCP_CATALOG_FILE"] = self.catalog_file
         self.catalog = [
             {
                 "name": "mcp-yfinance",
@@ -327,6 +353,7 @@ class InstallServerTests(unittest.TestCase):
         ]
 
     def tearDown(self):
+        os.environ.pop("HERMES_MCP_CATALOG_FILE", None)
         if os.path.exists(self.cfg):
             try:
                 os.chmod(self.cfg, 0o644)
@@ -535,9 +562,20 @@ class InstallWiringTests(unittest.TestCase):
         self.cfg = os.path.join(self.tmp, "config.yaml")
         with open(self.cfg, "w", encoding="utf-8") as f:
             f.write("session_reset:\n  at_hour: 4\n")
+        # U-SURF-1: point the self-catalog target at a temp file so e2e wiring
+        # tests never touch the real data/mcp/catalog.json.
+        self.catalog_file = os.path.join(self.tmp, "catalog.json")
+        with open(self.catalog_file, "w", encoding="utf-8", newline="") as f:
+            f.write(SAMPLE_CATALOG_TEXT)
+        os.environ["HERMES_MCP_CATALOG_FILE"] = self.catalog_file
 
     def tearDown(self):
+        os.environ.pop("HERMES_MCP_CATALOG_FILE", None)
         shutil.rmtree(self.tmp, ignore_errors=True)
+
+    def _catalog_names(self):
+        with open(self.catalog_file, encoding="utf-8", newline="") as f:
+            return [e["name"] for e in json.load(f)]
 
     def test_add_install_yes_path_calls_install_server(self):
         mod = self.mod
@@ -747,6 +785,394 @@ class SearchTests(unittest.TestCase):
         disabled = core.gap_line(1, {"a": {"enabled": False}})
         self.assertIn("1 registered (0 enabled)", disabled)
         self.assertNotIn("gap", disabled)
+
+
+class SelfCatalogTests(unittest.TestCase):
+    """U-SURF-1 core: catalog_add / register_server — user-added auto-indexing
+    into the catalog json (idempotent, byte-preserving, loud failures),
+    auto-index on install, badges + source for user-added entries."""
+
+    def setUp(self):
+        self.tmp = tempfile.mkdtemp()
+        self.catalog_file = os.path.join(self.tmp, "catalog.json")
+        with open(self.catalog_file, "w", encoding="utf-8", newline="") as f:
+            f.write(SAMPLE_CATALOG_TEXT)
+        os.environ["HERMES_MCP_CATALOG_FILE"] = self.catalog_file
+        self.cfg = os.path.join(self.tmp, "config.yaml")
+        with open(self.cfg, "w", encoding="utf-8") as f:
+            f.write("session_reset:\n  at_hour: 4\n")
+
+    def tearDown(self):
+        os.environ.pop("HERMES_MCP_CATALOG_FILE", None)
+        shutil.rmtree(self.tmp, ignore_errors=True)
+
+    def _catalog(self):
+        with open(self.catalog_file, encoding="utf-8", newline="") as f:
+            return json.load(f)
+
+    def test_catalog_add_appends_user_entry_preserving_rest_byte_for_byte(self):
+        result = core.catalog_add(
+            "my-srv", {"install_command": "uvx my-srv"}, catalog_path=self.catalog_file
+        )
+        self.assertTrue(result["written"])
+        self.assertEqual(result["path"], self.catalog_file)
+        entry = result["entry"]
+        self.assertEqual(entry["name"], "my-srv")
+        self.assertEqual(entry["install_command"], "uvx my-srv")
+        self.assertEqual(entry["source"], "user-added")
+        self.assertEqual(entry["security"], "REVIEW")
+        self.assertEqual(entry["badges"], {"keyless": True})
+        self.assertTrue(entry["added_at"])
+        # the rest of the catalog is preserved byte-for-byte (CRLF, indents,
+        # key order, final ']'): everything before the closing ']' appears
+        # verbatim, followed by ',' + the new entry + ']'
+        with open(self.catalog_file, encoding="utf-8", newline="") as f:
+            text = f.read()
+        preserved = SAMPLE_CATALOG_TEXT[:-1].rstrip()  # original minus ']'
+        self.assertTrue(text.startswith(preserved + ","))
+        self.assertTrue(text.endswith("]"))
+        data = self._catalog()
+        self.assertEqual([e["name"] for e in data], ["filesystem", "fetch", "my-srv"])
+        # file style matches the marketplace document (1-space entry brace,
+        # 2-space keys, CRLF)
+        self.assertIn(" {\r\n", text)
+        self.assertIn('  "name": "my-srv",\r\n', text)
+
+    def test_catalog_add_idempotent_skips_existing(self):
+        first = core.catalog_add(
+            "my-srv", {"install_command": "uvx my-srv"}, catalog_path=self.catalog_file
+        )
+        self.assertTrue(first["written"])
+        with open(self.catalog_file, encoding="utf-8", newline="") as f:
+            before = f.read()
+        second = core.catalog_add(
+            "my-srv", {"install_command": "uvx my-srv"}, catalog_path=self.catalog_file
+        )
+        self.assertFalse(second["written"])
+        self.assertEqual(second["entry"]["source"], "user-added")
+        with open(self.catalog_file, encoding="utf-8", newline="") as f:
+            after = f.read()
+        self.assertEqual(before, after)  # byte-for-byte unchanged on re-add
+        names = [e["name"] for e in self._catalog()]
+        self.assertEqual(names.count("my-srv"), 1)
+
+    def test_catalog_add_rejects_bad_shape_loudly(self):
+        with self.assertRaises(core.CatalogError) as cm:
+            core.catalog_add("x", {}, catalog_path=self.catalog_file)
+        self.assertIn("needs 'install_command', 'command'", str(cm.exception))
+        with self.assertRaises(core.CatalogError):
+            core.catalog_add("", {"install_command": "uvx x"}, catalog_path=self.catalog_file)
+        with self.assertRaises(core.CatalogError):
+            core.catalog_add("x", {"install_command": "   "}, catalog_path=self.catalog_file)
+        with self.assertRaises(core.CatalogError):
+            core.catalog_add("x", {"command": "uvx", "args": "not-a-list"}, catalog_path=self.catalog_file)
+        with self.assertRaises(core.CatalogError):
+            core.catalog_add("x", "uvx x", catalog_path=self.catalog_file)
+        # file untouched by rejected adds
+        with open(self.catalog_file, encoding="utf-8", newline="") as f:
+            self.assertEqual(f.read(), SAMPLE_CATALOG_TEXT)
+
+    def test_catalog_add_accepts_config_shapes_and_creates_missing_file(self):
+        # stdio config shape (command/args) and hosted url shape both index
+        stdio = core.catalog_add(
+            "srv-a", {"command": "npx", "args": ["-y", "srv-a"], "env": {}}, catalog_path=self.catalog_file
+        )
+        self.assertTrue(stdio["written"])
+        self.assertEqual(stdio["entry"]["install_command"], "npx -y srv-a")
+        url = core.catalog_add(
+            "srv-b", {"url": "https://example.com/mcp"}, catalog_path=self.catalog_file
+        )
+        self.assertTrue(url["written"])
+        self.assertEqual(
+            url["entry"]["install_command"], "hermes mcp add srv-b --url https://example.com/mcp"
+        )
+        # env vars flip the keyless badge
+        keyed = core.catalog_add(
+            "srv-c", {"command": "uvx", "args": ["srv-c"], "env": {"API_KEY": "x"}},
+            catalog_path=self.catalog_file,
+        )
+        self.assertEqual(keyed["entry"]["badges"], {"keyless": False})
+        # missing catalog file: created with just the entry
+        missing = os.path.join(self.tmp, "fresh.json")
+        created = core.catalog_add("solo", {"install_command": "uvx solo"}, catalog_path=missing)
+        self.assertTrue(created["written"])
+        with open(missing, encoding="utf-8") as f:
+            data = json.load(f)
+        self.assertEqual([e["name"] for e in data], ["solo"])
+        self.assertEqual(data[0]["source"], "user-added")
+
+    def test_install_server_auto_indexes_into_catalog(self):
+        catalog = [{"name": "mcp-yfinance", "install_command": "uvx mcp-yfinance",
+                    "connect_steps": [], "description": "d", "stars": 1,
+                    "verified": True, "source": "pypi"}]
+        result = core.install_server("mcp-yfinance", self.cfg, catalog)
+        self.assertTrue(result["written"])
+        self.assertTrue(result["indexed"])
+        self.assertEqual(result["catalog_path"], self.catalog_file)
+        data = self._catalog()
+        entry = next(e for e in data if e["name"] == "mcp-yfinance")
+        self.assertEqual(entry["source"], "user-added")
+        self.assertEqual(entry["install_command"], "uvx mcp-yfinance")
+        self.assertEqual(entry["security"], "REVIEW")
+        self.assertEqual(entry["badges"], {"keyless": True})
+        # untouched entries still present, catalog still valid JSON
+        self.assertEqual([e["name"] for e in data[:2]], ["filesystem", "fetch"])
+        # host config got the block too
+        with open(self.cfg, encoding="utf-8") as f:
+            self.assertIn("mcp-yfinance:\n    command: uvx", f.read())
+
+    def test_install_server_auto_index_idempotent(self):
+        catalog = [{"name": "mcp-yfinance", "install_command": "uvx mcp-yfinance",
+                    "connect_steps": [], "stars": 1, "verified": True, "source": "pypi"}]
+        first = core.install_server("mcp-yfinance", self.cfg, catalog)
+        self.assertTrue(first["indexed"])
+        with open(self.catalog_file, encoding="utf-8", newline="") as f:
+            before = f.read()
+        second = core.install_server("mcp-yfinance", self.cfg, catalog)
+        self.assertFalse(second["written"])     # already registered
+        self.assertFalse(second["indexed"])     # already in catalog
+        with open(self.catalog_file, encoding="utf-8", newline="") as f:
+            self.assertEqual(f.read(), before)  # catalog untouched
+        self.assertEqual([e["name"] for e in self._catalog()].count("mcp-yfinance"), 1)
+
+    def test_install_server_backfills_catalog_when_already_registered(self):
+        # a server already in host config (imported from a config entry) is
+        # still auto-indexed into the catalog on touch
+        with open(self.cfg, "w", encoding="utf-8") as f:
+            f.write("mcp_servers:\n  mcp-yfinance:\n    command: uvx\n    args:\n      - mcp-yfinance\n")
+        catalog = [{"name": "mcp-yfinance", "install_command": "uvx mcp-yfinance",
+                    "connect_steps": [], "stars": 1, "verified": True, "source": "pypi"}]
+        result = core.install_server("mcp-yfinance", self.cfg, catalog)
+        self.assertFalse(result["written"])
+        self.assertTrue(result["indexed"])
+        names = [e["name"] for e in self._catalog()]
+        self.assertEqual(names.count("mcp-yfinance"), 1)
+        self.assertEqual(
+            next(e for e in self._catalog() if e["name"] == "mcp-yfinance")["source"],
+            "user-added",
+        )
+
+    def test_register_server_writes_host_config_and_catalog(self):
+        result = core.register_server(
+            "my-new-srv", {"command": "uvx", "args": ["my-new-srv"]}, self.cfg
+        )
+        self.assertTrue(result["written"])
+        self.assertTrue(result["indexed"])
+        self.assertEqual(result["catalog_path"], self.catalog_file)
+        with open(self.cfg, encoding="utf-8") as f:
+            self.assertIn("my-new-srv:\n    command: uvx\n    args:\n      - my-new-srv", f.read())
+        entry = next(e for e in self._catalog() if e["name"] == "my-new-srv")
+        self.assertEqual(entry["source"], "user-added")
+        self.assertEqual(entry["install_command"], "uvx my-new-srv")
+        # url block variant
+        url_result = core.register_server("hosted-srv", {"url": "https://example.com/mcp"}, self.cfg)
+        self.assertTrue(url_result["written"])
+        with open(self.cfg, encoding="utf-8") as f:
+            self.assertIn("hosted-srv:\n    url: 'https://example.com/mcp'", f.read())
+
+    def test_register_server_bad_block_raises_loud(self):
+        with self.assertRaises(core.CatalogError) as cm:
+            core.register_server("", {"command": "x"}, self.cfg)
+        self.assertIn("non-empty string", str(cm.exception))
+        with self.assertRaises(core.CatalogError) as cm:
+            core.register_server("x", {}, self.cfg)
+        self.assertIn("needs 'url' (hosted) or 'command'", str(cm.exception))
+        with self.assertRaises(core.CatalogError):
+            core.register_server("x", {"command": "  "}, self.cfg)
+        with self.assertRaises(core.CatalogError):
+            core.register_server("x", {"url": "  "}, self.cfg)
+        with open(self.cfg, encoding="utf-8") as f:
+            self.assertNotIn("x:", f.read())
+
+    def test_user_added_entry_badges_and_render(self):
+        entry = {
+            "name": "solo",
+            "install_command": "uvx solo",
+            "badges": {"keyless": True},
+            "security": "REVIEW",
+            "source": "user-added",
+            "added_at": "2026-08-13T00:00:00+00:00",
+        }
+        self.assertEqual(core.security_verdict(entry), "REVIEW")
+        badges = core.format_badges(entry)
+        self.assertIn("★-", badges)     # no stars for user-added
+        self.assertIn("keyless", badges)
+        self.assertIn("REVIEW", badges)
+        listing = core.list_catalog_badged([entry])
+        self.assertIn("solo  [", listing)
+        self.assertIn("install: uvx solo", listing)
+        keyed = dict(entry, badges={"keyless": False})
+        self.assertIn("needs-key", core.format_badges(keyed))
+
+
+class SelfCatalogWiringTests(unittest.TestCase):
+    """/mcp add <name> <url-or-command> and /mcp catalog-add routing —
+    self-catalog e2e (temp host config + temp catalog), loud failures, and
+    the zero-hooks rule. Loads __init__.py via the package recipe."""
+
+    @classmethod
+    def setUpClass(cls):
+        plugin_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        pkg = types.ModuleType("pkg")
+        pkg.__path__ = [plugin_dir]
+        sys.modules["pkg"] = pkg
+        spec = importlib.util.spec_from_file_location(
+            "pkg.__init__", os.path.join(plugin_dir, "__init__.py")
+        )
+        mod = importlib.util.module_from_spec(spec)
+        sys.modules["pkg.__init__"] = mod
+        spec.loader.exec_module(mod)
+        cls.mod = mod
+        cls.plugin_dir = plugin_dir
+
+    def setUp(self):
+        self.tmp = tempfile.mkdtemp()
+        self.cfg = os.path.join(self.tmp, "config.yaml")
+        with open(self.cfg, "w", encoding="utf-8") as f:
+            f.write("session_reset:\n  at_hour: 4\n")
+        self.catalog_file = os.path.join(self.tmp, "catalog.json")
+        with open(self.catalog_file, "w", encoding="utf-8", newline="") as f:
+            f.write(SAMPLE_CATALOG_TEXT)
+        os.environ["HERMES_MCP_CATALOG_FILE"] = self.catalog_file
+        # isolate the catalog-dir import target too (file-import tests)
+        self.catalog_dir = os.path.join(self.tmp, "catalogs")
+        os.environ["HERMES_MCP_CATALOG_DIR"] = self.catalog_dir
+
+    def tearDown(self):
+        os.environ.pop("HERMES_MCP_CATALOG_FILE", None)
+        os.environ.pop("HERMES_MCP_CATALOG_DIR", None)
+        shutil.rmtree(self.tmp, ignore_errors=True)
+
+    def _catalog_names(self):
+        with open(self.catalog_file, encoding="utf-8", newline="") as f:
+            return [e["name"] for e in json.load(f)]
+
+    def test_mcp_add_self_catalog_e2e_stdio(self):
+        mod = self.mod
+        with mock.patch.object(mod, "_host_config_path", return_value=self.cfg):
+            out = mod._handle_mcp("add my-new-srv uvx my-new-srv")
+        self.assertIn("added 'my-new-srv'", out)
+        with open(self.cfg, encoding="utf-8") as f:
+            self.assertIn("my-new-srv:\n    command: uvx\n    args:\n      - my-new-srv", f.read())
+        self.assertIn("my-new-srv", self._catalog_names())
+        with open(self.catalog_file, encoding="utf-8") as f:
+            data = json.load(f)
+        added = next(e for e in data if e["name"] == "my-new-srv")
+        self.assertEqual(added["source"], "user-added")
+        self.assertEqual(added["security"], "REVIEW")
+        self.assertEqual(added["install_command"], "uvx my-new-srv")
+
+    def test_mcp_add_self_catalog_e2e_url_and_yes_flag(self):
+        mod = self.mod
+        with mock.patch.object(mod, "_host_config_path", return_value=self.cfg):
+            out = mod._handle_mcp("add hosted-srv https://example.com/mcp --yes")
+        self.assertIn("added 'hosted-srv'", out)
+        with open(self.cfg, encoding="utf-8") as f:
+            self.assertIn("hosted-srv:\n    url: 'https://example.com/mcp'", f.read())
+        with open(self.catalog_file, encoding="utf-8") as f:
+            data = json.load(f)
+        added = next(e for e in data if e["name"] == "hosted-srv")
+        self.assertEqual(
+            added["install_command"], "hermes mcp add hosted-srv --url https://example.com/mcp"
+        )
+
+    def test_mcp_catalog_add_catalog_only(self):
+        mod = self.mod
+        out = mod._handle_mcp("catalog-add solo-srv uvx solo-srv")
+        self.assertIn("indexed 'solo-srv'", out)
+        self.assertIn("user-added", out)
+        with open(self.cfg, encoding="utf-8") as f:
+            self.assertNotIn("solo-srv", f.read())  # host config untouched
+        with open(self.catalog_file, encoding="utf-8") as f:
+            data = json.load(f)
+        self.assertIn("solo-srv", [e["name"] for e in data])
+        # idempotent re-add
+        out2 = mod._handle_mcp("catalog-add solo-srv uvx solo-srv")
+        self.assertIn("already in catalog", out2)
+        # usage when the install command is missing
+        self.assertIn("usage:", mod._handle_mcp("catalog-add solo-srv"))
+
+    def test_mcp_add_self_catalog_loud_failure(self):
+        mod = self.mod
+        with mock.patch.object(mod, "_host_config_path", return_value=self.cfg):
+            out = mod._handle_mcp("add nospec")  # single token → marketplace install of unknown server
+        self.assertIn("FAILED", out)
+        self.assertIn("not found in MCP catalog", out)
+        # single token that is not a marketplace server → loud FAILED, never silent
+        with mock.patch.object(mod, "_host_config_path", return_value=self.cfg):
+            out2 = mod._handle_mcp("add onlyname")
+        self.assertIn("FAILED", out2)
+        self.assertIn("onlyname", out2)
+        # missing name / missing install command → usage
+        self.assertIn("usage:", mod._handle_mcp("add"))
+        self.assertIn("usage:", mod._handle_mcp("catalog-add"))
+        self.assertIn("usage:", mod._handle_mcp("catalog-add solo-srv"))
+
+    def test_mcp_add_marketplace_install_auto_indexes(self):
+        """/mcp add <real-catalog-name> --yes e2e: block lands in host config
+        AND a user-added entry lands in the catalog json."""
+        mod = self.mod
+        with mock.patch.object(mod, "_host_config_path", return_value=self.cfg):
+            out = mod._handle_mcp("add mcp-yfinance --yes")
+        self.assertIn("installed 'mcp-yfinance'", out)
+        with open(self.cfg, encoding="utf-8") as f:
+            self.assertIn("mcp-yfinance:\n    command: uvx", f.read())
+        with open(self.catalog_file, encoding="utf-8") as f:
+            data = json.load(f)
+        added = next(e for e in data if e["name"] == "mcp-yfinance")
+        self.assertEqual(added["source"], "user-added")
+        self.assertEqual(added["install_command"], "uvx mcp-yfinance")
+        # second run: no-op on config AND catalog (idempotent)
+        with mock.patch.object(mod, "_host_config_path", return_value=self.cfg):
+            out2 = mod._handle_mcp("add mcp-yfinance --yes")
+        self.assertIn("already registered", out2)
+        with open(self.catalog_file, encoding="utf-8") as f:
+            names = [e["name"] for e in json.load(f)]
+        self.assertEqual(names.count("mcp-yfinance"), 1)
+
+    def test_mcp_add_file_import_auto_indexes(self):
+        """/mcp add <path> import: servers land in the catalog dir AND are
+        auto-indexed into the catalog json as user-added entries."""
+        mod = self.mod
+        import_file = os.path.join(self.tmp, "import.json")
+        with open(import_file, "w", encoding="utf-8") as f:
+            f.write(
+                json.dumps(
+                    [
+                        {"name": "imp-a", "command": "uvx", "args": ["imp-a"], "env": {}, "description": "a"},
+                        {"name": "imp-b", "command": "npx", "args": ["-y", "imp-b"], "env": {}, "description": "b"},
+                    ]
+                )
+            )
+        out = mod._handle_mcp(f"add {import_file}")
+        self.assertIn("added 2 server(s)", out)
+        self.assertIn("Self-cataloged 2 new server(s)", out)
+        self.assertIn("imp-a", self._catalog_names())
+        self.assertIn("imp-b", self._catalog_names())
+
+    def test_plugin_registers_no_hooks(self):
+        """Zero-hooks rule: the plugin registers only a command and a tool —
+        no hooks, no event handlers."""
+        mod = self.mod
+        with open(os.path.join(self.plugin_dir, "__init__.py"), encoding="utf-8") as f:
+            src = f.read()
+        for banned in ("register_hook", "add_hook", "on_event", "subscribe"):
+            self.assertNotIn(banned, src)
+        class RecordingCtx:
+            def __init__(self):
+                self.calls = []
+            def register_command(self, *a, **k):
+                self.calls.append(("command", a[0] if a else "?"))
+            def register_tool(self, *a, **k):
+                self.calls.append(("tool", a[0] if a else "?"))
+            def register_hook(self, *a, **k):
+                self.calls.append(("hook", a))
+        ctx = RecordingCtx()
+        mod.register(ctx)
+        kinds = [c[0] for c in ctx.calls]
+        self.assertEqual(kinds, ["command", "tool"])
+        self.assertNotIn("hook", kinds)
+        self.assertEqual(ctx.calls[0][1], "mcp")
 
 
 if __name__ == "__main__":

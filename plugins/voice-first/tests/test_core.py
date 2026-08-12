@@ -9,6 +9,7 @@ any error message or request body (it rides only in the URL query).
 import io
 import json
 import os
+import shutil
 import sys
 import tempfile
 import unittest
@@ -293,6 +294,192 @@ class ZeroHooksGuardTests(unittest.TestCase):
             with open(os.path.join(here, "..", name), encoding="utf-8") as fh:
                 self.assertNotIn("register_hook", fh.read(),
                                  f"{name} must register zero hooks")
+
+
+class BackendRegistryTests(unittest.TestCase):
+    """U-SURF-3: pluggable voice backend registry — tests 14-18.
+
+    Registry completeness, auto-pick with mocked available(), explicit set +
+    persistence, unknown-backend loud errors, and payload builders (gemini key
+    by env name only, sarvam/bhashini for all 8 bharat-pack languages, edge
+    synth payload, missing keys fail loud).
+    """
+
+    def setUp(self):
+        # Isolate persistence: /voice set writes to a temp config file.
+        self._tmp = tempfile.mkdtemp(prefix="vf-cfg-")
+        patcher = mock.patch.object(
+            core, "backend_config_path",
+            return_value=os.path.join(self._tmp, ".voice_first.json"))
+        patcher.start()
+        self.addCleanup(patcher.stop)
+        self.addCleanup(shutil.rmtree, self._tmp, ignore_errors=True)
+
+    def test_registry_complete_and_shapes(self):
+        """STT {'whisper-local','gemini','sarvam'}, TTS {'edge','sarvam',
+        'bhashini'}; every entry carries name/kind/available + transcribe or
+        synthesize; availability is a local bool check (no network)."""
+        self.assertEqual(set(core.STT_BACKENDS),
+                         {"whisper-local", "gemini", "sarvam"})
+        self.assertEqual(set(core.TTS_BACKENDS),
+                         {"edge", "sarvam", "bhashini"})
+        for name, entry in core.STT_BACKENDS.items():
+            self.assertEqual(entry["name"], name)
+            self.assertEqual(entry["kind"], "stt")
+            self.assertTrue(callable(entry["available"]))
+            self.assertTrue(callable(entry["transcribe"]))
+        for name, entry in core.TTS_BACKENDS.items():
+            self.assertEqual(entry["name"], name)
+            self.assertEqual(entry["kind"], "tts")
+            self.assertTrue(callable(entry["available"]))
+            self.assertTrue(callable(entry["synthesize"]))
+        for entry in list(core.STT_BACKENDS.values()) + list(core.TTS_BACKENDS.values()):
+            self.assertIsInstance(entry["available"](), bool)
+        # edge synth payload shape (edge-tts argv).
+        self.assertEqual(core.build_tts_cmd("Hello there", "out.mp3"),
+                         ["edge-tts", "--voice", "en-IN-PrabhatNeural",
+                          "--text", "Hello there", "--write-media", "out.mp3"])
+
+    def test_auto_pick_first_available(self):
+        """auto returns the first available backend in priority order; when
+        nothing is available the error is loud and lists every backend."""
+        reg = {
+            "whisper-local": {"name": "whisper-local", "kind": "stt",
+                              "available": lambda: False, "hint": "w"},
+            "gemini": {"name": "gemini", "kind": "stt",
+                       "available": lambda: True, "hint": "g"},
+            "sarvam": {"name": "sarvam", "kind": "stt",
+                       "available": lambda: False, "hint": "s"},
+        }
+        with mock.patch.dict(core.STT_BACKENDS, reg, clear=True):
+            self.assertEqual(core.select_backend("stt", "auto"), "gemini")
+        all_down = {k: dict(v, available=lambda: False) for k, v in reg.items()}
+        with mock.patch.dict(core.STT_BACKENDS, all_down, clear=True):
+            with self.assertRaises(core.VoiceError) as ctx:
+                core.select_backend("stt", "auto")
+        msg = str(ctx.exception)
+        self.assertIn("no stt backend available", msg)
+        self.assertIn("whisper-local", msg) and self.assertIn("sarvam", msg)
+
+    def test_explicit_set_and_persistence(self):
+        """/voice set persists to the plugin config; auto honors config and env
+        overrides; /voice backends renders the live table."""
+        self.assertEqual(core.set_backend("stt", "gemini"), "gemini")
+        self.assertEqual(core.load_backend_config().get("stt_backend"), "gemini")
+        with mock.patch.object(core, "_api_key", return_value=FAKE_KEY):
+            self.assertEqual(core.select_backend("stt", None), "gemini")
+        core.set_backend("tts", "edge")
+        self.assertEqual(core.load_backend_config().get("tts_backend"), "edge")
+        # env override (dotted + VOICE_FIRST_*) wins over persisted config.
+        with mock.patch.dict(os.environ, {"voice_first.stt_backend": "gemini"}), \
+             mock.patch.object(core, "_api_key", return_value=FAKE_KEY):
+            self.assertEqual(core.select_backend("stt", None), "gemini")
+        with mock.patch.dict(os.environ, {"VOICE_FIRST_STT_BACKEND": "sarvam"}):
+            with self.assertRaises(core.VoiceError) as ctx:
+                core.select_backend("stt", None)  # sarvam has no key -> loud
+            self.assertIn("SARVAM_API_KEY", str(ctx.exception))
+        # /voice commands surface the registry and persist choices.
+        vf = _import_voice_first()
+        table = vf._handle_voice("backends")
+        self.assertIn("STT backends", table) and self.assertIn("TTS backends", table)
+        self.assertIn("whisper-local", table) and self.assertIn("bhashini", table)
+        self.assertIn("available", table) and self.assertIn("selected", table)
+        out = vf._handle_voice("set tts gemini")  # bad name for tts
+        self.assertIn("ERROR", out) and self.assertIn("gemini", out)
+        out2 = vf._handle_voice("set stt sarvam")
+        self.assertIn("sarvam", out2)
+        self.assertEqual(core.load_backend_config().get("stt_backend"), "sarvam")
+
+    def test_unknown_backend_loud(self):
+        """Unknown backend/kind -> loud VoiceError naming the valid set; the
+        /voice set handler surfaces it as a [voice] ERROR."""
+        with self.assertRaises(core.VoiceError) as ctx:
+            core.select_backend("stt", "bogus")
+        msg = str(ctx.exception)
+        self.assertIn("bogus", msg) and self.assertIn("whisper-local", msg)
+        with self.assertRaises(core.VoiceError) as ctx:
+            core.set_backend("tts", "bogus")
+        self.assertIn("edge", str(ctx.exception))
+        with self.assertRaises(core.VoiceError) as ctx:
+            core.select_backend("video", "edge")
+        self.assertIn("stt", str(ctx.exception))  # names the valid kinds
+        vf = _import_voice_first()
+        out = vf._handle_voice("set stt bogus")
+        self.assertIn("[voice] ERROR", out) and self.assertIn("bogus", out)
+
+    def test_payload_builders_all_backends(self):
+        """Gemini: key by env NAME only, never the value. Sarvam/bhashini:
+        payloads for all 8 bharat-pack languages. Missing keys -> loud error
+        naming the env var."""
+        wav = _write_fake_wav()
+        with mock.patch.dict(os.environ, {"GOOGLE_API_KEY": FAKE_KEY}):
+            p = core.build_gemini_transcribe_payload(wav)
+        self.assertEqual(p["provider"], "gemini")
+        self.assertEqual(p["kind"], "stt")
+        self.assertIn("generateContent", p["url"])
+        self.assertEqual(p["key_env"], "GOOGLE_API_KEY")
+        self.assertEqual(p["query"], {"key": "env:GOOGLE_API_KEY"})
+        self.assertNotIn(FAKE_KEY, json.dumps(p))  # env NAME only, never value
+        self.assertIn("inline_data", json.dumps(p["body"]))
+        self.assertEqual(p["body"]["contents"][0]["parts"][1]["inline_data"]["mime_type"],
+                         "audio/wav")
+        # sarvam + bhashini builders cover all 8 bharat-pack languages.
+        with mock.patch.dict(os.environ,
+                             {"SARVAM_API_KEY": FAKE_KEY,
+                              "BHASHINI_API_KEY": FAKE_KEY}):
+            for lang in core.BHARAT_LANGS:
+                text = "hello" if lang == "en" else "नमस्ते"
+                url, headers, body = core.build_sarvam_tts_payload(text, lang)
+                self.assertEqual(body["target_language_code"],
+                                 core.SARVAM_LANG_CODES[lang])
+                self.assertEqual(body["model"], "bulbul:v1")
+                self.assertIn("api-subscription-key", headers)
+                url, headers, body = core.build_sarvam_stt_payload("QUJD", lang)
+                self.assertEqual(body["language_code"], core.SARVAM_LANG_CODES[lang])
+                url, headers, body = core.build_bhashini_stt_payload("QUJD", lang)
+                self.assertEqual(body["config"]["language"]["sourceLanguage"], lang)
+                url, headers, body = core.build_bhashini_tts_payload(text, lang)
+                self.assertEqual(body["config"]["language"]["targetLanguage"], lang)
+                self.assertNotIn(FAKE_KEY, json.dumps(body))
+        # sarvam STT accepts 'auto' language; a bad language is loud.
+        with mock.patch.dict(os.environ, {"SARVAM_API_KEY": FAKE_KEY}):
+            url, headers, body = core.build_sarvam_stt_payload("QUJD", "auto")
+            self.assertEqual(body["language_code"], "auto")
+            with self.assertRaises(core.VoiceError) as ctx:
+                core.build_sarvam_tts_payload("hello", "xx")
+            self.assertIn("xx", str(ctx.exception))
+        # Missing keys -> loud error naming the env var (never a key value).
+        with mock.patch.dict(os.environ, {}, clear=True):
+            with self.assertRaises(core.VoiceError) as ctx:
+                core.build_sarvam_tts_payload("hello", "hi")
+            self.assertIn("SARVAM_API_KEY", str(ctx.exception))
+            with self.assertRaises(core.VoiceError) as ctx:
+                core.build_bhashini_tts_payload("hello", "hi")
+            self.assertIn("BHASHINI_API_KEY", str(ctx.exception))
+            with self.assertRaises(core.VoiceError) as ctx:
+                core.build_sarvam_stt_payload("QUJD", "hi")
+            self.assertIn("SARVAM_API_KEY", str(ctx.exception))
+            with self.assertRaises(core.VoiceError) as ctx:
+                core.build_bhashini_stt_payload("QUJD", "hi")
+            self.assertIn("BHASHINI_API_KEY", str(ctx.exception))
+
+
+def _import_voice_first():
+    """Load the plugin package, reusing the already-imported ``core`` module
+    (sys.modules['voice_first.core'] = core) so mock patches on ``core`` stay
+    effective inside the /voice command handler."""
+    import importlib.util
+    if "voice_first" in sys.modules:
+        return sys.modules["voice_first"]
+    parent = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    sys.modules["voice_first.core"] = core
+    spec = importlib.util.spec_from_file_location(
+        "voice_first", os.path.join(parent, "__init__.py"),
+        submodule_search_locations=[parent])
+    mod = importlib.util.module_from_spec(spec)
+    sys.modules["voice_first"] = mod
+    spec.loader.exec_module(mod)
+    return mod
 
 
 def _write_fake_wav() -> str:

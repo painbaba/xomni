@@ -377,5 +377,169 @@ class SelfHealingTests(unittest.TestCase):
         self.assertTrue(os.path.isfile(os.path.join(self.heal_dir, "heal.jsonl")))
 
 
+    # ------------------------------------------- multi-profile (U-ASSURE-2)
+
+    def _make_profiles(self, names=("xomni", "xomni-test")):
+        """Build a FAKE profiles tree under the temp hermes home."""
+        self._make_hermes(config="model:\n  provider: opencode-go\n")
+        for n in names:
+            home = os.path.join(self.hermes, "profiles", n)
+            os.makedirs(home, exist_ok=True)
+            with open(os.path.join(home, "config.yaml"), "w",
+                      encoding="utf-8") as f:
+                f.write("model:\n  provider: opencode-go\n")
+        return self.hermes
+
+    def _load_plugin(self, tag="self_healing_plugin"):
+        spec = importlib.util.spec_from_file_location(
+            tag, os.path.join(os.path.dirname(os.path.abspath(core.__file__)),
+                              "__init__.py"))
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        return mod
+
+    def test_discover_profiles_finds_base_plus_all(self):
+        """Discovery finds base + every profiles/* child with a config.yaml."""
+        self._make_profiles(("xomni", "xomni-test"))
+        found = core.discover_profiles()
+        self.assertEqual([p["name"] for p in found],
+                         ["base", "xomni", "xomni-test"])
+        homes = {p["name"]: p["home"] for p in found}
+        self.assertEqual(homes["base"], self.hermes)
+        self.assertEqual(homes["xomni"],
+                         os.path.join(self.hermes, "profiles", "xomni"))
+        self.assertEqual(homes["xomni-test"],
+                         os.path.join(self.hermes, "profiles", "xomni-test"))
+        # a profiles/* dir WITHOUT config.yaml is not a profile
+        os.makedirs(os.path.join(self.hermes, "profiles", "not-a-profile"))
+        self.assertEqual([p["name"] for p in core.discover_profiles()],
+                         ["base", "xomni", "xomni-test"])
+        # /heal profiles surfaces every profile
+        out = self._load_plugin("self_healing_plugin_disc")._handle_heal("profiles")
+        for name in ("base", "xomni", "xomni-test"):
+            self.assertIn(name, out)
+        self.assertIn("drift(s)", out)
+
+    def test_scan_profile_detects_drift_per_profile(self):
+        """Per-profile drift detection: same check, different homes."""
+        self._make_profiles(("xomni",))
+        # base has GROQ_API_KEY present; profile xomni does not
+        self._make_hermes(env_lines=["GROQ_API_KEY="])
+        res = core.scan_profiles()
+        self.assertEqual(set(res), {"base", "xomni"})
+        self.assertIsNone(res["base"]["error"])
+        self.assertFalse(any(d["key"] == "env.GROQ_API_KEY"
+                             for d in res["base"]["drifts"]))
+        self.assertTrue(any(d["key"] == "env.GROQ_API_KEY"
+                            for d in res["xomni"]["drifts"]))
+        # targeted scan of one profile only
+        one = core.scan_profiles(["xomni"])
+        self.assertEqual(set(one), {"xomni"})
+        self.assertEqual(one["xomni"]["profile"], "xomni")
+
+    def test_fix_profile_writes_placeholder_and_audits_profile_name(self):
+        """fix(profile) writes bare KEY= placeholders only + audited w/ name."""
+        self._make_profiles(("xomni",))
+        r = core.fix_profiles(["xomni"], apply=True)["xomni"]
+        self.assertIsNone(r["error"])
+        self.assertGreaterEqual(r["fixed"], 1)
+        env_path = os.path.join(self.hermes, "profiles", "xomni", ".env")
+        with open(env_path, "r", encoding="utf-8") as f:
+            env = f.read()
+        self.assertIn("GROQ_API_KEY=\n", env)   # placeholder, empty value
+        self.assertNotIn("sk-", env)            # never a secret value
+        # audit entries carry the profile name (fix and fix_failed both logged)
+        entries = core.last_audit_entries(200)
+        profiled = [e for e in entries if e.get("profile") == "xomni"]
+        self.assertTrue(profiled)
+        self.assertTrue(all(e["detector"] == "drift"
+                            and e["action"] in ("fix", "fix_failed")
+                            for e in profiled))
+        # the placeholder .env fix must have succeeded
+        self.assertTrue(any(e["action"] == "fix"
+                            and e["subject"] == "env.GROQ_API_KEY"
+                            for e in profiled))
+        self.assertTrue(all(e["subject"].startswith(("env.", "provider.", "plugins."))
+                            for e in profiled))
+        # other profiles untouched by the xomni-only fix
+        self.assertFalse(os.path.isfile(os.path.join(self.hermes, ".env")))
+
+    def test_scan_unreadable_profile_loud_error(self):
+        """Unreadable / unknown profiles -> loud error entries, never crash."""
+        self._make_profiles(("xomni",))
+        # unknown name -> loud error, scan continues
+        res = core.scan_profiles(["xomni", "ghost"])
+        self.assertFalse(res["ghost"]["ok"])
+        self.assertIn("unknown profile", res["ghost"]["error"])
+        self.assertIsNone(res["xomni"]["error"])
+        # home exists but config.yaml vanished -> loud
+        os.remove(os.path.join(self.hermes, "profiles", "xomni", "config.yaml"))
+        res2 = core.scan_profile({"name": "xomni",
+                                  "home": os.path.join(self.hermes, "profiles", "xomni")})
+        self.assertFalse(res2["ok"])
+        self.assertIn("unreadable", res2["error"])
+        # home path gone entirely -> loud
+        res3 = core.scan_profile({"name": "gone",
+                                  "home": os.path.join(self.hermes, "profiles", "gone")})
+        self.assertFalse(res3["ok"])
+        self.assertIn("unreadable profile home", res3["error"])
+        # fix on an unreadable profile is loud too and audits nothing
+        r = core.fix_profile({"name": "gone",
+                              "home": os.path.join(self.hermes, "profiles", "gone")})
+        self.assertFalse(r["fixed"])
+        self.assertIn("unreadable", r["error"])
+        self.assertEqual(core.last_audit_entries(), [])
+
+    def test_fix_all_mode_aggregates_and_requires_yes(self):
+        """all-mode aggregates every profile; without --yes it's a dry run."""
+        self._make_profiles(("xomni", "xomni-test"))
+        # command layer: /heal fix all without --yes -> plan only, no writes
+        mod = self._load_plugin("self_healing_plugin_all")
+        dry = mod._handle_heal("fix all")
+        self.assertIn("would fix", dry)
+        self.assertIn("--yes", dry)
+        self.assertFalse(os.path.isfile(os.path.join(self.hermes, ".env")))
+        # core plan matches
+        plan = core.fix_profiles(apply=False)
+        self.assertEqual(set(plan), {"base", "xomni", "xomni-test"})
+        # apply: every profile fixed, each audited under its own name
+        out = core.fix_profiles(apply=True)
+        for name in ("base", "xomni", "xomni-test"):
+            self.assertIsNone(out[name]["error"], out[name])
+            self.assertGreaterEqual(out[name]["fixed"], 1)
+        entries = core.last_audit_entries(500)
+        by_profile = {}
+        for e in entries:
+            if e.get("profile") and e["detector"] == "drift":
+                by_profile[e["profile"]] = by_profile.get(e["profile"], 0) + 1
+        self.assertEqual(set(by_profile), {"base", "xomni", "xomni-test"})
+        # every profile's .env holds bare KEY= placeholders only
+        for name in ("base", "xomni", "xomni-test"):
+            home = (self.hermes if name == "base"
+                    else os.path.join(self.hermes, "profiles", name))
+            with open(os.path.join(home, ".env"), "r", encoding="utf-8") as f:
+                env = f.read()
+            self.assertIn("GROQ_API_KEY=\n", env)
+            self.assertNotIn("sk-", env)
+
+    def test_zero_hooks_register_only_heal_command(self):
+        """register() wires ONLY the /heal command — zero hooks."""
+        mod = self._load_plugin("self_healing_plugin_hooks")
+        calls = []
+
+        class Ctx:
+            def register_command(self, name, **kw):
+                calls.append(("command", name))
+
+            def register_hook(self, *a, **kw):
+                calls.append(("hook", a))
+
+        mod.register(Ctx())
+        kinds = [c[0] for c in calls]
+        self.assertEqual(kinds, ["command"])
+        self.assertEqual(calls[0][1], "heal")
+        self.assertNotIn("hook", kinds)
+
+
 if __name__ == "__main__":
     unittest.main()

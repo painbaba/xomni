@@ -11,11 +11,15 @@ Commands:
   /receipts                 last 10 receipts (newest first)
   /receipts show <id>       full receipt record
   /receipts verify <id>     re-check the verifiable handle -> {ok, evidence}
+  /receipts audit           mutating-path coverage report: every mutating
+                            command across CLI + plugins, and whether it
+                            emits a receipt (grep-based, gaps loud)
 
 The mutating paths that issue receipts: skill install (omni-skills +
 `xomni skill install`), MCP catalog add / server install (mcp-catalog),
-`xomni plugins install`, `xomni add <stack>`. The receipts plugin is
-optional at every site — if it is unavailable, those paths behave exactly
+`xomni plugins install`, `xomni add <stack>`, `xomni providers add`,
+`/skills publish`, `/skill save`, `/statusline on|off`. The receipts plugin
+is optional at every site — if it is unavailable, those paths behave exactly
 as before.
 
 No hooks registered — zero per-turn cost.
@@ -30,6 +34,7 @@ HELP = (
     "/receipts                last 10 receipts (newest first)\n"
     "/receipts show <id>      full receipt record\n"
     "/receipts verify <id>    re-check the verifiable handle -> {ok, evidence}\n"
+    "/receipts audit          mutating-path coverage report (gaps loud)\n"
 )
 
 
@@ -53,6 +58,8 @@ def _handle_receipts(raw: str) -> str:
             return core.verify_text(core.ReceiptLedger().verify(rest))
         except core.ReceiptError as exc:
             return "/receipts verify: %s" % exc
+    if cmd == "audit":
+        return core.audit_text(core.audit_coverage())
     return HELP
 
 
@@ -64,8 +71,9 @@ def register(ctx) -> None:
         handler=_handle_receipts,
         description=(
             "Receipts-by-default JSONL ledger: /receipts (last 10), "
-            "/receipts show <id>, /receipts verify <id> — every external "
-            "side-effect carries a verifiable handle (sha256 / URL 200 / exit code)."
+            "/receipts show <id>, /receipts verify <id>, /receipts audit — "
+            "every external side-effect carries a verifiable handle "
+            "(sha256 / URL 200 / exit code); audit lists mutating-path coverage."
         ),
-        args_hint="[show <id>|verify <id>]",
+        args_hint="[show <id>|verify <id>|audit]",
     )

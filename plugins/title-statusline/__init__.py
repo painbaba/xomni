@@ -53,6 +53,53 @@ def _save_state(state: dict) -> None:
         pass  # state persistence must never break the agent either
 
 
+# ─── receipts-by-default (U7) ────────────────────────────────────────────────
+# /statusline on|off persists state.json — the write gets a verifiable sha256
+# receipt into the JSONL ledger (plugins/receipts). The receipts plugin is
+# optional — if unavailable, the toggle behaves exactly as before.
+_RECEIPTS = None
+
+
+def _receipts_core():
+    """Lazily resolve receipts.core (installed package, else XOMNI checkout)."""
+    global _RECEIPTS
+    if _RECEIPTS is None:
+        mod = None
+        try:
+            from receipts import core as mod
+        except Exception:
+            mod = None
+        if mod is None:
+            try:
+                import importlib.util
+                import sys as _sys
+                home = os.environ.get("XOMNI_HOME", "")
+                if not home:
+                    home = os.path.abspath(os.path.join(
+                        os.path.dirname(os.path.abspath(__file__)), "..", ".."))
+                cand = os.path.join(home, "plugins", "receipts", "core.py")
+                if os.path.isfile(cand):
+                    fspec = importlib.util.spec_from_file_location("receipts_core", cand)
+                    mod = importlib.util.module_from_spec(fspec)
+                    _sys.modules["receipts_core"] = mod
+                    fspec.loader.exec_module(mod)
+            except Exception:
+                mod = None
+        _RECEIPTS = mod if mod is not None else False
+    return _RECEIPTS or None
+
+
+def _receipt_file(action: str, target: str, result: str, meta: dict | None = None):
+    """Issue a sha256-handled receipt; never raises, never breaks the caller."""
+    mod = _receipts_core()
+    if mod is None:
+        return None
+    try:
+        return mod.try_file_receipt(action, target, result, meta)
+    except Exception:
+        return None
+
+
 def _refresh_title() -> None:
     """Compute the sponsor line and push it to the title bar. Never raises."""
     title = core.pick_line(core.read_sponsor_lines())
@@ -87,11 +134,15 @@ def _handle_title(raw: str) -> str:
     if args.startswith("on"):
         state["enabled"] = True
         _save_state(state)
+        _receipt_file("statusline.state", _STATE_PATH, "statusline ON",
+                      {"enabled": True})
         _refresh_title()
         return "title statusline ON — sponsor line will show in the terminal title bar."
     if args.startswith("off"):
         state["enabled"] = False
         _save_state(state)
+        _receipt_file("statusline.state", _STATE_PATH, "statusline OFF",
+                      {"enabled": False})
         core.set_title(core.NEUTRAL_TITLE)  # off restores a neutral title
         return "title statusline OFF — neutral title restored."
     if args.startswith("now"):

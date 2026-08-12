@@ -19,13 +19,34 @@ demand (or by cron); nothing is wired to agent events.
 ## Commands (registered by `register(ctx)` — command only, no hooks)
 
 ```
-/heal scan               run watchdog + postcondition checks (data/heal/checks.json)
-                         + drift scan; report everything found
-/heal fix <id>           fix one drift, e.g. plugins.omni-registry,
-                         provider.block.opencode-go, env.ANTHROPIC_API_KEY
-/heal fix all            fix every current drift
-/heal status             last 10 audit entries from ~/.xomni-heal/heal.jsonl
+/heal profiles            list every hermes profile (base + profiles/*) with
+                          per-profile drift status
+/heal scan [profile|all]  watchdog + postcondition checks (data/heal/checks.json)
+                          + drift scan across all profiles (default: all)
+/heal fix <profile|all>   fix every drift of a profile ('all' = every profile);
+                          add --yes to apply, without it: dry-run plan only
+/heal fix <id>            legacy: fix one drift of the base profile, e.g.
+                          plugins.omni-registry, provider.block.opencode-go,
+                          env.ANTHROPIC_API_KEY
+/heal status              last 10 audit entries from ~/.xomni-heal/heal.jsonl
 ```
+
+## Multi-profile healing (U-ASSURE-2)
+
+`discover_profiles()` finds **every** hermes profile: the base home
+(`~/AppData/Local/hermes` when its `config.yaml` exists) plus every
+`profiles/*` child that carries a `config.yaml`. `scan_profiles()` /
+`fix_profiles()` then run the same drift checks per profile home (plugins
+roster, provider block, `.env` KEY presence) and fix them independently:
+
+* **placeholders only** — `.env` fixes append bare `KEY=` lines; values are
+  never read, logged, or written, for any profile.
+* **per-profile audit trail** — every fix entry in `heal.jsonl` carries the
+  `profile` name, so you can replay exactly what each profile's heal did.
+* **loud errors** — an unreadable / unknown profile yields an `ERROR` entry
+  in the report; the scan/fix of the remaining profiles continues.
+* **`--yes` guard** — `/heal fix <profile|all>` without `--yes` is a dry-run
+  plan (no writes); with `--yes` fixes apply.
 
 ## Default checks (`data/heal/checks.json`)
 
@@ -42,16 +63,21 @@ demand (or by cron); nothing is wired to agent events.
 cd plugins/self-healing && python -m unittest tests.test_core -q
 ```
 
-20 tests, all hermetic (env-overridable `XOMNI_HEAL_DIR` / `XOMNI_HERMES_HOME` /
-`XOMNI_ROOT` / `XOMNI_CHECKS` — nothing touches the real config, `.env`, or
-`heal.jsonl`): watchdog kills silent hangs + audits the kill, timeout respected
-even when output flows, quiet detector disabled at 0, output resets the quiet
-timer, missing command handled; postconditions pass/fail incl. the
+20 legacy tests + 6 U-ASSURE-2 multi-profile tests, all hermetic
+(env-overridable `XOMNI_HEAL_DIR` / `XOMNI_HERMES_HOME` / `XOMNI_ROOT` /
+`XOMNI_CHECKS` — nothing touches the real config, `.env`, or `heal.jsonl`):
+watchdog kills silent hangs + audits the kill, timeout respected even when
+output flows, quiet detector disabled at 0, output resets the quiet timer,
+missing command handled; postconditions pass/fail incl. the
 exit-0-nothing-happened flag and service pings; drift detected for missing
 plugin dir / provider block / env key and clean state; fixes restore plugin
 dirs (audit shape complete), add env KEY placeholders with **secrets never
 logged**, re-insert provider blocks with config backup; `/heal scan|fix|status`
-end-to-end.
+end-to-end. U-ASSURE-2: discovery finds base + xomni + xomni-test from a fake
+profiles tree, per-profile drift detection, fix writes placeholders + audit
+entries stamped with the profile name, unreadable/unknown profiles come back
+loud without crashing, all-mode aggregates every profile and requires `--yes`
+for writes, and `register()` wires only the `/heal` command (zero hooks).
 
 Env overrides (all optional): `XOMNI_HEAL_DIR`, `XOMNI_HERMES_HOME`,
 `XOMNI_ROOT`, `XOMNI_CHECKS`.

@@ -1,12 +1,32 @@
 # model-router — automatic per-task model routing
 
 Picks the best free gateway model per task **automatically** — the user never
-chooses. Routing reads REAL capability data from
-[`omni-registry`](../omni-registry/) (`context_window`, `capabilities`,
-`capability_sources`, `latency_ms`, `status`) enriched with
+chooses. The candidate pool is the **LIVE registry state** read from
+[`omni-registry`](../omni-registry/) (`capabilities.json` exactly as it exists
+NOW — including models merged in by live `/models` probes), enriched with
 [`provider-pool`](../provider-pool/) `GATEWAY_MODELS` tags
 (`fast`/`reasoning`/`vision`/`heavy`/`default`). Pure stdlib, zero
-Hermes imports, zero network.
+Hermes imports. Command path (`/route`) is network-free unless the registry
+is empty/stale (see fallback below).
+
+Every pick carries a **source tier** with tie-break priority
+**live-probe > verified > spec**: a model confirmed by a live probe (fresh
+`/models` probe result, the registry's `source='live-probe'` marker, or an
+`http200` spot-check) beats a spot-checked/ok-verified record, which beats a
+spec-only claim — applied only when capability ranking ties.
+
+## Live-registry fallback (empty/stale registry)
+
+If the registry has **no candidates** (empty, unreadable, or no
+active/verified/live-probe records), `route()` falls back to the configured
+provider's own `/models` via the **probe module** — `capability-probe`
+(import when available: live-probe ANY provider pool, OpenAI/Anthropic
+shapes) else `provider-pool.gateway_health()`. A successful probe picks from
+the LIVE ids (`source=live-probe`, `pool: <n> live models`). If nothing can
+be probed the fallback is **LOUD**: the reason says `⚠ NO LIVE MODELS
+AVAILABLE`, `pool_size=0`, `pick_source=fallback` — never a silent pick,
+never a crash. `route(..., probe=...)` injects a probe result (ids /
+`{'models': [...]}` / callable) for tests and callers.
 
 ## Automatic routing hook (pre_llm_call)
 
@@ -30,7 +50,7 @@ Disable with `hermes config set model-router.auto_route false`.
 | `quick` | fast-tagged **or** `latency_ms < 5000`; lightest context (fastest TTFT), tools-capable | `minimax-m2.5` |
 | `reasoning` | `thinking`/`always_thinking` capability; prefers reasoning-tagged + verified thinking, biggest ctx | `deepseek-v4-pro` |
 | `vision` | `image_in` capability **required**; prefers live-verified `image_in` (minimax-m3 is the only spot-checked one) | `minimax-m3` |
-| `heavy` | largest `context_window` among active models | `gpt-5.6-luna` |
+| `heavy` | largest `context_window` among live models | `gpt-5.6-luna` |
 | `default` | tools+thinking workhorse, default-tagged preferred | `deepseek-v4-flash` |
 
 Detection precedence: **vision > reasoning > heavy > quick > default**
@@ -42,6 +62,8 @@ live in `core.KEYWORDS` (prefix-anchored word matches).
 ```
 /route <prompt>      chosen model + task type + reason + switch command
                      ('hermes config set model <id>') + provider hint
+                     + pool size ('pool: <n> live models' + tier breakdown)
+                     + pick source (live-probe/verified/spec)
                      (ADVISORY — prints what the hook would do)
 /route telemetry     last 10 routed calls: model, ms, $, task type
                      (auto-includes every call the hook classified)
@@ -63,6 +85,6 @@ rows are flagged. Ledger: `~/.xomni-cost/route.db`.
 
 ```
 cd plugins/model-router
-python -m unittest tests.test_core -q     # 20 tests, all green
+python -m unittest tests.test_core -q     # 31 tests, all green
 python scripts/demo.py                    # command-level demo (routing + telemetry)
 ```

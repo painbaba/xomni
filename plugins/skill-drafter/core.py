@@ -29,16 +29,22 @@ root (``skills/<name>/SKILL.md``) for the host curator to govern.
 """
 from __future__ import annotations
 
+import hashlib
+import importlib.util
 import json
 import os
 import re
 import shutil
 import subprocess
+import sys
 
 MIN_SUCCESS_CALLS = 5
 DEFAULT_VERSION = "1.0.0"
 DEFAULT_CATEGORY = "auto-drafted"
 DEFAULT_SKILLS_ROOT = os.path.expanduser("~/AppData/Local/hermes/skills")
+# U-SURF-2 — the xomni profile's skills dir (cross-profile sync peer).
+DEFAULT_PROFILE_SKILLS_ROOT = os.path.expanduser(
+    "~/AppData/Local/hermes/profiles/xomni/skills")
 
 # ------------------------------------------------------------------ frontmatter
 FM_RE = re.compile(r"^---\s*\n(.*?)\n---", re.S | re.M)
@@ -596,3 +602,323 @@ def draft_last_session(limit_messages: int = 200, runner=None,
     return {"ok": False,
             "reason": last_export_fail or "host session export failed",
             "session_id": ids[0]}
+
+
+# ------------------------------------------------------------------ U-SURF-2
+# Universal skills lifecycle — ONE pipeline: draft -> validate (REJECT check)
+# -> save (host skills dir) -> receipt (plugins/receipts ledger, optional) ->
+# publish OFFER (the omni-skills /skills publish path, never executed here).
+# Plus cross-profile sync (/skill sync): diff-based, no-clobber.
+# Pure stdlib. Zero hooks.
+
+def profile_skills_root() -> str:
+    """XOMNI profile skills dir — XOMNI_PROFILE_SKILLS override, else the
+    default under ~/AppData/Local/hermes/profiles/xomni/skills."""
+    env = (os.environ.get("XOMNI_PROFILE_SKILLS") or "").strip()
+    if env:
+        return env
+    return DEFAULT_PROFILE_SKILLS_ROOT
+
+
+def _resolve_source(source, runner=None, timeout: int = 60) -> dict:
+    """Normalize lifecycle input -> {ok, kind, transcript?, session_id?}.
+
+    Accepts a transcript list, an export dict ({transcript, session_id}), a
+    session-id string (exported via the host CLI), or a session-file path.
+    Never raises.
+    """
+    if isinstance(source, list):
+        return {"ok": True, "kind": "transcript", "transcript": source,
+                "session_id": None}
+    if isinstance(source, dict):
+        t = source.get("transcript")
+        if isinstance(t, list):
+            return {"ok": True, "kind": "transcript", "transcript": t,
+                    "session_id": source.get("session_id")}
+        sid = source.get("session_id") or source.get("id")
+        if sid:
+            exp = export_session(str(sid), runner=runner, timeout=timeout)
+            if exp["ok"]:
+                return {"ok": True, "kind": "session",
+                        "transcript": exp["transcript"], "session_id": str(sid)}
+            return {"ok": False, "reason": exp["reason"], "session_id": str(sid)}
+        return {"ok": False,
+                "reason": "source dict has neither transcript nor session_id"}
+    if isinstance(source, str):
+        s = source.strip()
+        if os.path.isfile(s):
+            try:
+                t = parse_transcript_file(s)
+            except Exception as exc:
+                return {"ok": False,
+                        "reason": f"could not read transcript: {exc}"}
+            return {"ok": True, "kind": "file", "transcript": t,
+                    "session_id": None}
+        exp = export_session(s, runner=runner, timeout=timeout)
+        if exp["ok"]:
+            return {"ok": True, "kind": "session",
+                    "transcript": exp["transcript"], "session_id": s}
+        return {"ok": False, "reason": exp["reason"], "session_id": s}
+    return {"ok": False,
+            "reason": f"unsupported source type: {type(source).__name__}"}
+
+
+# --- optional plugin bridges (receipts ledger, omni-skills publish path) -----
+def _load_checkout_module(rel_path: str, mod_name: str):
+    """Load a sibling plugin's core.py — the XOMNI checkout's own copy is the
+    source of truth and is preferred; the installed package (``<pkg>.core``)
+    is only a fallback. Returns the module or None. Never raises."""
+    try:
+        home = os.environ.get("XOMNI_HOME", "")
+        if not home:
+            home = os.path.abspath(os.path.join(
+                os.path.dirname(os.path.abspath(__file__)), "..", ".."))
+        cand = os.path.join(home, "plugins", rel_path, "core.py")
+        if os.path.isfile(cand):
+            spec = importlib.util.spec_from_file_location(mod_name, cand)
+            mod = importlib.util.module_from_spec(spec)
+            sys.modules[mod_name] = mod
+            spec.loader.exec_module(mod)
+            return mod
+    except Exception:
+        pass
+    try:
+        return importlib.import_module(rel_path.replace("/", ".") + ".core")
+    except Exception:
+        pass
+    return None
+
+
+_RECEIPTS_CACHE = None
+_OMNI_CACHE = None
+
+
+def receipts_core():
+    """plugins/receipts core when importable, else None (graceful skip)."""
+    global _RECEIPTS_CACHE
+    if _RECEIPTS_CACHE is None:
+        _RECEIPTS_CACHE = _load_checkout_module("receipts", "receipts_core") \
+            or False
+    return _RECEIPTS_CACHE or None
+
+
+def omni_skills_core():
+    """plugins/omni-skills core when importable, else None (publish offer
+    falls back to a plain hint)."""
+    global _OMNI_CACHE
+    if _OMNI_CACHE is None:
+        _OMNI_CACHE = _load_checkout_module("omni-skills", "omni_skills_core") \
+            or False
+    return _OMNI_CACHE or None
+
+
+def build_publish_offer(skill_dir: str, target: str = "github") -> dict:
+    """The publish OFFER for a saved skill — omni-skills' single publish path
+    (`hermes skills publish --to <target> <dir>` via /skills publish). Built
+    with omni-skills when available; a plain hint otherwise. Never executes.
+    Returns {command: [argv] | None, hint}."""
+    mod = omni_skills_core()
+    if mod is not None:
+        try:
+            cmd = mod.build_publish_command(skill_dir, target=target)
+            return {"command": list(cmd),
+                    "hint": f"publish via XOMNI: /skills publish {skill_dir} "
+                            f"[--to={target}]"}
+        except Exception:
+            pass
+    return {"command": None,
+            "hint": (f"publish via XOMNI: /skills publish {skill_dir} "
+                     f"(omni-skills unavailable here; host: hermes skills "
+                     f"publish --to {target} {skill_dir})")}
+
+
+# --- the one-call pipeline ---------------------------------------------------
+def lifecycle(source, category: str | None = None, *,
+              save: bool = True, publish: bool = True, receipt: bool = True,
+              skills_root: str | None = None, runner=None, timeout: int = 60,
+              receipts_path: str | None = None) -> dict:
+    """Universal skills lifecycle in ONE call.
+
+    draft -> validate (REJECT blocks everything) -> save (flat into the HOST
+    skills dir) -> receipt (plugins/receipts ledger when available, skipped
+    gracefully when not) -> publish offer (the omni-skills /skills publish
+    path — never executed).
+
+    *source*: transcript list, export dict, session-id string, or session
+    file path. Steps are optional via flags: ``save=False`` (--no-save
+    preview — nothing written, no receipt), ``publish=False`` (--no-publish),
+    ``receipt=False`` (--no-receipt).
+
+    Returns {ok, steps: [{step, status, detail}], name, skill_md, saved?,
+    receipt?, publish_offer?, session_id?, reason?} — never raises.
+    """
+    steps = []
+
+    def step(name, status, detail=""):
+        steps.append({"step": name, "status": status, "detail": detail})
+
+    resolved = _resolve_source(source, runner=runner, timeout=timeout)
+    if not resolved["ok"]:
+        step("draft", "failed", resolved["reason"])
+        return {"ok": False, "steps": steps, "reason": resolved["reason"],
+                "session_id": resolved.get("session_id")}
+    transcript = resolved["transcript"]
+    sid = resolved.get("session_id")
+    draft = draft_skill_checked(transcript)
+    if not draft["ok"]:
+        step("draft", "failed", draft["reason"])
+        return {"ok": False, "steps": steps, "reason": draft["reason"],
+                "session_id": sid}
+    step("draft", "ok",
+         f"name={draft['name']} successful_calls={draft['success_calls']}")
+    check = validate_draft(draft["skill_md"], expected_name=draft["name"])
+    if check["verdict"] != "PASS":
+        detail = "; ".join(f"{w}: {r}" for w, r in check["issues"]) or "issues"
+        step("validate", check["verdict"], detail)
+        return {"ok": False, "steps": steps, "verdict": check["verdict"],
+                "reason": f"{check['verdict']} — {detail}",
+                "name": draft["name"], "session_id": sid}
+    step("validate", "PASS", "no issues")
+    saved = None
+    if save:
+        root = skills_root or DEFAULT_SKILLS_ROOT
+        res = save_skill(draft["name"], draft["skill_md"], skills_root=root,
+                         flat=True)
+        if not res["ok"]:
+            step("save", "failed", res["reason"])
+            return {"ok": False, "steps": steps, "reason": res["reason"],
+                    "name": draft["name"], "session_id": sid}
+        saved = res
+        step("save", "ok", res["dest"])
+    else:
+        step("save", "skipped", "preview (--no-save) — nothing written")
+    receipt_rec = None
+    if receipt and saved:
+        mod = receipts_core()
+        if mod is not None:
+            try:
+                receipt_rec = mod.try_file_receipt(
+                    "skill.save", os.path.join(saved["dest"], "SKILL.md"),
+                    f"PASS {saved['name']}",
+                    {"name": saved["name"], "source": "lifecycle",
+                     **({"session_id": sid} if sid else {})},
+                    path=receipts_path)
+            except Exception:
+                receipt_rec = None
+        if receipt_rec:
+            step("receipt", "ok", receipt_rec.get("id", "issued"))
+        else:
+            step("receipt", "skipped",
+                 "receipts ledger unavailable — skipped gracefully")
+    else:
+        step("receipt", "skipped",
+             "nothing saved (--no-save preview) or --no-receipt")
+    publish_offer = None
+    if publish:
+        publish_offer = build_publish_offer(
+            saved["dest"] if saved else draft["name"])
+        cmd = publish_offer.get("command")
+        step("publish", "offer", " ".join(cmd) if cmd
+             else publish_offer.get("hint", ""))
+    else:
+        step("publish", "skipped", "--no-publish")
+    return {"ok": True, "steps": steps, "name": draft["name"],
+            "skill_md": draft["skill_md"], "saved": saved,
+            "receipt": receipt_rec, "publish_offer": publish_offer,
+            "session_id": sid}
+
+
+# --- cross-profile sync (diff-based, no-clobber) -----------------------------
+def _scan_skill_dirs(root: str) -> dict:
+    """{relpath-from-root: abs_dir} for every dir holding SKILL.md.
+
+    Recursive — handles both flat (skills/<name>) and categorized
+    (skills/<category>/<name>) layouts. Never descends into .git.
+    """
+    out = {}
+    if not os.path.isdir(root):
+        return out
+    for base, dirs, names in os.walk(root):
+        dirs[:] = [d for d in dirs if d != ".git"]
+        if "SKILL.md" in names:
+            rel = os.path.relpath(base, root).replace("\\", "/")
+            out[rel] = base
+    return out
+
+
+def _dir_fingerprint(skill_dir: str) -> str:
+    """sha256 over every file's relative path + content — change detection."""
+    h = hashlib.sha256()
+    for base, dirs, names in os.walk(skill_dir):
+        dirs[:] = [d for d in dirs if d != ".git"]
+        for n in sorted(names):
+            p = os.path.join(base, n)
+            rel = os.path.relpath(p, skill_dir).replace("\\", "/")
+            h.update(rel.encode("utf-8", "replace"))
+            try:
+                with open(p, "rb") as f:
+                    h.update(f.read())
+            except OSError:
+                pass
+    return h.hexdigest()
+
+
+def sync_skills(src_root: str, dst_root: str, dry_run: bool = False) -> dict:
+    """One-direction diff-based sync, NO CLOBBER.
+
+      * added    — skill only in src -> copied (or planned, when dry_run)
+      * updated  — skill in both but fingerprints DIFFER -> NEVER overwritten
+                   (reported with the reason; the differing dest is kept)
+      * skipped  — skill in both, identical -> no-op
+
+    Returns {ok, src, dst, dry_run, added: [(rel, dest)], updated: [(rel,
+    reason)], skipped: [rel], *_count}. Never raises.
+    """
+    src = _scan_skill_dirs(src_root)
+    dst = _scan_skill_dirs(dst_root)
+    added, updated, skipped = [], [], []
+    for rel in sorted(src):
+        src_dir = src[rel]
+        if rel not in dst:
+            dest = os.path.join(dst_root, rel.replace("/", os.sep))
+            added.append((rel, dest))
+            if not dry_run:
+                os.makedirs(os.path.dirname(dest) or dst_root, exist_ok=True)
+                shutil.copytree(src_dir, dest, dirs_exist_ok=True)
+            continue
+        if _dir_fingerprint(src_dir) == _dir_fingerprint(dst[rel]):
+            skipped.append(rel)
+        else:
+            updated.append(
+                (rel, "dest content differs from source — not clobbered"))
+    return {"ok": True, "src": os.path.abspath(src_root),
+            "dst": os.path.abspath(dst_root), "dry_run": dry_run,
+            "added": added, "updated": updated, "skipped": skipped,
+            "added_count": len(added), "updated_count": len(updated),
+            "skipped_count": len(skipped)}
+
+
+def sync_cross_profile(host_root: str | None = None,
+                       profile_root: str | None = None,
+                       direction: str = "both",
+                       dry_run: bool = False) -> dict:
+    """/skill sync — copies the HOST skills dir into the xomni profile skills
+    dir and vice versa. Diff-based, no-clobber: only source-only skills are
+    copied; a skill whose content differs on either side is never clobbered
+    (reported as updated). direction: both | host2xomni | xomni2host.
+    Returns {ok, passes: [(label, sync_result)], dry_run}."""
+    host = host_root or DEFAULT_SKILLS_ROOT
+    profile = profile_root or profile_skills_root()
+    direction = (direction or "both").strip().lower()
+    if direction not in ("both", "host2xomni", "xomni2host"):
+        return {"ok": False, "reason": f"unknown direction: {direction}"}
+    passes = []
+    if direction in ("both", "host2xomni"):
+        passes.append(("host->xomni",
+                       sync_skills(host, profile, dry_run=dry_run)))
+    if direction in ("both", "xomni2host"):
+        passes.append(("xomni->host",
+                       sync_skills(profile, host, dry_run=dry_run)))
+    return {"ok": True, "passes": passes, "dry_run": dry_run,
+            "host_root": os.path.abspath(host),
+            "profile_root": os.path.abspath(profile)}

@@ -19,9 +19,21 @@ is called explicitly by provider-pool (or any caller) after a model call;
 - **Budget caps** — per-day and per-week caps in USD (0 = no cap). Default is
   **warn-only**; `hard_stop` (opt-in) blocks new calls once a cap is reached —
   blocked calls are NOT logged.
+- **Spend caps (rolling windows)** — `5h / 1d / 7d / 30d` caps stored in the
+  ledger config table, each with an action: `warn` (warn text at >=80% of the
+  limit, never blocks) or `park` (warn at >=80%, and at >=100% the **heavy
+  tier** is parked). Windows are rolling (`ts - window .. ts`); `check_spend()`
+  and `parked_models()` are pure reads — checking a cap **never mutates the
+  ledger**. Heavy tier = paid models priced >= $1/1M input, derived live from
+  the cost table (claude-opus-4, gpt-4o, …). Per-model caps
+  (`/cost caps model <id> <limit>`) park a single model once its cumulative
+  spend reaches the limit.
 - **`/cost` commands** — `/cost` (report: top models by cost, totals, budget
   status), `/cost budget <daily> [weekly]`, `/cost budget hard on|off`,
-  `/cost sync [path]` (re-sync costs from the omni-registry snapshot).
+  `/cost caps` / `set <period> <limit_usd> <warn|park>` / `clear <period>`,
+  `/cost today`, `/cost week`, `/cost model <id>`, `/cost top` (top-5 models
+  by spend), `/cost sync [path]` (re-sync costs from the omni-registry
+  snapshot).
 - **`cost_track` tool** — the gate + logger in one call for provider-pool
   integration: checks the budget first, then logs.
 

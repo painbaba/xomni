@@ -35,7 +35,8 @@ STACK_POLICIES: dict[str, dict[str, dict[str, str]]] = {
 
 DOMAIN_PATTERNS: dict[str, tuple[str, ...]] = {
     "trading": ("buy", "sell", "order", "position", "leverage", "trade", "entry",
-                "stop-loss", "take-profit", "margin", "broker", "ticker"),
+                "stop-loss", "take-profit", "margin", "broker", "ticker",
+                "stock", "price", "quote", "equity", "portfolio"),
     "money":   ("transfer", "pay", "withdraw", "upi", "receipt", "payment",
                 "refund", "invoice", "balance transfer", "send money"),
     "medical": ("prescribe", "dose", "patient", "diagnos", "treatment", "surgery",
@@ -93,6 +94,43 @@ def decide(text: str, stack: str | None = None) -> dict:
         "allowed": policy in ("allow", "warn"),
         "requires_approval": policy == "block-approval",
         "reason": f"{domain}/{action}: {policy}"
+                  + ("" if domain != "unknown" else " (no domain matched — conservative)"),
+    }
+
+
+# skill-install policies: loading a skill grants its capabilities (execution),
+# but installation alone is lighter-touch than a live command — warn by default,
+# block-approval only for domains with real harm potential (medical).
+SKILL_POLICIES: dict[str, str] = {
+    "trading": "warn",
+    "money": "warn",
+    "medical": "block-approval",
+    "legal": "warn",
+    "crypto": "warn",
+    "code-exec": "warn",
+    "unknown": "warn",
+}
+
+
+def decide_tool(tool_name: str, tool_description: str = "") -> dict:
+    """Verdict for an MCP tool — domain/action classified from name+description."""
+    text = f"{tool_name or ''} {tool_description or ''}".strip()
+    verdict = decide(text)
+    verdict["reason"] = f"tool: {verdict['reason']}"
+    return verdict
+
+
+def decide_skill(frontmatter_text: str) -> dict:
+    """Verdict for a skill install — action is always execution (loading capability)."""
+    domain = classify_domain(frontmatter_text or "")
+    policy = SKILL_POLICIES[domain]
+    return {
+        "domain": domain,
+        "action": "execution",
+        "policy": policy,
+        "allowed": policy in ("allow", "warn"),
+        "requires_approval": policy == "block-approval",
+        "reason": f"skill install: {domain}/execution: {policy}"
                   + ("" if domain != "unknown" else " (no domain matched — conservative)"),
     }
 

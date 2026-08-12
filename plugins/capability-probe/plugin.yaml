@@ -1,0 +1,3 @@
+name: capability-probe
+version: "0.1.0"
+description: "Live-probe ANY provider's /models into the registry: OpenAI/Anthropic shapes, loud failures, key never printed; /probe <id> + /probe all, source=live-probe"

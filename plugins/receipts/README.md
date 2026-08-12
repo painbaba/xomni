@@ -26,6 +26,7 @@ always backed by proof, never claims.
 /receipts                last 10 receipts (newest first)
 /receipts show <id>      full receipt record
 /receipts verify <id>    re-check the handle -> {ok, evidence}
+/receipts audit          mutating-path coverage report (grep-based, gaps loud)
 ```
 
 **Integrated mutating paths** (each issues a receipt by default; the
@@ -34,9 +35,19 @@ behaves exactly as before):
 
 - skill install: `/skills-install`, `/skills-marketplace`, `skills_import`
   (omni-skills) and `xomni skill install`
+- skill publish: `/skills publish` (omni-skills — sha256 of the stamped /
+  published SKILL.md)
+- skill save/sync: `/skill save`, `/skill from-session`, `/skill sync`
+  (skill-drafter — sha256 of the written/copied SKILL.md)
 - MCP: `/mcp add <path>` (catalog import) and `/mcp add <name> --yes`
   (server install into host config.yaml)
-- CLI: `xomni plugins install`, `xomni add <stack>` (config.yaml append)
+- CLI: `xomni plugins install`, `xomni add <stack>` (config.yaml append),
+  `xomni providers add` (config.yaml + .env placeholder)
+- state: `/statusline on|off` (state.json toggle)
+
+`/receipts audit` verifies this list against the source: every mutating
+command's handler is grepped for a receipt-issuing call, and any handler
+that writes files without one is flagged loudly (missing-path detection).
 
 **Core API** (`plugins/receipts/core.py`, pure stdlib):
 

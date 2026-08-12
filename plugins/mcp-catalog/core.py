@@ -32,6 +32,13 @@ What lives here (all pure, all stdlib, no Hermes imports):
     ``mcp_servers`` block (``command``/``args``/``url``/``env``) and append
     it to the host config.yaml — idempotent, with loud failures that name
     the file and the fix.
+  * :func:`catalog_add` / :func:`register_server` — self-cataloging
+    (U-SURF-1): any installed or imported MCP server is AUTO-INDEXED into
+    the catalog json as a ``source: 'user-added'`` entry (``badges`` /
+    ``security: REVIEW`` / ``added_at``), idempotently and preserving the
+    rest of the catalog byte-for-byte; :func:`register_server` is the
+    one-shot path that writes host config AND catalog for a brand-new
+    server nobody has cataloged yet.
   * :func:`format_badges` / :func:`keyless` / :func:`security_verdict` /
     :func:`list_catalog_badged` — stars / keyless / security badges for
     ``/mcp list``.
@@ -49,6 +56,7 @@ makes it shareable between CLI and gateway sessions.
 """
 from __future__ import annotations
 
+import datetime
 import json
 import os
 import re
@@ -643,49 +651,295 @@ def install_server(
     server_name: str,
     host_config_path: Optional[str] = None,
     catalog: Optional[List[dict]] = None,
+    auto_index: bool = True,
+    catalog_path: Optional[str] = None,
 ) -> dict:
     """Append a catalog server block to the host config ``mcp_servers``.
 
     Idempotent: when ``server_name`` is already registered, nothing is
-    written and ``written`` is False. Returns ``{name, block, written, path}``.
+    written and ``written`` is False. Returns
+    ``{name, block, written, path, indexed, catalog_path}``.
+
+    Self-cataloging (U-SURF-1): every server installed this way — and every
+    server already registered on the host that this call touches — is
+    AUTO-INDEXED into the catalog json as a user-added entry via
+    :func:`catalog_add` (``indexed`` = True when a new entry was appended,
+    False when it was already present). Set ``auto_index=False`` to skip, or
+    pass ``catalog_path`` to target a specific catalog file.
 
     Failures are loud — :class:`CatalogError` naming the file and the fix:
     unknown server, no auto-installable launcher, config file missing, or
     config file read-only/unwritable. Never silently cancels."""
     plan = install_plan(server_name, host_config_path, catalog)
     if plan["exists"]:
-        return {
+        result = {
             "name": plan["name"],
             "block": plan["block"],
             "written": False,
             "path": plan["path"],
         }
-    path = plan["path"]
-    if not os.path.isfile(path):
+    else:
+        path = plan["path"]
+        if not os.path.isfile(path):
+            raise CatalogError(
+                f"host config not found: {path} — create it (or point "
+                f"MCP_HOST_CONFIG / HERMES_CONFIG at an existing config.yaml) and re-run"
+            )
+        if not os.access(path, os.W_OK):
+            raise CatalogError(
+                f"host config is read-only: {path} — clear the read-only attribute "
+                f"(attrib -R \"{path}\" / chmod +w) and re-run"
+            )
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                text = f.read()
+        except OSError as exc:
+            raise CatalogError(f"cannot read host config {path}: {exc}") from exc
+        try:
+            new_text = _append_server_block(text, plan["name"], plan["block"])
+            with open(path, "w", encoding="utf-8") as f:
+                f.write(new_text)
+        except OSError as exc:
+            raise CatalogError(
+                f"failed to write host config {path}: {exc} — check permissions "
+                f"(clear the read-only attribute, close editors holding the file) and re-run"
+            ) from exc
+        result = {"name": plan["name"], "block": plan["block"], "written": True, "path": path}
+    if auto_index:
+        result["indexed"] = False
+        try:
+            idx = catalog_add(
+                plan["name"], {"install_command": plan["launch"]}, catalog_path=catalog_path
+            )
+        except CatalogError as exc:
+            prefix = (
+                f"installed {plan['name']!r} into {plan['path']}, but " if result["written"] else ""
+            )
+            raise CatalogError(f"{prefix}catalog auto-index failed: {exc}") from exc
+        result["indexed"] = idx["written"]
+        result["catalog_path"] = idx["path"]
+    return result
+
+
+# ─── Self-cataloging (U-SURF-1): user-added entries ─────────────────────────
+
+# Target catalog file for user-added entries: data/mcp/catalog.json, overridable
+# with HERMES_MCP_CATALOG_FILE (tests and multi-instance setups use the env var).
+CATALOG_FILE_ENV = "HERMES_MCP_CATALOG_FILE"
+_USER_SOURCE = "user-added"
+_USER_SECURITY = "REVIEW"
+
+
+def catalog_file_path() -> str:
+    """The catalog json that user-added entries are indexed into
+    (``HERMES_MCP_CATALOG_FILE`` override > ``data/mcp/catalog.json``)."""
+    override = os.environ.get(CATALOG_FILE_ENV, "")
+    if override.strip():
+        return os.path.expanduser(override.strip())
+    return default_rich_catalog_path()
+
+
+def _user_catalog_entry(name: str, entry: dict) -> dict:
+    """Build the stored user-added catalog entry from a validated shape.
+
+    ``entry`` carries either ``install_command`` (marketplace style) or a host
+    config shape (``command``/``args``/``env`` for stdio, ``url`` for hosted).
+    The stored entry is ``{name, install_command, badges: {keyless}, security:
+    'REVIEW', source: 'user-added', added_at}`` — REVIEW because a
+    user-supplied server has no marketplace verification chain to cite.
+    ``keyless`` is True when the server needs no env vars and the launch line
+    carries no secret hints.
+    """
+    install_command = (entry.get("install_command") or "").strip()
+    if not install_command:
+        url = (entry.get("url") or "").strip()
+        if url:
+            install_command = f"hermes mcp add {name} --url {url}"
+        else:
+            command = (entry.get("command") or "").strip()
+            args = [str(a) for a in (entry.get("args") or [])]
+            install_command = " ".join([command] + args)
+    env = entry.get("env") or {}
+    hay = " ".join([install_command, entry.get("description") or ""]).lower()
+    keyless_badge = not env and not any(hint in hay for hint in _KEY_HINTS)
+    return {
+        "name": name,
+        "install_command": install_command,
+        "badges": {"keyless": keyless_badge},
+        "security": _USER_SECURITY,
+        "source": _USER_SOURCE,
+        "added_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+    }
+
+
+def _append_catalog_entry(text: str, entry: dict) -> str:
+    """Byte-preserving append of one entry to a catalog json document.
+
+    Keeps the file's EOL style and indentation (``[`` / `` {`` / 2-space keys /
+    `` }`` / ``]``, matching data/mcp/catalog.json) and touches nothing but
+    the closing ``]``: everything before it is returned verbatim.
+    """
+    eol = "\r\n" if "\r\n" in text else "\n"
+    body = text.rstrip()
+    if not body.endswith("]"):
         raise CatalogError(
-            f"host config not found: {path} — create it (or point "
-            f"MCP_HOST_CONFIG / HERMES_CONFIG at an existing config.yaml) and re-run"
+            "catalog file does not end with ']' — refusing to rewrite a "
+            "catalog that was not produced by this tool"
         )
-    if not os.access(path, os.W_OK):
-        raise CatalogError(
-            f"host config is read-only: {path} — clear the read-only attribute "
-            f"(attrib -R \"{path}\" / chmod +w) and re-run"
+    inner = body[:-1].rstrip()
+    entry_text = " " + json.dumps(entry, indent=1, ensure_ascii=False).replace("\n", "\n ")
+    if inner.endswith("["):
+        return inner + eol + entry_text + eol + "]"
+    return inner + "," + eol + entry_text + eol + "]"
+
+
+def _validate_user_entry(name: Any, entry: Any) -> List[str]:
+    """Validate a self-catalog add; return ALL error messages (empty = valid)."""
+    errors: List[str] = []
+    if not isinstance(name, str) or not name.strip():
+        errors.append("server name must be a non-empty string")
+    if not isinstance(entry, dict):
+        errors.append(
+            f"entry for {name!r} must be an object with 'install_command' "
+            "(marketplace style) or a config shape ('command'+'args' for stdio "
+            "or 'url' for hosted)"
         )
+        return errors
+    install_command = (entry.get("install_command") or "").strip()
+    command = (entry.get("command") or "").strip()
+    url = (entry.get("url") or "").strip()
+    if not install_command and not command and not url:
+        errors.append(
+            f"entry for {name!r} needs 'install_command', 'command' (stdio), "
+            f"or 'url' (hosted) — got keys: {sorted(k for k in entry) or '(empty)'}"
+        )
+    args = entry.get("args", [])
+    if not isinstance(args, list) or not all(isinstance(a, str) for a in args):
+        errors.append(f"entry for {name!r}: 'args' must be a list of strings")
+    env = entry.get("env", {})
+    if not isinstance(env, dict) or not all(
+        isinstance(k, str) and isinstance(v, str) for k, v in env.items()
+    ):
+        errors.append(f"entry for {name!r}: 'env' must be an object mapping string to string")
+    return errors
+
+
+def catalog_add(name: str, entry: dict, catalog_path: Optional[str] = None) -> dict:
+    """Auto-index a user-installed/imported MCP server into the catalog json.
+
+    Appends ``{name, install_command, badges: {keyless}, security: 'REVIEW',
+    source: 'user-added', added_at}`` to the catalog file
+    (``data/mcp/catalog.json``, override with ``HERMES_MCP_CATALOG_FILE`` or
+    pass ``catalog_path``) — the REST of the catalog is preserved byte-for-byte.
+    Idempotent: a name already present is skipped (``written`` False) and the
+    existing entry is returned. Returns ``{name, written, path, entry}``.
+
+    Failures are loud — :class:`CatalogError` with the exact problem: bad
+    entry shape (no install_command/command/url), unreadable catalog, or a
+    catalog file that does not end in ``]`` (never silently rewrites).
+    """
+    errors = _validate_user_entry(name, entry)
+    if errors:
+        raise CatalogError("catalog_add: " + "; ".join(errors))
+    name = name.strip()
+    path = catalog_path or catalog_file_path()
+    if os.path.isfile(path):
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                text = f.read()
+        except OSError as exc:
+            raise CatalogError(f"catalog_add: cannot read {path}: {exc}") from exc
+        try:
+            data = json.loads(text)
+        except json.JSONDecodeError as exc:
+            raise CatalogError(f"catalog_add: invalid JSON in {path}: {exc}") from exc
+        if not isinstance(data, list):
+            raise CatalogError(
+                f"catalog_add: {path} must be a JSON array of server objects, "
+                f"got {type(data).__name__}"
+            )
+        for existing in data:
+            if isinstance(existing, dict) and existing.get("name") == name:
+                return {"name": name, "written": False, "path": path, "entry": existing}
+    else:
+        text = "[]"
+    user_entry = _user_catalog_entry(name, entry)
     try:
-        with open(path, "r", encoding="utf-8") as f:
-            text = f.read()
-    except OSError as exc:
-        raise CatalogError(f"cannot read host config {path}: {exc}") from exc
-    try:
-        new_text = _append_server_block(text, plan["name"], plan["block"])
+        new_text = _append_catalog_entry(text, user_entry)
         with open(path, "w", encoding="utf-8") as f:
             f.write(new_text)
     except OSError as exc:
-        raise CatalogError(
-            f"failed to write host config {path}: {exc} — check permissions "
-            f"(clear the read-only attribute, close editors holding the file) and re-run"
-        ) from exc
-    return {"name": plan["name"], "block": plan["block"], "written": True, "path": path}
+        raise CatalogError(f"catalog_add: failed to write {path}: {exc}") from exc
+    return {"name": name, "written": True, "path": path, "entry": user_entry}
+
+
+def register_server(
+    name: str,
+    block: dict,
+    host_config_path: Optional[str] = None,
+    catalog_path: Optional[str] = None,
+) -> dict:
+    """One-shot registration of a brand-new MCP server (self-catalog path).
+
+    ``block`` is a host ``mcp_servers`` shape: ``{"command": str, "args":
+    [str], "env": {str: str}}`` for stdio or ``{"url": str}`` for hosted HTTP.
+    Writes the block into host config ``mcp_servers`` (idempotent — skips when
+    already registered) AND auto-indexes the server into the catalog json as a
+    user-added entry. Returns
+    ``{name, block, written, path, indexed, catalog_path}``. Raises
+    :class:`CatalogError` loudly on bad block shapes and write failures.
+    """
+    name = (name or "").strip()
+    if not name:
+        raise CatalogError("register_server: server name must be a non-empty string")
+    if not isinstance(block, dict):
+        raise CatalogError(f"register_server: block for {name!r} must be an object")
+    if "url" in block:
+        url = (block.get("url") or "").strip()
+        if not url:
+            raise CatalogError(f"register_server: {name!r} url block has an empty 'url'")
+        block = {"url": url}
+    else:
+        command = (block.get("command") or "").strip()
+        if not command:
+            raise CatalogError(
+                f"register_server: {name!r} block needs 'url' (hosted) or 'command' "
+                f"(stdio) — got keys: {sorted(block)}"
+            )
+        args = [str(a) for a in (block.get("args") or [])]
+        env = {str(k): str(v) for k, v in (block.get("env") or {}).items()}
+        block = {"command": command, "args": args, "env": env}
+    path = host_config_path or default_host_config_path()
+    written = False
+    if not _server_registered(path, name):
+        if not os.path.isfile(path):
+            raise CatalogError(
+                f"host config not found: {path} — create it (or point "
+                f"MCP_HOST_CONFIG / HERMES_CONFIG at an existing config.yaml) and re-run"
+            )
+        if not os.access(path, os.W_OK):
+            raise CatalogError(
+                f"host config is read-only: {path} — clear the read-only attribute "
+                f"(attrib -R \"{path}\" / chmod +w) and re-run"
+            )
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                text = f.read()
+            new_text = _append_server_block(text, name, block)
+            with open(path, "w", encoding="utf-8") as f:
+                f.write(new_text)
+            written = True
+        except OSError as exc:
+            raise CatalogError(f"failed to write host config {path}: {exc}") from exc
+    result = {"name": name, "block": block, "written": written, "path": path}
+    try:
+        idx = catalog_add(name, block, catalog_path=catalog_path)
+    except CatalogError as exc:
+        prefix = f"registered {name!r} into {path}, but " if written else ""
+        raise CatalogError(f"{prefix}catalog index failed: {exc}") from exc
+    result["indexed"] = idx["written"]
+    result["catalog_path"] = idx["path"]
+    return result
 
 
 # ─── Marketplace badges (stars / keyless / security) ─────────────────────────
@@ -707,7 +961,11 @@ def keyless(entry: dict) -> bool:
 def security_verdict(entry: dict) -> str:
     """Security posture from the catalog's ``verified``/``source`` fields:
     VERIFIED (verified + primary source), REVIEW (verified, secondary source),
-    UNVERIFIED (not verified)."""
+    UNVERIFIED (not verified). An explicit ``security`` field (as written by
+    :func:`catalog_add` for user-added entries) wins when present."""
+    explicit = (entry.get("security") or "").upper()
+    if explicit in ("VERIFIED", "REVIEW", "UNVERIFIED"):
+        return explicit
     verified = bool(entry.get("verified"))
     source = (entry.get("source") or "").lower()
     if not verified:
@@ -724,9 +982,12 @@ def format_badges(entry: dict) -> str:
         stars_badge = f"★{stars / 1000:.1f}k" if stars >= 1000 else f"★{int(stars)}"
     else:
         stars_badge = "★-"
-    return " ".join(
-        [stars_badge, "keyless" if keyless(entry) else "needs-key", security_verdict(entry)]
-    )
+    badges = entry.get("badges")
+    if isinstance(badges, dict) and "keyless" in badges:
+        keyless_badge = "keyless" if badges["keyless"] else "needs-key"
+    else:
+        keyless_badge = "keyless" if keyless(entry) else "needs-key"
+    return " ".join([stars_badge, keyless_badge, security_verdict(entry)])
 
 
 def _badged_entry_lines(entry: dict) -> List[str]:

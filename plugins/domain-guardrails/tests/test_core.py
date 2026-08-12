@@ -88,6 +88,84 @@ class DecideTests(unittest.TestCase):
             self.assertIn(key, v)
 
 
+class DecideToolTests(unittest.TestCase):
+    def test_tool_fetch_stock_price_allowed(self):
+        v = core.decide_tool("fetch_stock_price",
+                             "Fetch the current stock price for a symbol")
+        self.assertEqual(v["domain"], "trading")
+        self.assertEqual(v["action"], "analysis")
+        self.assertEqual(v["policy"], "allow")
+        self.assertTrue(v["allowed"])
+        self.assertFalse(v["requires_approval"])
+
+    def test_tool_place_order_requires_approval(self):
+        v = core.decide_tool("place_order",
+                             "Place a market order for the given symbol and quantity")
+        self.assertEqual(v["domain"], "trading")
+        self.assertEqual(v["action"], "execution")
+        self.assertEqual(v["policy"], "block-approval")
+        self.assertFalse(v["allowed"])
+        self.assertTrue(v["requires_approval"])
+
+    def test_tool_legal_warn(self):
+        v = core.decide_tool("contract_draft",
+                             "Draft a contract clause with agreement terms")
+        self.assertEqual(v["domain"], "legal")
+        self.assertEqual(v["policy"], "warn")
+        self.assertTrue(v["allowed"])
+        self.assertFalse(v["requires_approval"])
+
+    def test_tool_unknown_conservative(self):
+        v = core.decide_tool("widget_tool", "frobnicate the widget")
+        self.assertEqual(v["domain"], "unknown")
+        self.assertIn(v["policy"], ("allow", "warn"))
+        self.assertFalse(v["requires_approval"])
+        v2 = core.decide_tool("widget_tool", "start the widget daemon")
+        self.assertEqual(v2["action"], "execution")
+        self.assertEqual(v2["policy"], "warn")
+        self.assertTrue(v2["allowed"])
+
+
+class DecideSkillTests(unittest.TestCase):
+    def test_skill_medical_block_approval(self):
+        fm = ("---\nname: dose-calculator\ndescription: Calculate patient "
+              "medication doses and treatment plans\n---")
+        v = core.decide_skill(fm)
+        self.assertEqual(v["domain"], "medical")
+        self.assertEqual(v["action"], "execution")
+        self.assertEqual(v["policy"], "block-approval")
+        self.assertFalse(v["allowed"])
+        self.assertTrue(v["requires_approval"])
+
+    def test_skill_trading_warn(self):
+        v = core.decide_skill("name: trade-bot\ndescription: Automated buy and "
+                              "sell order placement")
+        self.assertEqual(v["domain"], "trading")
+        self.assertEqual(v["action"], "execution")
+        self.assertEqual(v["policy"], "warn")
+        self.assertTrue(v["allowed"])
+
+
+class SkillPathTests(unittest.TestCase):
+    def test_skill_path_read_and_loud_missing_error(self):
+        import tempfile
+        plug_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        sys.path.insert(0, plug_dir)  # tests/__init__.py would shadow the plugin
+        from __init__ import _handle_guardrails
+        with tempfile.TemporaryDirectory() as td:
+            p = os.path.join(td, "SKILL.md")
+            with open(p, "w", encoding="utf-8") as fh:
+                fh.write("---\nname: med\ndescription: patient medication dosing\n---")
+            out = _handle_guardrails(f"check-skill {p}")
+            self.assertIn("block-approval", out)
+            self.assertIn("medical", out)
+            missing = os.path.join(td, "NOPE.md")
+            out2 = _handle_guardrails(f"check-skill {missing}")
+            self.assertIn("ERROR", out2)
+            self.assertIn("not found", out2)
+            self.assertIn("NOPE.md", out2)
+
+
 class PolicyTableTests(unittest.TestCase):
     def test_table_lists_all_domains(self):
         t = core.policy_table()

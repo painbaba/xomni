@@ -1,0 +1,3 @@
+name: notify
+version: "1.0.0"
+description: "Universal channel fan-out (telegram/whatsapp/local): queues notification payloads to ~/.xomni-notify/queue.jsonl (XOMNI_NOTIFY_QUEUE override) and prints the exact host-gateway command that WOULD send them. NEVER sends by default — only --send runs the command. Targets resolved from config notify.channels.<name>.target or env NOTIFY_TELEGRAM_TARGET / NOTIFY_WHATSAPP_TARGET / NOTIFY_LOCAL_TARGET; all output masked. Commands: /notify send <channel> <text> [--send], /notify digest <channel> <title>|<i1>|<i2>... [--send], /notify status, /notify channels. Zero hooks, zero per-turn cost."
