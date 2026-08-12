@@ -22,6 +22,8 @@ file current — it is the workforce's queue.
 
 - [ ] U8. Domain guardrails: per-domain approval policies (trading/money/medical/legal/crypto/code-exec) — trading stack defaults to analysis-OK, execution-requires-explicit-approval; /guardrails commands. BUILDING (deleg_38cc4b9b).
 
+- [ ] U9. Self-healing agent: watchdog kills silent hangs (vectorbt-180s case) + postcondition checks for exit-0-nothing-happened, config-drift auto-fix with audit trail (heal.jsonl), /heal commands. BUILDING (deleg_300466ed).
+
 ## MOONSHOTS (proposals — pick or add yours)
 
 - [ ] M1. XOMNI as a service: OpenAI-compatible gateway mode — any app (VS Code, Excel, WhatsApp, custom) talks to XOMNI as a localhost API.
