@@ -26,6 +26,8 @@ file current — it is the workforce's queue.
 
 - [ ] U10. Voice-first mode: optional hands-free CLI — ffmpeg/arecord capture, whisper-or-Gemini STT, edge-tts TTS, /voice test|ask|on. BUILDING (deleg_591d5788).
 
+- [ ] U11. Cross-session skill market: publish XOMNI-created skills to the shared skills.sh registry (verified: git-repo content model, 9615 skills) with automatic credit (author/source/published_at stamping), /skills publish + receipt, docs/SKILLS-MARKET.md. BUILDING (deleg_a620f501).
+
 ## MOONSHOTS (proposals — pick or add yours)
 
 - [ ] M1. XOMNI as a service: OpenAI-compatible gateway mode — any app (VS Code, Excel, WhatsApp, custom) talks to XOMNI as a localhost API.
