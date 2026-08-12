@@ -299,6 +299,97 @@ class TestCliBehavior(unittest.TestCase):
         for pat in ("skills", "MCPs"):
             self.assertIn(pat, out)
 
+    def test_all_four_stacks_install_cleanly(self):
+        """CLI-level install for EVERY stack into a temp host config: rc 0,
+        no ERROR output, valid YAML, and every declared MCP server present
+        and enabled (covers the other 3 stacks end-to-end, not just
+        trading-stack)."""
+        import yaml
+        for name in STACKS:
+            cfg = self._config()
+            rc, out = _run_add(name, config=cfg)
+            self.assertEqual(rc, 0, f"{name}: {out}")
+            self.assertNotIn("ERROR", out, name)
+            with open(cfg, encoding="utf-8") as f:
+                servers = yaml.safe_load(f)["mcp_servers"]
+            for mcp in xomni_cli._load_stack(name)["mcp_servers"]:
+                self.assertIn(mcp, servers, f"{name}: missing {mcp}")
+                self.assertTrue(servers[mcp].get("enabled"),
+                                f"{name}: {mcp} not enabled")
+
+
+class TestCliValidation(unittest.TestCase):
+    """cmd_add's validation path: a stack def that fails validation must be
+    rejected with rc=1 and a clear ERROR line, and must never touch config.
+    Uses a temp STACKS_DIR so bad defs never enter the real data/stacks/."""
+
+    def setUp(self):
+        self.tmp = tempfile.mkdtemp(prefix="xomni_stacks_bad_")
+        self.addCleanup(shutil.rmtree, self.tmp, ignore_errors=True)
+        self._old_dir = xomni_cli.STACKS_DIR
+        self._old_cfg = os.environ.get("XOMNI_HERMES_CONFIG")
+        xomni_cli.STACKS_DIR = self.tmp
+        self.cfg = os.path.join(self.tmp, "config.yaml")
+        with open(self.cfg, "w", encoding="utf-8") as f:
+            f.write("model:\n  provider: opencode-go\n  model: deepseek-v4-flash\n")
+        os.environ["XOMNI_HERMES_CONFIG"] = self.cfg
+
+    def tearDown(self):
+        xomni_cli.STACKS_DIR = self._old_dir
+        if self._old_cfg is None:
+            os.environ.pop("XOMNI_HERMES_CONFIG", None)
+        else:
+            os.environ["XOMNI_HERMES_CONFIG"] = self._old_cfg
+
+    def _write_stack(self, name, **over):
+        sdef = {"name": name, "description": "x" * 20, "skills": ["xlsx"],
+                "mcp_servers": ["coingecko-mcp"], "config": {},
+                "smoke_test": {"command": "echo ok", "expect": "ok"}}
+        sdef.update(over)
+        with open(os.path.join(self.tmp, name + ".json"), "w",
+                  encoding="utf-8") as f:
+            json.dump(sdef, f)
+
+    def test_unknown_skill_rejected(self):
+        self._write_stack("bad-skill", skills=["xlsx", "no-such-skill"])
+        rc, out = _run_add("bad-skill")
+        self.assertEqual(rc, 1)
+        self.assertIn("skill not in data/curated-skills.json: 'no-such-skill'",
+                      out)
+
+    def test_unknown_mcp_rejected(self):
+        self._write_stack("bad-mcp", mcp_servers=["coingecko-mcp", "no-such-mcp"])
+        rc, out = _run_add("bad-mcp")
+        self.assertEqual(rc, 1)
+        self.assertIn("unknown MCP server in catalog: 'no-such-mcp'", out)
+
+    def test_missing_smoke_test_rejected(self):
+        self._write_stack("no-smoke", smoke_test={})
+        rc, out = _run_add("no-smoke")
+        self.assertEqual(rc, 1)
+        self.assertIn("smoke_test must define command + expect", out)
+
+    def test_unparseable_install_command_rejected(self):
+        # temp catalog whose entry needs manual setup (e.g. "see repo")
+        cat_path = os.path.join(self.tmp, "catalog.json")
+        old_cat = xomni_cli.MCP_CATALOG
+        xomni_cli.MCP_CATALOG = cat_path
+        self.addCleanup(setattr, xomni_cli, "MCP_CATALOG", old_cat)
+        with open(cat_path, "w", encoding="utf-8") as f:
+            json.dump([{"name": "manual-mcp",
+                        "install_command": "see repo for setup"}], f)
+        self._write_stack("manual-mcp", mcp_servers=["manual-mcp"])
+        rc, out = _run_add("manual-mcp")
+        self.assertEqual(rc, 1)
+        self.assertIn("cannot auto-install non-interactively", out)
+
+    def test_rejected_stack_never_writes_config(self):
+        self._write_stack("bad-skill", skills=["no-such-skill"])
+        before = open(self.cfg, encoding="utf-8").read()
+        rc, _ = _run_add("bad-skill")
+        self.assertEqual(rc, 1)
+        self.assertEqual(open(self.cfg, encoding="utf-8").read(), before)
+
 
 if __name__ == "__main__":
     unittest.main()

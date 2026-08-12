@@ -35,6 +35,10 @@ What lives here (all pure, all stdlib, no Hermes imports):
   * :func:`format_badges` / :func:`keyless` / :func:`security_verdict` /
     :func:`list_catalog_badged` — stars / keyless / security badges for
     ``/mcp list``.
+  * :func:`search_catalog` / :func:`format_search_results` — keyword search
+    over name/description/purpose with badged results (``/mcp search``).
+  * :func:`gap_line` — the marketplace-vs-host gap line (``/mcp status``):
+    catalog size vs ``mcp_servers`` registered/enabled on the host.
 
 Catalog location convention: catalogs live in ``~/.hermes-mcp/catalogs/``
 (override with the ``HERMES_MCP_CATALOG_DIR`` env var). Each ``*.json`` file
@@ -725,17 +729,91 @@ def format_badges(entry: dict) -> str:
     )
 
 
+def _badged_entry_lines(entry: dict) -> List[str]:
+    """The badged listing lines for one rich catalog entry (name + badges,
+    description, install command). Shared by the full listing and the search
+    results so both views render identically."""
+    name = entry.get("name", "?")
+    lines = [f"  {name}  [{format_badges(entry)}]"]
+    desc = entry.get("description") or entry.get("purpose") or ""
+    if desc:
+        lines.append(f"    {desc}")
+    install = entry.get("install_command") or "(manual steps)"
+    lines.append(f"    install: {install}")
+    return lines
+
+
 def list_catalog_badged(entries: List[dict]) -> str:
     """Marketplace listing with badges (for ``/mcp list``)."""
     if not entries:
         return "no MCP servers in catalog."
     lines = [f"MCP catalog: {len(entries)} server(s)"]
     for entry in entries:
-        name = entry.get("name", "?")
-        lines.append(f"  {name}  [{format_badges(entry)}]")
-        desc = entry.get("description") or entry.get("purpose") or ""
-        if desc:
-            lines.append(f"    {desc}")
-        install = entry.get("install_command") or "(manual steps)"
-        lines.append(f"    install: {install}")
+        lines.extend(_badged_entry_lines(entry))
     return "\n".join(lines)
+
+
+def search_catalog(entries: List[dict], query: str) -> List[dict]:
+    """Keyword search over server name/description/purpose.
+
+    Every whitespace-separated token of ``query`` must appear (case-
+    insensitive) somewhere in the entry's name, description or purpose.
+    Matches where ALL tokens hit the *name* rank first; the rest follow in
+    catalog order. An empty/whitespace query yields ``[]``.
+    """
+    tokens = [t for t in (query or "").lower().split() if t]
+    if not tokens:
+        return []
+    name_matches: List[dict] = []
+    desc_matches: List[dict] = []
+    for entry in entries:
+        name = (entry.get("name") or "").lower()
+        hay = " ".join(
+            [name, entry.get("description") or "", entry.get("purpose") or ""]
+        ).lower()
+        if not all(t in hay for t in tokens):
+            continue
+        if all(t in name for t in tokens):
+            name_matches.append(entry)
+        else:
+            desc_matches.append(entry)
+    return name_matches + desc_matches
+
+
+def format_search_results(matches: List[dict], query: str, total: int) -> str:
+    """Badged search results with a match header (for ``/mcp search``)."""
+    if not matches:
+        return (
+            f"no matches for {query!r} in MCP catalog ({total} servers) — "
+            "try /mcp list or a different keyword"
+        )
+    lines = [
+        f"search: {len(matches)} match(es) for {query!r} in MCP catalog ({total} servers)"
+    ]
+    for entry in matches:
+        lines.extend(_badged_entry_lines(entry))
+    return "\n".join(lines)
+
+
+def gap_line(rich_count: int, host_servers: dict) -> str:
+    """The marketplace-vs-host gap line (for ``/mcp status``): catalog size
+    vs how many servers the host config.yaml ``mcp_servers`` actually
+    registers (and how many are enabled), plus an explicit gap note when
+    they differ — this is the '311 in catalog vs N on host' surface."""
+    host_servers = host_servers or {}
+    registered = len(host_servers)
+    enabled = sum(
+        1
+        for v in host_servers.values()
+        if not isinstance(v, dict) or v.get("enabled", True)
+    )
+    line = (
+        f"marketplace: {rich_count} server(s) in data/mcp/catalog.json; "
+        f"host config mcp_servers: {registered} registered ({enabled} enabled)"
+    )
+    if rich_count != registered:
+        line += (
+            f" — gap: {rich_count - registered} catalog server(s) not "
+            f"registered on the host; /mcp add <name> --yes installs any of them"
+        )
+    return line

@@ -11,6 +11,41 @@ Install any of the 311 servers two ways:
 
 Interactive catalog: `website/mcp.html` · Docs: `website/docs/mcp.html`.
 
+## Search
+
+`/mcp search <query>` — keyword search over the 311-entry marketplace (server name, description, purpose). Every word of the query must match (case-insensitive); hits where all words appear in the *name* rank first. Results render with the same badges as `/mcp list`:
+
+```
+/mcp search browser
+search: 19 match(es) for 'browser' in MCP catalog (311 servers)
+  browser-use-mcp  [★108.8k keyless VERIFIED]
+    browser-use MCP (PyPI, 108k★). The popular AI browser agent — ...
+    install: pip install browser-use && uvx browser-use
+  ...
+```
+
+No match → `no matches for '<query>' in MCP catalog (311 servers) — try /mcp list or a different keyword`.
+
+## Badges & security scores
+
+`/mcp list` and `/mcp search` render three badges per server:
+
+- **Stars** — GitHub stars from the catalog entry: `★108.8k` (≥1000 stars, one decimal) or `★39501` (raw), `★-` when the entry has no star data.
+- **Keyless** — `keyless` when the server needs no secret env var / auth to run (heuristic over description/purpose/connect_steps); `needs-key` when an API key, token, OAuth or credential is mentioned.
+- **Security score** — from the catalog's `verified` + `source` fields: `VERIFIED` (verified + primary source: GitHub/PyPI/npm/official/Smithery/Glama/awesome-mcp), `REVIEW` (verified but secondary source, e.g. a blog/reddit list), `UNVERIFIED` (not verified).
+
+## Catalog vs host (the 2-vs-311 gap)
+
+`hermes mcp list` only ever shows what is registered in the host `config.yaml` `mcp_servers` block — it is NOT the marketplace. The marketplace catalog (`data/mcp/catalog.json`) holds **311** servers; the host typically registers a handful (all `enabled: false` by default). That mismatch is expected: catalog entries become host servers one at a time, on demand.
+
+`/mcp status` surfaces the gap explicitly, e.g.:
+
+```
+marketplace: 311 server(s) in data/mcp/catalog.json; host config mcp_servers: 3 registered (0 enabled) — gap: 308 catalog server(s) not registered on the host; /mcp add <name> --yes installs any of them
+```
+
+The one-command install closes the gap per server: `/mcp add <name> --yes` resolves the catalog entry and appends the block directly to `config.yaml` `mcp_servers` (stdio → `command`/`args`, hosted/Smithery remote → `url`) — it never invokes interactive `hermes mcp add`, is idempotent, and issues a sha256 receipt into the receipts ledger. Restart Hermes or run `/reload-mcp` to connect, then `/mcp tools <name>` to verify.
+
 ## Index
 
 - [AI-MODELS](#ai-models) — 10

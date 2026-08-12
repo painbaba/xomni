@@ -582,6 +582,172 @@ class InstallWiringTests(unittest.TestCase):
         self.assertIn("--yes", out)
         self.assertIn("uvx mcp-yfinance", out)
 
+    def test_search_command_returns_badged_results(self):
+        mod = self.mod
+        rich = [
+            {
+                "name": "mcp-yfinance",
+                "install_command": "uvx mcp-yfinance",
+                "connect_steps": [],
+                "description": "yahoo finance data",
+                "purpose": "quotes and history",
+                "stars": 1,
+                "verified": True,
+                "source": "pypi",
+            },
+            {
+                "name": "browser-use-mcp",
+                "install_command": "uvx browser-use",
+                "connect_steps": [],
+                "description": "browser agent",
+                "purpose": "browser automation",
+                "stars": 2,
+                "verified": True,
+                "source": "github",
+            },
+        ]
+        with mock.patch.object(mod.core, "load_rich_catalog", return_value=rich):
+            out = mod._handle_mcp("search finance")
+        self.assertIn("1 match(es) for 'finance'", out)
+        self.assertIn("mcp-yfinance", out)
+        self.assertIn("VERIFIED", out)
+        with mock.patch.object(mod.core, "load_rich_catalog", return_value=rich):
+            out = mod._handle_mcp("search zzz-none")
+        self.assertIn("no matches for 'zzz-none'", out)
+
+    def test_status_surfaces_marketplace_gap(self):
+        mod = self.mod
+        with mock.patch.object(
+            mod.core, "load_rich_catalog", return_value=[{"name": "x"}, {"name": "y"}]
+        ), mock.patch.object(
+            mod, "_host_config_servers", return_value={"ffmpeg": {"enabled": False}}
+        ):
+            out = mod._cmd_status([])
+        self.assertIn("marketplace: 2 server(s) in data/mcp/catalog.json", out)
+        self.assertIn("1 registered (0 enabled)", out)
+        self.assertIn("gap: 1 catalog server(s) not registered", out)
+
+
+class SearchTests(unittest.TestCase):
+    """U2 /mcp search: keyword search over name/description/purpose with
+    badged results, and the marketplace-vs-host gap line (/mcp status)."""
+
+    def setUp(self):
+        self.catalog = [
+            {
+                "name": "browser-use-mcp",
+                "description": "browser-use MCP (PyPI, 108k★). The popular AI browser agent",
+                "purpose": "LLM-driven browser agent: plan + execute multi-step web tasks",
+                "install_command": "uvx browser-use",
+                "stars": 108796,
+                "verified": True,
+                "source": "github",
+            },
+            {
+                "name": "tavily",
+                "description": "AI-optimized web search with citations",
+                "purpose": "search the web",
+                "install_command": "uvx tavily",
+                "stars": 500,
+                "verified": True,
+                "source": "pypi",
+            },
+            {
+                "name": "firecrawl-mcp-server",
+                "description": "Web scraping & search",
+                "purpose": "scrape and crawl sites",
+                "install_command": "see repo",
+                "stars": None,
+                "verified": False,
+                "source": "blog:top-20",
+            },
+            {
+                "name": "filesystem",
+                "description": "secure local file operations",
+                "purpose": "file access",
+                "install_command": "npx -y @modelcontextprotocol/server-filesystem",
+                "stars": 1000,
+                "verified": True,
+                "source": "github",
+            },
+        ]
+
+    def test_search_by_name(self):
+        matches = core.search_catalog(self.catalog, "tavily")
+        self.assertEqual([m["name"] for m in matches], ["tavily"])
+
+    def test_search_by_description_keyword_case_insensitive(self):
+        matches = core.search_catalog(self.catalog, "BROWSER")
+        self.assertEqual([m["name"] for m in matches], ["browser-use-mcp"])
+        # 'web' hits browser-use-mcp's purpose plus both search descriptions
+        matches = core.search_catalog(self.catalog, "web")
+        self.assertEqual(
+            [m["name"] for m in matches],
+            ["browser-use-mcp", "tavily", "firecrawl-mcp-server"],
+        )
+        # description-only hit, not present anywhere in the other entries
+        matches = core.search_catalog(self.catalog, "citations")
+        self.assertEqual([m["name"] for m in matches], ["tavily"])
+
+    def test_search_name_matches_rank_first(self):
+        catalog = [
+            {"name": "search-helper", "description": "generic utility", "purpose": "x"},
+            {"name": "plain", "description": "a search service for docs", "purpose": "search"},
+            {"name": "alpha-search", "description": "search anything", "purpose": "y"},
+        ]
+        matches = core.search_catalog(catalog, "search")
+        # name hits first (catalog order), then description-only hits
+        self.assertEqual(
+            [m["name"] for m in matches], ["search-helper", "alpha-search", "plain"]
+        )
+
+    def test_search_all_tokens_must_match(self):
+        matches = core.search_catalog(self.catalog, "citations")
+        self.assertEqual([m["name"] for m in matches], ["tavily"])
+        # 'firecrawl search' → both tokens in the firecrawl entry's name+desc
+        matches = core.search_catalog(self.catalog, "firecrawl search")
+        self.assertEqual([m["name"] for m in matches], ["firecrawl-mcp-server"])
+
+    def test_search_no_match_and_empty_query(self):
+        self.assertEqual(core.search_catalog(self.catalog, "zzz-none"), [])
+        self.assertEqual(core.search_catalog(self.catalog, ""), [])
+        self.assertEqual(core.search_catalog(self.catalog, "   "), [])
+
+    def test_format_search_results_header_and_badges(self):
+        matches = core.search_catalog(self.catalog, "web")
+        text = core.format_search_results(matches, "web", len(self.catalog))
+        self.assertIn("search: 3 match(es) for 'web' in MCP catalog (4 servers)", text)
+        self.assertIn("  browser-use-mcp  [", text)
+        self.assertIn("★108.8k", text)       # stars badge
+        self.assertIn("  tavily  [", text)
+        self.assertIn("★500", text)          # stars badge
+        self.assertIn("VERIFIED", text)
+        self.assertIn("install: uvx tavily", text)
+        self.assertIn("  firecrawl-mcp-server  [", text)
+        self.assertIn("★-", text)            # no stars → placeholder
+        self.assertIn("UNVERIFIED", text)
+        self.assertIn("install: see repo", text)
+
+    def test_format_search_results_no_match_message(self):
+        text = core.format_search_results([], "zzz", 311)
+        self.assertIn("no matches for 'zzz'", text)
+        self.assertIn("311", text)
+
+    def test_gap_line_matches_and_differs(self):
+        line = core.gap_line(311, {"ffmpeg": {"enabled": False}, "yfinance": {}})
+        self.assertIn("marketplace: 311 server(s) in data/mcp/catalog.json", line)
+        self.assertIn("host config mcp_servers: 2 registered (1 enabled)", line)
+        self.assertIn("gap: 309 catalog server(s) not registered", line)
+        self.assertIn("/mcp add <name> --yes", line)
+        # no gap when counts agree
+        same = core.gap_line(2, {"a": {}, "b": {}})
+        self.assertNotIn("gap", same)
+        self.assertIn("2 registered (2 enabled)", same)
+        # all-disabled hosts still count as registered, just not enabled
+        disabled = core.gap_line(1, {"a": {"enabled": False}})
+        self.assertIn("1 registered (0 enabled)", disabled)
+        self.assertNotIn("gap", disabled)
+
 
 if __name__ == "__main__":
     unittest.main()

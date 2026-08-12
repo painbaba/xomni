@@ -383,5 +383,99 @@ class TestCache(unittest.TestCase):
             self.assertEqual(idx.stats()["total"], len(corpus))
 
 
+class TestCrossSurfaceEval(unittest.TestCase):
+    """Cross-surface recall eval: 50 mixed-surface cases + runner."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.cases_path = Path(core.__file__).resolve().parent / "data" / "cross_surface_eval.json"
+        cls.cases = json.loads(cls.cases_path.read_text(encoding="utf-8"))
+
+    def test_exactly_50_cases_with_valid_ids(self):
+        self.assertEqual(len(self.cases), 50)
+        ids = [c["id"] for c in self.cases]
+        self.assertEqual(len(set(ids)), 50, "case ids must be unique")
+        self.assertEqual(sorted(ids), ids, "case ids must be ordered cs001..cs050")
+        self.assertEqual(ids[0], "cs001")
+        self.assertEqual(ids[-1], "cs050")
+
+    def test_case_schema_valid(self):
+        surfaces = {"plugin", "mcp", "skill", "mixed"}
+        for c in self.cases:
+            self.assertIn(c["surface"], surfaces, f"{c['id']}: bad surface")
+            self.assertIsInstance(c["query"], str)
+            self.assertTrue(c["query"].strip(), f"{c['id']}: empty query")
+            hits = c["expected_hits"]
+            self.assertIsInstance(hits, list, f"{c['id']}: expected_hits must be a list")
+            self.assertTrue(1 <= len(hits) <= 3, f"{c['id']}: 1-3 expected hits")
+            for h in hits:
+                self.assertIsInstance(h, str)
+                self.assertTrue(h.strip(), f"{c['id']}: empty expected hit")
+
+    def test_surface_mix_is_balanced(self):
+        counts = {}
+        for c in self.cases:
+            counts[c["surface"]] = counts.get(c["surface"], 0) + 1
+        self.assertGreaterEqual(counts.get("plugin", 0), 8)
+        self.assertGreaterEqual(counts.get("mcp", 0), 8)
+        self.assertGreaterEqual(counts.get("skill", 0), 8)
+        self.assertGreaterEqual(counts.get("mixed", 0), 8)
+
+    def test_runner_returns_recall_and_writes_report(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            report = Path(tmp) / "report.json"
+            ev = core.cross_surface_recall(
+                cases_path=self.cases_path, top_k=5, report_path=report
+            )
+            self.assertEqual(ev["queries"], 50)
+            self.assertEqual(ev["top_k"], 5)
+            self.assertEqual(len(ev["per_case"]), 50)
+            self.assertGreaterEqual(ev["overall_recall"], 0.0)
+            self.assertLessEqual(ev["overall_recall"], 1.0)
+            self.assertIn("plugin", ev["per_surface"])
+            self.assertIn("mcp", ev["per_surface"])
+            self.assertIn("skill", ev["per_surface"])
+            self.assertIn("mixed", ev["per_surface"])
+            for surface, stats in ev["per_surface"].items():
+                self.assertGreaterEqual(stats["recall"], 0.0)
+                self.assertLessEqual(stats["recall"], 1.0)
+            self.assertTrue(report.exists(), "report file must be written")
+            saved = json.loads(report.read_text(encoding="utf-8"))
+            self.assertEqual(saved["overall_recall"], ev["overall_recall"])
+
+    def test_runner_degrades_gracefully_with_missing_data(self):
+        # A missing MCP catalog / skills file must score 0 for those surfaces
+        # instead of crashing the run.
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp = Path(tmp)
+            fake = tmp / "does-not-exist.json"
+            cases_file = tmp / "cases.json"
+            cases_file.write_text(
+                json.dumps([
+                    {"id": "cs001", "query": "sqlite database", "surface": "mcp",
+                     "expected_hits": ["sqlite"]},
+                    {"id": "cs002", "query": "pdf document", "surface": "skill",
+                     "expected_hits": ["pdf"]},
+                    {"id": "cs003", "query": "compress context", "surface": "plugin",
+                     "expected_hits": ["ctxcompact"]},
+                ]),
+                encoding="utf-8",
+            )
+            ev = core.cross_surface_recall(
+                cases_path=cases_file, top_k=5,
+                report_path=tmp / "report.json",
+                mcp_path=fake, skills_path=fake,
+                plugins_dir=tmp,  # empty dir: no plugin surfaces
+            )
+            self.assertEqual(ev["queries"], 3)
+            self.assertFalse(ev["sources_loaded"]["mcp"])
+            self.assertFalse(ev["sources_loaded"]["skill"])
+            self.assertGreaterEqual(ev["overall_recall"], 0.0)
+            self.assertLessEqual(ev["overall_recall"], 1.0)
+            # mcp + skill surfaces have zero loaded entries -> recall 0
+            self.assertEqual(ev["per_surface"]["mcp"]["recall"], 0.0)
+            self.assertEqual(ev["per_surface"]["skill"]["recall"], 0.0)
+
+
 if __name__ == "__main__":
     unittest.main()

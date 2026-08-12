@@ -55,6 +55,40 @@ reports the last eval time across runs.
 1.0   # 20/20 expected hits in top 5 (verified 2026-08-12)
 ```
 
+## Cross-surface recall eval
+
+`core.cross_surface_recall()` scores recall@k per surface and overall against
+**50 planted queries** in `data/cross_surface_eval.json` — 15 plugin, 15 MCP,
+10 skill, 10 mixed — each carrying 1-3 expected hits that must land in the
+top-k results (same case-insensitive substring rule as `EVAL_SET`). Where
+`EVAL_SET` is a narrow smoke set, this is the broad cross-surface benchmark:
+the `mixed` cases deliberately span two surfaces in one query (e.g.
+"sqlite mcp and test driven development" must surface both a SQLite MCP
+server *and* the TDD skill). `top_k` is configurable, default 5.
+
+Run:
+
+```
+cd plugins/omni-tools && python scripts/cross_surface_eval.py            # recall@5
+cd plugins/omni-tools && python scripts/cross_surface_eval.py --top-k 10
+```
+
+The runner prints a per-surface table + overall recall and writes per-case
+ranks and per-surface/overall numbers to `data/cross_surface_report.json`
+(repo root). Data files are loaded best-effort: if a source is missing that
+surface scores 0 but the run does not crash.
+
+Current overall recall@5: **1.000** (50/50 expected hits in top 5, verified
+2026-08-12 against the live 591-entry corpus; plugin 1.000, mcp 1.000,
+skill 1.000, mixed 1.000).
+
+**Reading the numbers**: a case scores 1.0 only when *every* expected hit is
+in the top k, so per-surface recall is the mean over that surface's cases.
+Mixed queries are the hardest — two capabilities must survive one BM25 pass —
+so a dip in the `mixed` row is the first sign of a cross-surface ranking
+regression (e.g. synonym expansion flooding one surface, or a new surface
+dominating the merged index).
+
 ## Design notes
 
 - **Pure stdlib** (`re`, `math`, `json`, `sqlite3`, `pathlib`) — no deps,
@@ -77,9 +111,11 @@ cd plugins/omni-tools && python -m unittest tests.test_core -q
 
 ```
 plugins/omni-tools/
-├── core.py          corpus builder, BM25, cache, eval_recall, stats_report (pure)
+├── core.py          corpus builder, BM25, cache, eval_recall, cross_surface_recall (pure)
 ├── __init__.py      register xomni_capabilities + /tools-search + /tools-index + /tools-stats
+├── data/cross_surface_eval.json   50-query cross-surface eval set
+├── scripts/cross_surface_eval.py  CLI runner for the cross-surface eval
 ├── plugin.yaml
 ├── README.md
-└── tests/test_core.py   21 tests
+└── tests/test_core.py   26 tests
 ```

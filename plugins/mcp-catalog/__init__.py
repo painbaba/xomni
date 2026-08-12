@@ -17,6 +17,7 @@ Commands::
 
     /mcp                       list catalog servers
     /mcp list                  list catalog servers (marketplace badges: stars/keyless/security)
+    /mcp search <query>        keyword search over catalog server names/descriptions (badged results)
     /mcp tools [server]        tool surface; with <server>, live-discover its tools
     /mcp add <path>            import a catalog JSON file into the catalog dir
     /mcp add <name> [--yes]    install a catalog server into host config.yaml mcp_servers
@@ -88,6 +89,7 @@ def _receipt_file(action: str, target: str, result: str, meta: dict | None = Non
 HELP = (
     "/mcp                    list catalog servers (marketplace badges)\n"
     "/mcp list               list catalog servers (marketplace badges)\n"
+    "/mcp search <query>     keyword search over catalog names/descriptions (badged results)\n"
     "/mcp tools [server]     tool surface; with <server>, live-discover its tools\n"
     "/mcp add <path>         import a catalog JSON file into ~/.hermes-mcp/catalogs/\n"
     "/mcp add <name> [--yes] install a catalog server into host config.yaml mcp_servers\n"
@@ -152,6 +154,34 @@ def _cmd_list(servers) -> str:
             "Add one with /mcp add <path-to-catalog-json>."
         )
     return core.list_catalog_text(servers)
+
+
+def _cmd_search(query: str) -> str:
+    """/mcp search <query> — keyword search over the marketplace catalog
+    (name/description/purpose) with badged results. Falls back to the user
+    catalog dir when the marketplace catalog is unavailable."""
+    query = (query or "").strip()
+    if not query:
+        return (
+            "usage: /mcp search <query> — keyword search over catalog server "
+            "names/descriptions (badged results)"
+        )
+    try:
+        rich = core.load_rich_catalog()
+        return core.format_search_results(
+            core.search_catalog(rich, query), query, len(rich)
+        )
+    except core.CatalogError:
+        pass
+    servers = core.load_all_catalogs()
+    if not servers:
+        return (
+            f"no matches for {query!r} — no MCP catalog available "
+            "(marketplace catalog missing and catalog dir is empty)"
+        )
+    return core.format_search_results(
+        core.search_catalog(servers, query), query, len(servers)
+    )
 
 
 def _cmd_tools(server: str, servers) -> str:
@@ -260,6 +290,10 @@ def _cmd_status(servers) -> str:
     lines = [
         f"catalog dir: {catalog_dir} ({n_files} catalog file(s), {len(servers)} server(s))",
     ]
+    try:
+        lines.append(core.gap_line(len(core.load_rich_catalog()), host))
+    except core.CatalogError:
+        pass
     for entry in servers:
         name = entry["name"]
         state = "registered+enabled" if host.get(name, {}).get("enabled", True) else "registered"
@@ -302,6 +336,8 @@ def _handle_mcp(raw: str) -> str:
     servers = core.load_all_catalogs()
     if not cmd or cmd in ("list", "ls"):
         return _cmd_list(servers)
+    if cmd == "search":
+        return _cmd_search(rest)
     if cmd == "tools":
         return _cmd_tools(rest.strip(), servers)
     if cmd == "add":
@@ -377,9 +413,9 @@ def register(ctx) -> None:
         handler=_handle_mcp,
         description=(
             "MCP catalog: discover, validate and install MCP servers as agent tools "
-            "(list | tools [server] | add <path> | add <name> [--yes] | status | validate <path>)"
+            "(list | search <query> | tools [server] | add <path> | add <name> [--yes] | status | validate <path>)"
         ),
-        args_hint="[list|tools [server]|add <path>|add <name> [--yes]|status|validate <path>]",
+        args_hint="[list|search <query>|tools [server]|add <path>|add <name> [--yes]|status|validate <path>]",
     )
     ctx.register_tool(
         "mcp_call",

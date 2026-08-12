@@ -17,6 +17,18 @@ Windows failure modes, plus a few extras:
       Repo code must use os.path/pathlib and tempfile.gettempdir(), never a
       hardcoded /tmp. This check also proves mixed-separator paths normalize
       to the same string.
+  (d) Spaces-path launch
+      ``python -m xomni_cli`` must work from a directory whose path contains
+      spaces (classic Windows breakage: unquoted argv[0] / sys.path entries).
+      The probe runs the real CLI ``--help`` from a temp dir with spaces.
+  (e) Host-config writer (mcp-catalog)
+      The mcp-catalog plugin edits the host config.yaml with surgical text
+      appends. On Windows the file is typically CRLF and commands carry
+      backslash paths (``C:\\Program Files\\...``); the writer must preserve
+      the file's line endings, single-quote backslash scalars, keep every
+      other top-level key, and produce YAML that still parses. When pyyaml
+      is installed the round-trip is verified with ``yaml.safe_load``;
+      otherwise quoting/CRLF are verified at string level.
 
 Usage:
     python .bench/windows_checks.py          # human report, exit 0 = all OK
@@ -27,6 +39,7 @@ Exit code is 1 when any check FAILs, 0 otherwise (WARNs do not fail the run).
 
 from __future__ import annotations
 
+import importlib.util
 import json
 import os
 import shutil
@@ -36,7 +49,14 @@ import tempfile
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-CHECK_NAMES = ("npx_shim", "config_write", "path_sanity")
+CHECK_NAMES = ("npx_shim", "config_write", "path_sanity", "spaces_path", "host_config_edit")
+
+try:  # pyyaml is optional: full round-trip when present, string-level otherwise
+    import yaml  # noqa: F401
+
+    HAVE_YAML = True
+except ImportError:  # pragma: no cover - exercised only on minimal interpreters
+    HAVE_YAML = False
 
 # --------------------------------------------------------------------------- #
 # tiny check framework
@@ -238,6 +258,145 @@ def check_path_sanity(c: Checker) -> None:
 
 
 # --------------------------------------------------------------------------- #
+# (d) python -m xomni_cli from a path containing spaces
+# --------------------------------------------------------------------------- #
+
+
+def check_spaces_path(c: Checker) -> None:
+    """Prove `python -m xomni_cli` launches from a cwd whose path has spaces.
+
+    Classic Windows breakage: unquoted argv[0]/sys.path entries fall apart when
+    the working directory contains spaces. Uses the REAL repo CLI (--help is a
+    fast, side-effect-free exit) with HERMES_HOME redirected to a throwaway dir.
+    """
+    tmp = Path(tempfile.mkdtemp(prefix="xomni space probe "))
+    env = dict(os.environ)
+    env["PYTHONPATH"] = str(REPO_ROOT)
+    env["HERMES_HOME"] = str(tmp / "hermes_home")
+    try:
+        r = subprocess.run(
+            [sys.executable, "-m", "xomni_cli", "--help"],
+            cwd=str(tmp),
+            env=env,
+            capture_output=True,
+            text=True,
+            timeout=60,
+            shell=False,
+        )
+        out = (r.stdout or "") + (r.stderr or "")
+        if r.returncode == 0 and "xomni" in out.lower():
+            c.ok(
+                "spaces_path",
+                f"`python -m xomni_cli --help` ran from spaces-path cwd {tmp} (rc=0). "
+                f"interpreter={sys.executable}{' (contains spaces)' if ' ' in sys.executable else ''}.",
+            )
+        else:
+            c.fail(
+                "spaces_path",
+                f"`python -m xomni_cli --help` from spaces-path cwd {tmp} failed: "
+                f"rc={r.returncode} out={out[:300]!r}. Fix: quote every argv element / "
+                f"sys.path entry that may contain spaces.",
+            )
+    except (subprocess.TimeoutExpired, OSError) as exc:
+        c.fail("spaces_path", f"could not launch `python -m xomni_cli` from spaces-path cwd {tmp}: {exc}")
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
+
+
+# --------------------------------------------------------------------------- #
+# (e) mcp-catalog host-config writer: CRLF tolerance + backslash paths
+# --------------------------------------------------------------------------- #
+
+
+def _verify_edit(out: str, expected_servers: set, expected_top: dict) -> list:
+    """Return a list of problems with an appended host-config edit."""
+    problems: list[str] = []
+    if "\r\n" not in out:
+        problems.append("CRLF line endings not preserved")
+    elif "\n" in out.replace("\r\n", ""):
+        problems.append("mixed line endings (stray lone \\n)")
+    backslash_quoted = all(
+        s in out for s in ("'C:\\Program Files\\nodejs\\npx.CMD'", "'C:\\data'", "'C:\\Program Files\\nodejs'")
+    )
+    if not backslash_quoted:
+        problems.append("backslash paths not single-quoted in rendered block")
+    if HAVE_YAML:
+        data = yaml.safe_load(out)
+        if not isinstance(data, dict):
+            problems.append(f"edited config does not parse as a YAML mapping ({type(data).__name__})")
+            return problems
+        servers = data.get("mcp_servers") or {}
+        missing = [s for s in expected_servers if s not in servers]
+        if missing:
+            problems.append(f"server block(s) missing after parse: {missing}")
+        for k, v in expected_top.items():
+            if data.get(k) != v:
+                problems.append(f"top-level key {k!r} altered: {data.get(k)!r} != {v!r}")
+    return problems
+
+
+def check_host_config_edit(c: Checker) -> None:
+    """Exercise the mcp-catalog plugin's host config.yaml writer on Windows-style input.
+
+    A CRLF config.yaml (typical of Windows-written files) with backslash command
+    paths must survive the surgical append: line endings preserved, backslash
+    scalars single-quoted, unrelated top-level keys untouched, and the result
+    still a parseable YAML document that a follow-up idempotency scan detects.
+    """
+    try:
+        spec = importlib.util.spec_from_file_location(
+            "xomni_mcp_catalog_core", REPO_ROOT / "plugins" / "mcp-catalog" / "core.py"
+        )
+        if spec is None or spec.loader is None:
+            c.fail("host_config_edit", "cannot locate plugins/mcp-catalog/core.py")
+            return
+        core = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(core)
+    except Exception as exc:
+        c.fail("host_config_edit", f"cannot import plugins/mcp-catalog/core.py: {exc}")
+        return
+
+    block = {
+        "command": r"C:\Program Files\nodejs\npx.CMD",
+        "args": ["-y", "server-filesystem", r"C:\data"],
+        "env": {"NODE_NO_WARNINGS": "1", "NODE_PATH": r"C:\Program Files\nodejs"},
+    }
+    tmp = Path(tempfile.mkdtemp(prefix="xomni mcp probe "))
+    try:
+        problems: list[str] = []
+        # scenario A: inline `mcp_servers: {}` in a CRLF config
+        text_a = "model: default\r\nmcp_servers: {}\r\nlog_level: info\r\n"
+        problems += _verify_edit(
+            core._append_server_block(text_a, "win-test", block),
+            {"win-test"},
+            {"model": "default", "log_level": "info"},
+        )
+        # scenario B: mid-file insertion between existing entries
+        text_b = "model: default\r\nmcp_servers:\r\n  already: {command: x}\r\nlog_level: info\r\n"
+        problems += _verify_edit(
+            core._append_server_block(text_b, "win-test-2", block),
+            {"already", "win-test-2"},
+            {"model": "default", "log_level": "info"},
+        )
+        # idempotency scan against a real file
+        cfg = tmp / "config.yaml"
+        cfg.write_text(core._append_server_block(text_a, "win-test", block), encoding="utf-8", newline="")
+        if not core._server_registered(str(cfg), "win-test"):
+            problems.append("_server_registered did not detect the appended server")
+        if problems:
+            c.fail("host_config_edit", "; ".join(problems))
+        else:
+            parse_note = "yaml.safe_load round-trip" if HAVE_YAML else "string-level (pyyaml not installed)"
+            c.ok(
+                "host_config_edit",
+                f"mcp-catalog writer preserved CRLF, quoted backslash paths, kept top-level keys, "
+                f"and round-tripped ({parse_note}); idempotency scan found the appended server (2 scenarios).",
+            )
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
+
+
+# --------------------------------------------------------------------------- #
 # main
 # --------------------------------------------------------------------------- #
 
@@ -247,6 +406,8 @@ def main() -> int:
     check_npx_shim(c)
     check_config_write(c)
     check_path_sanity(c)
+    check_spaces_path(c)
+    check_host_config_edit(c)
 
     as_json = "--json" in sys.argv[1:]
     if as_json:

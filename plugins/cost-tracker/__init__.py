@@ -19,7 +19,8 @@ HELP = (
     "/cost budget <daily> [weekly]   set budget caps in USD (0 = no cap)\n"
     "/cost budget hard on|off  enable/disable the hard-stop (block new calls over cap)\n"
     "/cost digest              weekly summary: totals, top 3 models, budget status\n"
-    "/cost export <path>       full ledger → CSV (timestamp, model, in, out, est_cost)"
+    "/cost export <path>       full ledger → CSV (timestamp, model, in, out, est_cost)\n"
+    "/cost sync [path]         re-sync the cost table from the omni-registry pinned snapshot"
 )
 
 
@@ -37,6 +38,8 @@ def _handle_cost(raw: str) -> str:
         return tr.cmd_digest(ts=time.time())
     if cmd == "export":
         return tr.cmd_export(rest)
+    if cmd == "sync":
+        return tr.cmd_sync(rest)
     if cmd.startswith(("help", "h")):
         return HELP
     return HELP
@@ -47,5 +50,5 @@ def register(ctx) -> None:
     ctx.register_command(
         "cost", handler=_handle_cost,
         description="Model cost ledger: sqlite log, budget caps, hard-stop (free forever)",
-        args_hint="[report|digest|export <path>|budget <daily> [weekly]|budget hard on|off]",
+        args_hint="[report|digest|export <path>|budget <daily> [weekly]|budget hard on|off|sync [path]]",
     )

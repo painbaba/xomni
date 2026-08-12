@@ -20,6 +20,7 @@ their usage is logged honestly without inventing cost.
 from __future__ import annotations
 
 import datetime
+import json
 import os
 import sqlite3
 import time
@@ -78,6 +79,80 @@ COST_TABLE: dict[str, tuple[float, float]] = {
 
 # Conservative estimate for unknown models (USD/1M tokens); flagged per row.
 FALLBACK_RATES: tuple[float, float] = (0.50, 1.50)
+
+# Pinned models.dev snapshot (single source of truth for model costs) — the
+# omni-registry plugin fetches and pins it at plugins/omni-registry/data/
+# models.snapshot.json. Override per-run with $XOMNI_MODELS_SNAPSHOT.
+DEFAULT_SNAPSHOT = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)),
+    "..", "omni-registry", "data", "models.snapshot.json",
+)
+
+
+def _extract_pricing(rec: dict) -> tuple[float, float] | None:
+    """Pull (input, output) USD/1M-token prices from one snapshot record.
+
+    Accepts the omni-registry shape (``cost_per_1m: {input, output}``), the
+    models.dev api.json shape (``pricing: {prompt, completion}``), or flat
+    ``input``/``output`` keys. Returns None when the record carries no
+    pricing — snapshot models then default to $0 (the pinned snapshot covers
+    the verified-free gateway set).
+    """
+    for container, in_key, out_key in (
+        ("cost_per_1m", "input", "output"),
+        ("pricing", "prompt", "completion"),
+    ):
+        block = rec.get(container)
+        if isinstance(block, dict) and in_key in block and out_key in block:
+            try:
+                return float(block[in_key]), float(block[out_key])
+            except (TypeError, ValueError):
+                return None
+    if "input" in rec and "output" in rec:
+        try:
+            return float(rec["input"]), float(rec["output"])
+        except (TypeError, ValueError):
+            return None
+    return None
+
+
+def sync_costs_from_snapshot(snapshot_path: str | None = None) -> dict:
+    """Re-sync the model-cost table from the omni-registry pinned snapshot.
+
+    Single source of truth: the pinned snapshot at
+    ``plugins/omni-registry/data/models.snapshot.json`` (repo-relative to this
+    file), overridable with ``$XOMNI_MODELS_SNAPSHOT`` or ``snapshot_path``.
+    Snapshot pricing fields are mapped into COST_TABLE's (input, output)
+    USD/1M format; snapshot models without pricing are $0 (verified-free
+    gateway set). The result is a *merge* over the built-in table, so paid
+    models the snapshot does not cover keep their public list prices.
+
+    Never raises: on a missing/unparseable snapshot the built-in hardcoded
+    table is returned with ``source="fallback"`` so callers keep operating on
+    last-known data and can surface the warning themselves.
+
+    Returns ``{"models": <count>, "table": <dict>, "source": "snapshot"|"fallback"}``
+    plus ``path`` and (on fallback) ``reason``.
+    """
+    path = snapshot_path or os.environ.get("XOMNI_MODELS_SNAPSHOT") or DEFAULT_SNAPSHOT
+    try:
+        with open(path, encoding="utf-8-sig") as fh:
+            data = json.load(fh)
+        models = data.get("models") if isinstance(data, dict) else None
+        if not isinstance(models, dict) or not models:
+            raise ValueError("snapshot has no 'models' mapping")
+        table = dict(COST_TABLE)
+        for slug, rec in models.items():
+            if not isinstance(rec, dict):
+                continue
+            rates = _extract_pricing(rec) or (0.0, 0.0)
+            table[str(slug).strip().lower()] = (float(rates[0]), float(rates[1]))
+        return {"models": len(models), "table": table, "source": "snapshot",
+                "path": os.path.abspath(path)}
+    except (OSError, ValueError, TypeError, KeyError) as exc:
+        return {"models": 0, "table": dict(COST_TABLE), "source": "fallback",
+                "reason": str(exc), "path": os.path.abspath(path)}
+
 
 # Warn-only by default: the agent never silently stops working. hard_stop is
 # opt-in (/cost budget hard on) for users who want a true budget hard-stop.
@@ -477,3 +552,24 @@ class CostTracker:
         s = self.set_budget(daily_cap=daily, weekly_cap=weekly)
         return "budget set: daily $%.4f, weekly $%.4f, hard-stop %s" % (
             s["daily_cap"], s["weekly_cap"], "ON" if s["hard_stop"] else "off")
+
+    def cmd_sync(self, raw: str = "") -> str:
+        """/cost sync [path] — re-sync the cost table from the omni-registry
+        pinned snapshot (single source of truth); a path argument or
+        $XOMNI_MODELS_SNAPSHOT overrides the default snapshot location."""
+        path = (raw or "").strip() or None
+        res = sync_costs_from_snapshot(path)
+        if res["source"] == "snapshot":
+            COST_TABLE.clear()
+            COST_TABLE.update(res["table"])
+            return ("cost table synced from omni-registry snapshot: %d models, "
+                    "source %s (in: $%.4f-%.4f / out: $%.4f-%.4f per 1M tokens)"
+                    % (res["models"], res["path"],
+                       min(r[0] for r in res["table"].values()),
+                       max(r[0] for r in res["table"].values()),
+                       min(r[1] for r in res["table"].values()),
+                       max(r[1] for r in res["table"].values())))
+        # Fallback: keep the last-known table untouched and warn clearly.
+        return ("WARNING: cost table sync failed — snapshot unavailable (%s). "
+                "Continuing with the built-in table (%d models); ledger "
+                "unaffected." % (res.get("reason", "unknown error"), len(COST_TABLE)))

@@ -3,16 +3,16 @@
 
 ## Quick wins (days)
 
-- [ ] U1. One-command vertical stacks: `xomni add trading-stack|data-science|web-dev|home-automation` — installs skills + MCPs + config, runs smoke tests, shows live-data proof. Stack defs in data/stacks/*.json (skills from curated DB, MCPs from catalog.json).
-- [ ] U2. Make the MCP catalog REAL: host `hermes mcp list` shows 2 (disabled) vs 311 in the catalog — gap verified 2026-08-12. Full marketplace path: search/stars/keyless badges/security scores in /mcp, one-command install that WRITES the host mcp config (not the host's interactive flow).
-- [ ] U3. Non-interactive everything: every install command takes --yes; NO silent cancels — failed installs exit non-zero with a loud error naming the cause.
-- [ ] U4. Windows CI pass: GitHub Actions windows-latest job running the full matrix + windows-specific checks (npx .cmd shim resolution, config.yaml write-protection handling, /tmp vs Windows paths).
+- [x] U1. One-command vertical stacks: `xomni add trading-stack|data-science|web-dev|home-automation` — installs skills + MCPs + config, runs smoke tests, shows live-data proof. Stack defs in data/stacks/*.json (skills from curated DB, MCPs from catalog.json). done 2026-08-12 (4 stacks + xomni add wiring + test_stacks).
+- [x] U2. Make the MCP catalog REAL: host `hermes mcp list` shows 2 (disabled) vs 311 in the catalog — gap verified 2026-08-12. Full marketplace path: search/stars/keyless badges/security scores in /mcp, one-command install that WRITES the host mcp config (not the host's interactive flow). done 2026-08-12 (311-catalog marketplace + host config.yaml writer + tests; windows_checks host_config_edit PASS).
+- [x] U3. Non-interactive everything: every install command takes --yes; NO silent cancels — failed installs exit non-zero with a loud error naming the cause. done 2026-08-12 (--yes audit + fail-loud + test_noninteractive).
+- [x] U4. Windows CI pass: GitHub Actions windows-latest job running the full matrix + windows-specific checks (npx .cmd shim resolution, config.yaml write-protection handling, /tmp vs Windows paths). done 2026-08-12 (windows-latest job + windows_checks.py 8 checks, 0 fail).
 
 ## Big wins (design-then-build)
 
-- [ ] U5. Automatic model routing: pick per task (fast/reasoning/vision) from the 25 free models + per-task cost/latency telemetry after every answer. BUILDING (deleg_8a9896b8).
-- [ ] U6. Auto-skill creation: after any 5+ tool-call success, auto-draft a skill and show "saved: <name>" for approval. BUILDING (deleg_8a9896b8).
-- [ ] U7. Receipts by default: every external side-effect returns a verifiable handle (URL/hash/status) — proof, not claims. BUILDING (deleg_8a9896b8).
+- [x] U5. Automatic model routing: pick per task (fast/reasoning/vision) from the 25 free models + per-task cost/latency telemetry after every answer. done 2026-08-12 (model-router plugin: detect_task_type/route + deterministic pre_llm_call hook, ci_gate DETERMINISTIC_HOOK_PLUGINS).
+- [x] U6. Auto-skill creation: after any 5+ tool-call success, auto-draft a skill and show "saved: <name>" for approval. done 2026-08-12 (skill-drafter plugin: draft_skill/parse_transcript + auto-draft bridge).
+- [x] U7. Receipts by default: every external side-effect returns a verifiable handle (URL/hash/status) — proof, not claims. done 2026-08-12 (receipts plugin: sha/url/exit handles + verify).
 
 
 Owned by the improvement workforce (cron: xomni-improvement-workforce, every 3h)
@@ -20,13 +20,13 @@ Owned by the improvement workforce (cron: xomni-improvement-workforce, every 3h)
 status: `[ ]` open · `[~]` in progress (date) · `[x]` done (date). Keep this
 file current — it is the workforce's queue.
 
-- [ ] U8. Domain guardrails: per-domain approval policies (trading/money/medical/legal/crypto/code-exec) — trading stack defaults to analysis-OK, execution-requires-explicit-approval; /guardrails commands. BUILDING (deleg_38cc4b9b).
+- [x] U8. Domain guardrails: per-domain approval policies (trading/money/medical/legal/crypto/code-exec) — trading stack defaults to analysis-OK, execution-requires-explicit-approval; /guardrails commands. done 2026-08-12 (domain-guardrails plugin, 16 tests).
 
-- [ ] U9. Self-healing agent: watchdog kills silent hangs (vectorbt-180s case) + postcondition checks for exit-0-nothing-happened, config-drift auto-fix with audit trail (heal.jsonl), /heal commands. BUILDING (deleg_300466ed).
+- [x] U9. Self-healing agent: watchdog kills silent hangs (vectorbt-180s case) + postcondition checks for exit-0-nothing-happened, config-drift auto-fix with audit trail (heal.jsonl), /heal commands. done 2026-08-12 (self-healing plugin: watchdog/postcondition/heal.jsonl, /heal).
 
-- [ ] U10. Voice-first mode: optional hands-free CLI — ffmpeg/arecord capture, whisper-or-Gemini STT, edge-tts TTS, /voice test|ask|on. BUILDING (deleg_591d5788).
+- [x] U10. Voice-first mode: optional hands-free CLI — ffmpeg/arecord capture, whisper-or-Gemini STT, edge-tts TTS, /voice test|ask|on. done 2026-08-12 (voice-first plugin, 17 tests).
 
-- [ ] U11. Cross-session skill market: publish XOMNI-created skills to the shared skills.sh registry (verified: git-repo content model, 9615 skills) with automatic credit (author/source/published_at stamping), /skills publish + receipt, docs/SKILLS-MARKET.md. BUILDING (deleg_a620f501).
+- [x] U11. Cross-session skill market: publish XOMNI-created skills to the shared skills.sh registry (verified: git-repo content model, 9615 skills) with automatic credit (author/source/published_at stamping), /skills publish + receipt, docs/SKILLS-MARKET.md. done 2026-08-12 (omni-skills publish_skill + SKILLS-MARKET.md, 35 tests).
 
 ## MOONSHOTS (proposals — pick or add yours)
 
@@ -67,14 +67,14 @@ file current — it is the workforce's queue.
 
 ## P2 — scale
 
-- [ ] 23. Plugin marketplace rails: 15% take-rate spec + receipts (docs/MARKETPLACE.md)
-- [ ] 24. Lightning micro-payouts pilot (global payouts; India stays UPI — 30%+1% TDS)
-- [ ] 25. Enterprise tier: audit log + SSO-ready docs
-- [ ] 26. Desktop GUI skin sync: xomni skin in the desktop app (dark/light pairing)
-- [ ] 27. Gateway proxy mode docs: expose XOMNI as an OpenAI-compatible endpoint
-- [ ] 28. Release automation: tag script (v1.x.y) + changelog generator + PyPI publish dry-run
-- [ ] 29. omni-tools: cross-surface recall eval (plugin+MCP+skill mixed queries, 50-case set)
-- [ ] 30. cost-tracker: model-cost table sync with omni-registry (single source of truth)
+- [x] 23. Plugin marketplace rails: 15% take-rate spec + receipts (docs/MARKETPLACE.md) — done 2026-08-12
+- [x] 24. Lightning micro-payouts pilot (global payouts; India stays UPI — 30%+1% TDS) — done 2026-08-12 (docs/LIGHTNING-PAYOUTS.md)
+- [x] 25. Enterprise tier: audit log + SSO-ready docs — done 2026-08-12 (audit-log plugin + docs/ENTERPRISE.md)
+- [x] 26. Desktop GUI skin sync: xomni skin in the desktop app (dark/light pairing) — done 2026-08-12 (data/skins/xomni-skin.json + docs/DESKTOP-SKIN.md)
+- [x] 27. Gateway proxy mode docs: expose XOMNI as an OpenAI-compatible endpoint — done 2026-08-12 (docs/GATEWAY-PROXY.md)
+- [x] 28. Release automation: tag script (v1.x.y) + changelog generator + PyPI publish dry-run — done 2026-08-12 (scripts/release.sh + scripts/changelog.py + CHANGELOG.md, dry-run verified)
+- [x] 29. omni-tools: cross-surface recall eval (plugin+MCP+skill mixed queries, 50-case set) — done 2026-08-12 (50 cases 15/15/10/10, recall@5 1.000, runner + report)
+- [x] 30. cost-tracker: model-cost table sync with omni-registry (single source of truth) — done 2026-08-12 (sync_costs_from_snapshot + /cost sync, 25 models from snapshot)
 
 ## Never (do not build)
 

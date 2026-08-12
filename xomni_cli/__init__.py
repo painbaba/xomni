@@ -138,7 +138,11 @@ def cmd_plugins_list() -> int:
 
 def cmd_plugins_install(names: list[str]) -> int:
     if not os.path.isdir(HERMES_PLUGINS_DIR):
-        os.makedirs(HERMES_PLUGINS_DIR)
+        try:
+            os.makedirs(HERMES_PLUGINS_DIR)
+        except OSError as exc:
+            print(f"! failed: plugins install: cannot create {HERMES_PLUGINS_DIR} ({exc})")
+            return 1
     # --yes / -y: accepted everywhere (U3 — non-interactive; no prompt exists,
     # and the flag guarantees none is ever shown). Any mutating CLI command
     # must accept it and never block on a prompt.
@@ -320,8 +324,16 @@ def cmd_skill_install(path: str) -> int:
     if not path or not os.path.isdir(path):
         print(f"usage: xomni skill install <dir>  ({path!r} is not a directory)")
         return 1
-    omni_skills_core = _load_omni_skills_core()
-    os.makedirs(HERMES_SKILLS_DIR, exist_ok=True)
+    try:
+        omni_skills_core = _load_omni_skills_core()
+    except ImportError as exc:
+        print(f"FAILED — {exc}")
+        return 1
+    try:
+        os.makedirs(HERMES_SKILLS_DIR, exist_ok=True)
+    except OSError as exc:
+        print(f"FAILED — cannot create skills dir {HERMES_SKILLS_DIR} ({exc})")
+        return 1
     if os.path.isfile(os.path.join(path, "SKILL.md")):
         r = omni_skills_core.install_skill(path, HERMES_SKILLS_DIR)
         if not r.get("ok"):
@@ -513,7 +525,13 @@ def cmd_providers_add(args: list[str]) -> int:
     except OSError as exc:
         print(f"FAILED — {exc}")
         return 1
-    env_note = _touch_env_key(_env_path(), key_env, False)
+    try:
+        env_note = _touch_env_key(_env_path(), key_env, False)
+    except OSError as exc:
+        print(f"FAILED — .env not writable at {_env_path()} ({exc}). "
+              f"Fix: create the hermes home dir (or uncheck Read-only), "
+              f"then re-run `xomni providers add`.")
+        return 1
     print(f"  wrote providers.{name} block -> {config_path} (YAML validated)")
     print(f"  .env: {env_note}")
     print("NEXT: paste the key value into .env, then `xomni doctor` or /models to verify.")
@@ -891,7 +909,17 @@ def main(argv=None) -> int:
     if cmd == "launch":
         home = os.path.expanduser("~/AppData/Local/hermes")
         env = dict(os.environ, HERMES_HOME=os.path.join(home, "profiles", "xomni"))
-        return subprocess.call([_resolve_exe("hermes"), *args], env=env)  # .cmd shim fix (hermes.exe works bare)
+        try:
+            # .cmd shim fix (hermes.exe works bare)
+            return subprocess.call([_resolve_exe("hermes"), *args], env=env)
+        except FileNotFoundError:
+            print("launch: FAILED — the hermes binary was not found on PATH. "
+                  "Fix: install Hermes first (or re-run from a shell where "
+                  "`hermes` resolves), then re-run `xomni launch`.")
+            return 1
+        except OSError as exc:
+            print(f"launch: FAILED — could not start hermes: {exc}")
+            return 1
     print(f"unknown command: {cmd}\n{__doc__}")
     return 1
 

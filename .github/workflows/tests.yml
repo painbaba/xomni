@@ -20,7 +20,7 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Run 386-test matrix
+      - name: Run full test matrix (1043 tests / 29 plugins)
         run: bash .bench/run_all_tests.sh
 
   test-windows:
@@ -38,10 +38,11 @@ jobs:
           python-version: ${{ matrix.python-version }}
       # run_all_tests.sh is bash-only -> drive it through git-bash (preinstalled
       # on windows-latest runners). Windows-specific env checks run first so a
-      # broken npx shim / read-only config / path bug fails fast with a clear name.
+      # broken npx shim / read-only config / path bug / spaces-path launch /
+      # host-config writer regression fails fast with a clear name.
       - name: Windows environment checks
         shell: bash
         run: python .bench/windows_checks.py
-      - name: Run 386-test matrix (git-bash)
+      - name: Run full test matrix (1043 tests / 29 plugins, git-bash)
         shell: bash
         run: bash .bench/run_all_tests.sh

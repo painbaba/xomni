@@ -14,9 +14,10 @@ prompt, and none may fail silently. The three rules:
    an error string that NAMES the cause (plugin command handlers). There is
    no bare `return`/`except: pass` that swallows an install error. A missing
    directory, a read-only target, an invalid URL, a missing binary, a
-   rejected skill, an empty/all-rejected marketplace, and an unknown plugin
-   or server all produce a cause-naming error and a non-zero exit / FAILED
-   line.
+   rejected skill, an empty/all-rejected marketplace, an unknown plugin
+   or server, a missing/unwritable config.yaml, an unwritable `.env`, and a
+   missing host binary (`xomni launch`) all produce a cause-naming error and
+   a non-zero exit / FAILED line.
 3. **Zero silent cancels.** Nothing ever prints "Cancelled" and walks away.
    The only "no-op" outcomes are explicit and informative: `already
    registered — nothing to do` (`/mcp add <name>` when the server exists),
@@ -35,6 +36,8 @@ closed in CI), which is exactly what `.bench/test_fail_loud.py` verifies.
 | `xomni plugins install [names…]` | `--yes` / `-y` (stripped) | Same — never prompts; installs immediately | per-name `! failed: <name>: <cause>`; exit 1 if any failed |
 | `xomni skill install <dir>` | `--yes` / `-y` (stripped) | Same — never prompts; installs immediately | `FAILED — <reason>` + issues; exit 1 |
 | `xomni add <stack>` | `--yes` / `-y` (accepted) | Same — never prompts; appends MCP servers immediately (`--dry-run` previews) | `ERROR: <cause>` (unknown stack, invalid MCP, missing/unwritable config.yaml, failed validation); exit 1 |
+| `xomni providers add <name> <url>` | `--yes` / `-y` (stripped) | Same — never prompts; writes the providers block + .env key placeholder immediately (`--dry-run` previews) | `FAILED — <cause>` (invalid name/URL/env var/api-type, missing config.yaml, unwritable config.yaml, unwritable `.env`); exit 1; `ALREADY PRESENT` idempotent no-op |
+| `xomni launch` | `--yes` / `-y` (passed through to the host) | Never prompts; delegates to `hermes` | host exit code; `launch: FAILED — the hermes binary was not found on PATH` if missing; exit 1 |
 | `/mcp add <path>` (catalog import) | `--yes` / `-y` (stripped) | Same — never prompts; imports immediately | `no such file: <path>` / `rejected — <cause>` / `failed to copy: <exc>` |
 | `/mcp add <name>` (host install) | `--yes` / `-y` (required to mutate) | Prints the plan + `confirm by re-running: /mcp add <name> --yes` — NO mutation | `/mcp add: FAILED — <cause>` (unknown server, launch binary missing, config write error) |
 | `/skills-install <dir>` | `--yes` / `-y` (stripped) | Same — never prompts; installs immediately (`--dry-run` previews) | `/skills-install: FAILED — <reason>` |
@@ -47,7 +50,7 @@ closed in CI), which is exactly what `.bench/test_fail_loud.py` verifies.
 
 | Surface | File | Mutating command(s) |
 |---|---|---|
-| CLI | `xomni_cli/__init__.py` | `plugins install`, `skill install`, `add <stack>` |
+| CLI | `xomni_cli/__init__.py` | `plugins install`, `skill install`, `add <stack>`, `providers add`, `launch` |
 | Plugin command | `plugins/mcp-catalog/__init__.py` | `/mcp add <path>`, `/mcp add <name> [--yes]` |
 | Plugin command | `plugins/omni-skills/__init__.py` | `/skills-install`, `/skills-marketplace`, `/skills publish` |
 | Plugin command | `plugins/skill-drafter/__init__.py` | `/skill save` |
@@ -59,6 +62,11 @@ closed in CI), which is exactly what `.bench/test_fail_loud.py` verifies.
   command is invoked with `--yes` and asserted to perform its action
   (stubbed handlers), and every simulated failure names its cause. Green:
   `python .bench/test_fail_loud.py`.
+- `xomni_cli/tests/test_noninteractive.py` — CLI unit suite: `--yes` accepted
+  on every mutating command, unknown plugin / missing dir / un-creatable
+  target dir / unwritable `.env` / missing host binary each exit 1 with the
+  cause named, and `main()` propagates subcommand exit codes. Green:
+  `cd xomni_cli && python -m unittest discover -s tests -q`.
 - `PromptFreeGuaranteeTests` — asserts no `input(` anywhere in the audited
   files.
 - Source-level grep: every audited mutating command's file contains `--yes`

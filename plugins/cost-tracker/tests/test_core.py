@@ -5,6 +5,7 @@ budget status + remaining, cap persistence, hard-stop blocking, warn-only
 overage, top-models ranking, the cost_track tool gate, and /cost rendering.
 """
 import datetime
+import json
 import os
 import tempfile
 import unittest
@@ -215,6 +216,73 @@ class CostTrackerTests(unittest.TestCase):
         self.assertIn("weekly digest", text)
         self.assertIn("no calls logged this week", text)
         self.assertIn("budget (week)", text)
+
+    # ---- snapshot sync (single source of truth: omni-registry pinned snapshot) ----
+
+    def test_sync_from_snapshot_maps_prices(self):
+        snap = os.path.join(self._tmp.name, "models.snapshot.json")
+        payload = {
+            "schema_version": "1.0.0",
+            "models": {
+                "deepseek-v4-flash": {"context_window": 1048576,
+                                      "cost_per_1m": {"input": 0.0, "output": 0.0}},
+                "gpt-4o": {"pricing": {"prompt": 2.5, "completion": 10.0}},
+                "claude-opus-4": {"input": 15.0, "output": 75.0},
+            },
+        }
+        with open(snap, "w", encoding="utf-8") as fh:
+            json.dump(payload, fh)
+        r = core.sync_costs_from_snapshot(snap)
+        self.assertEqual(r["source"], "snapshot")
+        self.assertGreater(r["models"], 0)
+        self.assertEqual(r["models"], 3)
+        for slug in ("deepseek-v4-flash", "gpt-4o", "claude-opus-4"):
+            in_p, out_p = r["table"][slug]
+            self.assertIsInstance(in_p, float)
+            self.assertIsInstance(out_p, float)
+        self.assertEqual(r["table"]["deepseek-v4-flash"], (0.0, 0.0))
+        self.assertEqual(r["table"]["gpt-4o"], (2.5, 10.0))
+        self.assertEqual(r["table"]["claude-opus-4"], (15.0, 75.0))
+
+    def test_sync_missing_snapshot_falls_back_gracefully(self):
+        r = core.sync_costs_from_snapshot(os.path.join(self._tmp.name, "nope.json"))
+        self.assertEqual(r["source"], "fallback")
+        self.assertEqual(r["models"], 0)
+        self.assertGreater(len(r["table"]), 0)          # built-in table still usable
+        self.assertEqual(r["table"], dict(core.COST_TABLE))
+        self.assertTrue(r.get("reason"))
+
+    def test_sync_corrupt_snapshot_falls_back(self):
+        bad = os.path.join(self._tmp.name, "bad.json")
+        with open(bad, "w", encoding="utf-8") as fh:
+            fh.write("{not json!!")
+        r = core.sync_costs_from_snapshot(bad)
+        self.assertEqual(r["source"], "fallback")
+        self.assertEqual(r["models"], 0)
+        self.assertGreater(len(r["table"]), 0)
+
+    def test_sync_record_without_pricing_defaults_zero(self):
+        snap = os.path.join(self._tmp.name, "s2.json")
+        with open(snap, "w", encoding="utf-8") as fh:
+            json.dump({"models": {"deepseek-v4-flash": {"context_window": 1}}}, fh)
+        r = core.sync_costs_from_snapshot(snap)
+        self.assertEqual(r["source"], "snapshot")
+        self.assertEqual(r["table"]["deepseek-v4-flash"], (0.0, 0.0))
+
+    def test_cmd_sync_applies_table_and_warns_on_fallback(self):
+        tr = self._tracker()
+        saved = dict(core.COST_TABLE)
+        self.addCleanup(lambda: (core.COST_TABLE.clear(), core.COST_TABLE.update(saved)))
+        snap = os.path.join(self._tmp.name, "sync.json")
+        with open(snap, "w", encoding="utf-8") as fh:
+            json.dump({"models": {"gpt-4o": {"pricing": {"prompt": 9.9, "completion": 8.8}}}}, fh)
+        out = tr.cmd_sync(snap)
+        self.assertIn("synced", out)
+        self.assertEqual(core.COST_TABLE["gpt-4o"], (9.9, 8.8))  # table applied globally
+        # fallback keeps last-known data and surfaces a clear warning
+        out2 = tr.cmd_sync(os.path.join(self._tmp.name, "missing.json"))
+        self.assertIn("WARNING", out2)
+        self.assertEqual(core.COST_TABLE["gpt-4o"], (9.9, 8.8))
 
 
 if __name__ == "__main__":

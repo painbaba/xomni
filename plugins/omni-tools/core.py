@@ -697,6 +697,154 @@ def eval_recall(
     return ev
 
 
+# ─── cross-surface recall eval ──────────────────────────────────────────────
+# A broader, data-driven companion to EVAL_SET: 50 planted queries
+# (data/cross_surface_eval.json) that intentionally mix the plugin, MCP and
+# skill surfaces (including multi-surface "mixed" queries), scored as
+# recall@k per surface and overall. Same substring hit rule as eval_recall.
+CROSS_SURFACE_EVAL_PATH: Path = (
+    Path(__file__).resolve().parent / "data" / "cross_surface_eval.json"
+)
+CROSS_SURFACE_REPORT_PATH: Path = XOMNI_ROOT / "data" / "cross_surface_report.json"
+
+
+def _best_effort_index(
+    plugins_dir: Optional[Path] = None,
+    mcp_path: Optional[Path] = None,
+    skills_path: Optional[Path] = None,
+) -> Tuple[ToolSearchIndex, Dict[str, bool]]:
+    """Build an index surface-by-surface so a missing data file degrades to
+    a score of 0 for that surface instead of crashing the eval run."""
+    loaded = {"plugin": True, "mcp": True, "skill": True}
+    entries: List[Dict[str, Any]] = []
+    try:
+        entries.extend(scan_plugin_surfaces(plugins_dir))
+    except (OSError, ValueError):
+        loaded["plugin"] = False
+    try:
+        entries.extend(load_mcp_servers(mcp_path))
+    except (OSError, ValueError):
+        loaded["mcp"] = False
+    try:
+        entries.extend(load_curated_skills(skills_path))
+    except (OSError, ValueError):
+        loaded["skill"] = False
+    for i, entry in enumerate(entries):
+        entry.setdefault("id", f"{entry['source']}:{entry['kind']}:{entry['name']}:{i}")
+        entry.setdefault("_keywords", doc_keywords(entry))
+    return ToolSearchIndex(entries), loaded
+
+
+def cross_surface_recall(
+    cases_path: Optional[Path] = None,
+    top_k: int = 5,
+    index: Optional[ToolSearchIndex] = None,
+    report_path: Optional[Path] = None,
+    plugins_dir: Optional[Path] = None,
+    mcp_path: Optional[Path] = None,
+    skills_path: Optional[Path] = None,
+) -> Dict[str, Any]:
+    """Run the 50-query cross-surface eval; score recall@top_k per surface.
+
+    Each case in ``cases_path`` (default data/cross_surface_eval.json) is a
+    dict with ``id``, ``query``, ``surface`` (plugin|mcp|skill|mixed) and
+    ``expected_hits`` (1-3 names/substrings that must appear in the top-k
+    results, case-insensitive substring match — same rule as eval_recall).
+    Per-case recall = matched_expected / len(expected_hits); per-surface and
+    overall recall are the mean over their cases. ``index`` defaults to the
+    live corpus (built best-effort so a missing data file scores 0 for that
+    surface rather than crashing). The per-case + summary report is written
+    to ``report_path`` (default data/cross_surface_report.json).
+    """
+    cp = Path(cases_path or CROSS_SURFACE_EVAL_PATH)
+    with open(cp, encoding="utf-8") as fh:
+        cases = json.load(fh)
+    k = max(1, int(top_k))
+    idx = index
+    loaded: Optional[Dict[str, bool]] = None
+    if idx is None:
+        if plugins_dir is None and mcp_path is None and skills_path is None:
+            try:
+                idx = get_index()
+            except (OSError, ValueError):
+                idx = None
+        if idx is None:
+            idx, loaded = _best_effort_index(plugins_dir, mcp_path, skills_path)
+
+    per_case: List[Dict[str, Any]] = []
+    for case in cases:
+        names = [r["name"] for r in idx.search(case["query"], limit=k)]
+        expected = case.get("expected_hits") or []
+        ranks: Dict[str, Optional[int]] = {}
+        matched = 0
+        for exp in expected:
+            rank = next(
+                (i + 1 for i, n in enumerate(names) if str(exp).lower() in n.lower()),
+                None,
+            )
+            ranks[str(exp)] = rank
+            matched += int(rank is not None)
+        per_case.append(
+            {
+                "id": case["id"],
+                "query": case["query"],
+                "surface": case["surface"],
+                "expected_hits": list(expected),
+                "ranks": ranks,
+                "recall": matched / len(expected) if expected else 0.0,
+            }
+        )
+
+    surfaces: List[str] = []
+    for c in per_case:
+        if c["surface"] not in surfaces:
+            surfaces.append(c["surface"])
+    per_surface: Dict[str, Dict[str, Any]] = {}
+    for s in surfaces:
+        group = [c for c in per_case if c["surface"] == s]
+        per_surface[s] = {
+            "cases": len(group),
+            "recall": sum(c["recall"] for c in group) / len(group) if group else 0.0,
+        }
+    overall = (
+        sum(c["recall"] for c in per_case) / len(per_case) if per_case else 0.0
+    )
+
+    result: Dict[str, Any] = {
+        "eval": "cross_surface_recall",
+        "queries": len(per_case),
+        "top_k": k,
+        "overall_recall": overall,
+        "per_surface": per_surface,
+        "sources_loaded": loaded
+        if loaded is not None
+        else {"plugin": True, "mcp": True, "skill": True},
+        "last_eval": time.strftime("%Y-%m-%d %H:%M:%S"),
+        "per_case": per_case,
+    }
+
+    # human-readable table
+    rows = [s for s in surfaces if s in ("plugin", "mcp", "skill", "mixed")] + ["overall"]
+    width = max(len("overall"), max(len(r) for r in rows))
+    print(f"cross-surface recall@{k} ({len(per_case)} queries)")
+    print(f"{'surface':<{width}}  {'cases':>5}  {'recall':>7}")
+    for r in rows:
+        if r == "overall":
+            print(f"{'overall':<{width}}  {len(per_case):>5}  {overall:>7.3f}")
+        else:
+            ps = per_surface.get(r, {"cases": 0, "recall": 0.0})
+            print(f"{r:<{width}}  {ps['cases']:>5}  {ps['recall']:>7.3f}")
+
+    try:
+        rp = Path(report_path or CROSS_SURFACE_REPORT_PATH)
+        rp.parent.mkdir(parents=True, exist_ok=True)
+        rp.write_text(json.dumps(result, indent=2, sort_keys=True), encoding="utf-8")
+        result["report_path"] = str(rp)
+    except OSError:
+        pass  # report file is best-effort; never fatal
+    return result
+
+
 def save_eval(db_path: Path, ev: Dict[str, Any]) -> None:
     """Persist the eval summary into a key/value 'eval' table (cache db)."""
     db_path.parent.mkdir(parents=True, exist_ok=True)
