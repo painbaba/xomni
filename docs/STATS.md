@@ -21,7 +21,7 @@ Live snapshot generated 2026-08-12. Every number below was produced by running t
 | Plugins | 17 | `ls plugins \| wc -l` |
 | Python files in plugins/ | 59 | `find plugins -name '*.py' \| wc -l` |
 | Plugin LOC | 13,505 | `find plugins -name '*.py' -exec cat {} + \| wc -l` |
-| Test methods | 647 | docs/TEST-MATRIX.md (auto-generated; per-plugin column sums to 677) |
+| Test methods | 677 | docs/TEST-MATRIX.md (auto-generated; per-plugin column sums to 677) |
 | Tests passing | 677 / 677 | docs/TEST-MATRIX.md |
 
 ## Website (flagship)
