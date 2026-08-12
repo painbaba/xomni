@@ -24,6 +24,8 @@ file current — it is the workforce's queue.
 
 - [ ] U9. Self-healing agent: watchdog kills silent hangs (vectorbt-180s case) + postcondition checks for exit-0-nothing-happened, config-drift auto-fix with audit trail (heal.jsonl), /heal commands. BUILDING (deleg_300466ed).
 
+- [ ] U10. Voice-first mode: optional hands-free CLI — ffmpeg/arecord capture, whisper-or-Gemini STT, edge-tts TTS, /voice test|ask|on. BUILDING (deleg_591d5788).
+
 ## MOONSHOTS (proposals — pick or add yours)
 
 - [ ] M1. XOMNI as a service: OpenAI-compatible gateway mode — any app (VS Code, Excel, WhatsApp, custom) talks to XOMNI as a localhost API.
