@@ -10,7 +10,7 @@ the only claims we make in marketing:
 - **7 merged agents** out of the box (Hermes, OpenCode, jcode, Codex, Aider, Goose, OpenClaw)
 - **35 plugins**, **25 verified free models** (verified = tested to actually work, not scraped from a list)
 - **Sponsorship engine**: sponsor line, 50/50 impression share, capped payouts, CPM/CPC/CPA tiers, receipts, escrow, auction
-- Works on **Windows**, **one-command install**, sources MIT/Apache, **1142 passing tests**
+- Works on **Windows**, **one-command install**, sources MIT/Apache, **1251 passing tests**
 
 ---
 
@@ -50,7 +50,7 @@ XOMNI exists yet). The plan below is mostly a discovery-and-trust plan.
 ### Open core: the agent is the free bait (and it's genuinely good)
 
 - Agent itself: **free forever, MIT/Apache sources** — no license key, no "pro" wall on core features.
-- 7 merged agents, 35 plugins, 25 verified free models, Windows support, one-command install, 1142 tests.
+- 7 merged agents, 35 plugins, 25 verified free models, Windows support, one-command install, 1251 tests.
 - "Free forever" is a strategic choice, not charity: we need **installed base**, because the installed base *is* the product we sell to sponsors.
 
 ### The moat: the sponsorship NETWORK
@@ -92,7 +92,7 @@ Every channel has concrete actions, not vibes.
 
 ### 1. GitHub — stars via README + Show HN
 
-- **README is the landing page.** One-command install at the very top, then a 10-second demo GIF, then the facts table (7 agents / 35 plugins / 25 verified free models / 1142 tests). Screenshot of the sponsor line in action.
+- **README is the landing page.** One-command install at the very top, then a 10-second demo GIF, then the facts table (7 agents / 35 plugins / 25 verified free models / 1251 tests). Screenshot of the sponsor line in action.
 - **Show HN post** ("Show HN: XOMNI — one CLI, 6 agents, 25 free models, devs earn 50% on sponsored impressions"). HN is the single highest-leverage audience for solo devs and AI tinkerers. Post on a Tuesday/Wednesday morning US time.
 - `hackernews` launch support: answer every comment, fix every legitimate gripe within 48h, log all feedback.
 - Star-for-star / giveaway tactics: no. Organic only — a gamed star count dies in one HN comment thread.

@@ -1,6 +1,6 @@
 # XOMNI Quickstart — running in 5 minutes
 
-XOMNI = the Hermes host + 35 plugins (1142 tests), 170 bundled skills, 25
+XOMNI = the Hermes host + 35 plugins (1251 tests), 170 bundled skills, 25
 verified free models, a 311-server MCP catalog, and a sponsorship engine that
 pays you for installs. No API keys required.
 
@@ -84,7 +84,7 @@ sponsor's payment, capped at `0.5 × P`, with signed receipts and escrow.
 ```bash
 cd plugins/repomap && python -m unittest tests.test_core -v   # 15 tests
 ```
-Full suite: 1142/1142 pass. See `docs/VALIDATION.md`.
+Full suite: 1251/1251 pass. See `docs/VALIDATION.md`.
 
 ## Next steps
 

@@ -57,7 +57,7 @@ What it does:
    website assets, docs, pipelines, infra) into `website/features.html` in the
    flagship docs-page style.
 
-The page's canonical counts (35 plugins · 1142 tests) come straight from the
+The page's canonical counts (35 plugins · 1251 tests) come straight from the
 matrix's "Totals" line — keep that line in sync and the site stays truthful.
    folder name for `name`).
 3. Derives `category` from the path (first path segment).

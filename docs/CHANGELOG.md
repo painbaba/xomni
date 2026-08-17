@@ -1,6 +1,6 @@
 # XOMNI Changelog
 
-> Current: **35 plugins / 1142 tests / 519 skills / 311 MCPs**
+> Current: **35 plugins / 1251 tests / 519 skills / 311 MCPs**
 > All entries are taken verbatim from `git log`; nothing invented.
 
 ## 2026-08-12
